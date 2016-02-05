@@ -1,0 +1,701 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   
+      <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      -->
+      <title>rpag</title>
+      <meta name="generator" content="MATLAB 7.8">
+      <meta name="date" content="2011-10-17">
+      <meta name="m-file" content="rpag"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head>
+   <body>
+      <div class="content">
+         <h1>rpag</h1>
+         <!--introduction-->
+         <p>Implementation of the RPGA algorithm, which computes the pipeline sets of a pipelined multiplier block or pipelined adder
+            graph (PAG).
+         </p>
+         <!--/introduction-->
+         <h2>Contents</h2>
+         <div>
+            <ul>
+               <li><a href="#1">Syntax</a></li>
+               <li><a href="#2">Description</a></li>
+               <li><a href="#3">Examples</a></li>
+            </ul>
+         </div>
+         <h2>Syntax<a name="1"></a></h2>
+         <p>X = rpag(coeff,cost_model)</p>
+         <p>[X,comp_time,decisions] = rpag(coeff,cost_model,bw,exhaustive,rand_variance,decisions)</p>
+         <h2>Description<a name="2"></a></h2>
+         <p>X = rpag(coeff,cost_model) computes the pipeline sets X for coefficients coeff. X is a cell array where X{s} contains the
+            elements of pipeline stage s. The cost model is defined by 'cost_model' which must be one following strings:
+         </p>
+         <div>
+            <ul>
+               <li>'hl_fpga'    : high level FPGA cost model</li>
+               <li>'ll_fpga'    : low level FPGA cost model</li>
+               <li>'hl_asic'    : high level ASIC cost model</li>
+               <li>'ll_asic'    : low level ASIC cost model</li>
+               <li>'asic_icost' : more detailed model by Aksoy</li>
+               <li>'mcm_min_ad' : minimal toatal adder depth model</li>
+            </ul>
+         </div>
+         <p>[X,comp_time,decisions] = rpag(coeff,cost_model,bw,exhaustive,rand_variance,decisions) uses all optional arguments which are:</p>
+         <div>
+            <ul>
+               <li>bw            : Bit width of the multiplier block input</li>
+               <li>exhaustive    : Except from standard mode, the exhaustive mode seaches                   for both single predecessor and predecessor
+                  pairs,                   choosing the best found.
+               </li>
+               <li>rand_variance : Variance for random selection, e.g. a variance of 1                   means the best or 2nd best is used,
+                  variance 2 means                   the 1st, 2nd or 3rd best one is used, etc.
+               </li>
+               <li>decisions     : A cell containing decisions. The value n at index i                   chooses the n-th best for decision no
+                  i. An empty                   decision cell is equal to the value 0 and means best                   decision. It can be used
+                  to explore better solutions by                   manipulating decisions in several runs.
+               </li>
+            </ul>
+         </div>
+         <p>The return values 'comp_time' and 'decisions' containts the computation time of the algorithm and the decision cell of the
+            current run respectively.
+         </p>
+         <h2>Examples<a name="3"></a></h2>
+         <p>X = rpag([123,321],'hl_fpga') computes the pipeline sets for the coefficients 123 and 321</p><pre class="codeinput"><span class="keyword">function</span> [X,comp_time,decisions] = rpag(coeff,cost_model,bw,exhaustive,rand_variance,decisions)
+
+<span class="comment">% used variables:</span>
+<span class="comment">%</span>
+<span class="comment">% W: Coefficient set of current pipeline stage</span>
+<span class="comment">%</span>
+<span class="comment">% P: predecessor set of W, if the complete set P is found, all coefficients</span>
+<span class="comment">% from W can be realized by add/sub of shifted elements of P</span>
+<span class="comment">%</span>
+<span class="comment">% s: current pipeline stage</span>
+<span class="comment">% S: number of pipeline stages</span>
+<span class="comment">%</span>
+<span class="comment">% X: Cell array containing all pipeline sets</span>
+
+<span class="keyword">global</span> verbose;
+
+<span class="keyword">switch</span> cost_model
+  <span class="keyword">case</span> <span class="string">'hl_fpga'</span>
+    cost_add = @cost_add_hl_fpga;
+    cost_reg = @cost_reg_hl_fpga;
+  <span class="keyword">case</span> <span class="string">'hl_asic'</span>
+    cost_add = @cost_add_hl_asic;
+    cost_reg = @cost_reg_hl_asic;
+  <span class="keyword">case</span> <span class="string">'ll_asic'</span>
+    cost_add = @cost_add_ll_asic;
+    cost_reg = @cost_reg_ll_asic;
+  <span class="keyword">case</span> <span class="string">'ll_fpga'</span>
+    cost_add = @cost_add_ll_fpga;
+    cost_reg = @cost_reg_ll_fpga;
+  <span class="keyword">case</span> <span class="string">'mcm_min_ad'</span>
+    cost_add = @cost_add_mcm_min_ad;
+    cost_reg = @cost_reg_mcm_min_ad;
+  <span class="keyword">case</span> <span class="string">'asic_icost'</span>
+    cost_add = @cost_add_asic_icost;
+    cost_reg = @cost_reg_asic_icost;
+<span class="keyword">end</span>
+
+<span class="keyword">if</span>(~exist(<span class="string">'exhaustive'</span>))
+  exhaustive = false;
+<span class="keyword">end</span>
+<span class="keyword">if</span>(~exist(<span class="string">'rand_variance'</span>))
+  rand_variance = 0;
+<span class="keyword">end</span>
+<span class="keyword">if</span>(~exist(<span class="string">'decisions'</span>))
+  decisions = cell(0);
+<span class="keyword">end</span>
+<span class="keyword">if</span>(~exist(<span class="string">'bw'</span>))
+  bw=0;
+<span class="keyword">end</span>
+
+coeff_unique = setdiff(unique(abs(coeff)),[0]);
+coeff_fun = unique(fundamental(coeff_unique));
+c_max = 2^(ceil(log2(max(coeff_fun)))+1);
+
+<span class="keyword">if</span>(verbose &gt;= 2)
+  disp([<span class="string">'fundamentals='</span>,num2str(coeff_fun)]);
+  disp([<span class="string">'c_max='</span>,num2str(c_max)]);
+<span class="keyword">end</span>
+tic();
+
+<span class="comment">%find max. AD for number of pipeline stages:</span>
+S=0;
+c_ad_max=0;
+<span class="keyword">for</span> i=1:length(coeff_fun)
+  s=adder_depth(coeff_fun(i));
+  <span class="keyword">if</span> s &gt; S
+    S = s;
+    c_ad_max = coeff_fun(i);
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+<span class="keyword">if</span>(verbose &gt;= 1)
+  disp([<span class="string">'number of pipeline stages: '</span>,num2str(S), <span class="string">' for coefficient '</span>,num2str(c_ad_max)]);
+<span class="keyword">end</span>
+
+W=coeff_fun;
+
+<span class="comment">%cell for solutions</span>
+X = cell(1,S);
+X{1}=1;
+decision_index = 1;
+
+<span class="keyword">for</span> s=S:-1:2
+  <span class="keyword">if</span>(verbose &gt;= 2)
+    disp([<span class="string">'****** optimizing pipeline stage '</span>,num2str(s-1),<span class="string">' ******'</span>]);
+  <span class="keyword">end</span>
+  X{s}=W;
+  P=[];
+
+  <span class="keyword">while</span> ~isempty(W)
+    <span class="keyword">if</span>(verbose &gt;= 2)
+      disp([<span class="string">'P=['</span>,num2str(P),<span class="string">']'</span>]);
+      disp([<span class="string">'W=['</span>,num2str(W),<span class="string">']'</span>]);
+    <span class="keyword">end</span>
+
+
+    <span class="keyword">if</span>(exhaustive)
+
+      [x_best,gain_single,decisions,decision_index] = rpag_find_best_single_predecessor(W,P,s-1,c_max,rand_variance,bw,cost_add,cost_reg,decisions,decision_index);
+      [x_i_best,x_j_best,gain_msd_pair] = rpag_find_best_predecessor_pair_from_msd(W,P,s-1,c_max,bw,cost_add,cost_reg);
+
+      <span class="keyword">if</span> gain_single &gt;= gain_msd_pair
+        <span class="keyword">if</span> verbose &gt;= 1
+          disp([<span class="string">'choosing '</span>,num2str(x_best)]);
+        <span class="keyword">end</span>
+        R = succ_set([x_best,P],c_max); <span class="comment">%determine realized coefficients</span>
+        <span class="keyword">if</span> verbose &gt;= 1
+          disp([<span class="string">'coefficient(s) ['</span>,num2str(intersect(W,R)),<span class="string">'] can be realized using x='</span>,num2str(x_best),<span class="string">' with gain='</span>,num2str(gain_single)]);
+        <span class="keyword">end</span>
+        P=[P,x_best];
+      <span class="keyword">else</span>
+        <span class="keyword">if</span> verbose &gt;= 1
+          disp([<span class="string">'choosing ('</span>,num2str(x_i_best),<span class="string">','</span>,num2str(x_j_best),<span class="string">')'</span>]);
+        <span class="keyword">end</span>
+        R = succ(x_i_best,x_j_best,c_max); <span class="comment">%determine realized coefficients</span>
+        <span class="keyword">if</span> verbose &gt;= 1
+          disp([<span class="string">'coefficient(s) ['</span>,num2str(intersect(W,R)),<span class="string">'] can be realized using x_i='</span>,num2str(x_i_best),<span class="string">' and x_j='</span>,num2str(x_j_best),<span class="string">' with gain='</span>,num2str(gain_msd_pair)]);
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> x_i_best==x_j_best
+          P=[P,x_i_best];
+        <span class="keyword">else</span>
+          P=[P,x_i_best,x_j_best];
+        <span class="keyword">end</span>
+      <span class="keyword">end</span>
+    <span class="keyword">else</span>
+      [x_i_best,gain_single,decisions,decision_index] = rpag_find_best_single_predecessor(W,P,s-1,c_max,rand_variance,bw,cost_add,cost_reg,decisions,decision_index);
+
+      <span class="keyword">if</span> x_i_best &gt; 0
+        <span class="comment">%a single predecessor x was selected:</span>
+        R = succ_set([x_i_best,P],2*c_max); <span class="comment">%determine realized coefficients</span>
+        <span class="keyword">if</span> verbose &gt;= 1
+          disp([<span class="string">'coefficient(s) ['</span>,num2str(intersect(W,R)),<span class="string">'] can be realized using x='</span>,num2str(x_i_best),<span class="string">' (gain='</span>,num2str(gain_single),<span class="string">')'</span>]);
+        <span class="keyword">end</span>
+        P=[P,x_i_best];
+      <span class="keyword">else</span>
+        [x_i_best,x_j_best,gain_msd_pair] = rpag_find_best_predecessor_pair_from_msd(W,P,s-1,c_max,bw,cost_add,cost_reg);
+        <span class="keyword">if</span> x_i_best &lt; 0
+          error(<span class="string">'could not find a predecessor pair (this should never happen!)'</span>);
+        <span class="keyword">end</span>
+
+        <span class="comment">%a pair (x,y) was was selected:</span>
+        R = succ(x_i_best,x_j_best,c_max); <span class="comment">%determine realized coefficients</span>
+        <span class="keyword">if</span> verbose &gt;= 1
+          disp([<span class="string">'coefficient(s) ['</span>,num2str(intersect(W,R)),<span class="string">'] can be realized using x_i='</span>,num2str(x_i_best),<span class="string">' and x_j='</span>,num2str(x_j_best),<span class="string">' (gain='</span>,num2str(gain_msd_pair),<span class="string">')'</span>]);
+        <span class="keyword">end</span>
+        <span class="keyword">if</span> x_i_best==x_j_best
+          P=[P,x_i_best];
+        <span class="keyword">else</span>
+          P=[P,x_i_best,x_j_best];
+        <span class="keyword">end</span>
+      <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    W=setdiff(W,R); <span class="comment">%remove realized coefficients from W</span>
+  <span class="keyword">end</span>
+  <span class="keyword">if</span>(verbose &gt;= 2)
+    disp([<span class="string">'P=['</span>,num2str(P),<span class="string">']'</span>]);
+    disp([<span class="string">'W=['</span>,num2str(W),<span class="string">']'</span>]);
+    disp(<span class="string">'-----------------------------------'</span>);
+  <span class="keyword">end</span>
+  W=P;
+<span class="keyword">end</span>
+X{1}=W;
+
+comp_time = toc();
+<span class="keyword">if</span>(verbose &gt;= 1)
+  disp([<span class="string">'Elapsed time is '</span>,num2str(comp_time),<span class="string">' seconds.'</span>]);
+  disp(<span class="string">'solution:'</span>);
+<span class="keyword">end</span>
+
+<span class="keyword">for</span> s=1:S
+<span class="comment">%  X{s} = unique(X{s}); %!!! this should not be neccessary</span>
+  <span class="keyword">if</span>(verbose &gt;= 1)
+    disp([<span class="string">'fundamentals for pipeline stage '</span>,num2str(s),<span class="string">'=['</span>,num2str(X{s}),<span class="string">']'</span>]);
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">if</span>(verbose &gt;= 2)
+  disp(<span class="string">'checking solution...'</span>);
+<span class="keyword">end</span>
+  <span class="keyword">for</span> s=2:S
+    <span class="keyword">if</span> length(X{s}) ~= length(intersect(X{s},succ_set(X{s-1},2*c_max)));
+      X{s}
+      intersect(X{s},succ_set(X{s-1},2*c_max))
+      error(<span class="string">'solution is not valid!'</span>);
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+<span class="keyword">if</span>(verbose &gt;= 2)
+  disp(<span class="string">'done!'</span>);
+<span class="keyword">end</span>
+
+decisions = {decisions{1:decision_index-1}};
+
+
+<span class="comment">%%%% Definition of cost functions %%%%</span>
+
+<span class="comment">% A high level FPGA cost model:</span>
+<span class="comment">% registerd adders are assumed to have the same costs than pure registers</span>
+<span class="keyword">function</span> cost = cost_add_hl_fpga(x,u,v,bw,c_max)
+  cost=1;
+
+<span class="keyword">function</span> cost = cost_reg_hl_fpga(x,bw)
+  cost=1;
+
+<span class="comment">% A low level FPGA cost model:</span>
+<span class="comment">% registerd adders are assumed to have the same costs than pure registers</span>
+<span class="comment">% but are weighted by the bit width</span>
+<span class="keyword">function</span> cost = cost_add_ll_fpga(x,u,v,bw,c_max)
+  cost=ceil(log2(x));
+
+<span class="keyword">function</span> cost = cost_reg_ll_fpga(x,bw)
+  cost=ceil(log2(x));
+
+<span class="comment">% A high level ASIC cost model:</span>
+<span class="comment">% registerd adders are assumed to have twice the costs of pure registers as</span>
+<span class="comment">% a full adder approximately needs the same area than a flip-flop</span>
+
+<span class="keyword">function</span> cost = cost_add_hl_asic(x,u,v,bw,c_max)
+  cost=2;
+
+<span class="keyword">function</span> cost = cost_reg_hl_asic(x,bw)
+  cost=1;
+
+<span class="comment">% A MCM cost model for minimal adder depth</span>
+
+<span class="keyword">function</span> cost = cost_add_mcm_min_ad(x,u,v,bw,c_max)
+  cost=1;
+
+<span class="keyword">function</span> cost = cost_reg_mcm_min_ad(x,bw)
+  cost=0.1;
+
+<span class="comment">% A low level ASIC cost model:</span>
+<span class="keyword">function</span> cost = cost_add_ll_asic(x,u,v,bw,c_max,signed)
+  cost_HA = 26;
+  cost_FA = 62;
+  cost_HAb = 26;
+  cost_INV = 6;
+
+  realization = compute_exponents(x,u,v,c_max,false);
+
+  [N_FA,N_HA,N_HAb,N_INV] = add_sub_ll_components(realization,bw,signed);
+
+  cost = N_FA*cost_FA+N_HA*cost_HA+N_HAb*cost_HAb+N_INV*cost_INV;
+  disp([<span class="string">'N_FA='</span>,num2str(N_FA),<span class="string">' N_HA='</span>,num2str(N_HA),<span class="string">' N_HAb='</span>,num2str(N_HAb),<span class="string">' N_INV='</span>,num2str(N_INV)]);
+  disp([<span class="string">'cost='</span>,num2str(cost)]);
+
+<span class="keyword">function</span> cost = cost_reg_ll_asic(x,bw)
+  cost_FF = 52;
+  cost = cost_FF*(bw+ceil(log2(x)));
+
+<span class="keyword">function</span> cost = cost_add_asic_icost(x,u,v,bw,c_max,signed)
+  realization = compute_exponents(x,u,v,c_max,false);
+  <span class="keyword">if</span> ~isempty(realization)
+    cost = add_sub_icost(realization,bw);
+  <span class="keyword">else</span>
+    warning(<span class="string">'no realization found!!!'</span>);
+    cost = 1;
+  <span class="keyword">end</span>
+  cost = cost + cost_reg_asic_icost(x,bw);
+
+<span class="keyword">function</span> cost = cost_reg_asic_icost(x,bw)
+  cost_FF = 52;
+  cost = cost_FF*(bw+ceil(log2(x)));
+</pre><p class="footer"><br>
+            Published with MATLAB&reg; 7.8<br></p>
+      </div>
+      <!--
+##### SOURCE BEGIN #####
+%% rpag
+% Implementation of the RPGA algorithm, which computes the pipeline sets of 
+% a pipelined multiplier block or pipelined adder graph (PAG).
+
+%% Syntax
+% X = rpag(coeff,cost_model)
+%
+% [X,comp_time,decisions] = rpag(coeff,cost_model,bw,exhaustive,rand_variance,decisions)
+
+%% Description
+% X = rpag(coeff,cost_model) computes the pipeline sets X for 
+% coefficients coeff. X is a cell array where X{s} contains the elements 
+% of pipeline stage s. The cost model is defined by 'cost_model' which must
+% be one following strings:
+%
+% * 'hl_fpga'    : high level FPGA cost model
+% * 'll_fpga'    : low level FPGA cost model
+% * 'hl_asic'    : high level ASIC cost model
+% * 'll_asic'    : low level ASIC cost model
+% * 'asic_icost' : more detailed model by Aksoy
+% * 'mcm_min_ad' : minimal toatal adder depth model
+%
+% [X,comp_time,decisions] = rpag(coeff,cost_model,bw,exhaustive,rand_variance,decisions)
+% uses all optional arguments which are:
+%
+% * bw            : Bit width of the multiplier block input
+% * exhaustive    : Except from standard mode, the exhaustive mode seaches 
+%                   for both single predecessor and predecessor pairs,
+%                   choosing the best found.
+% * rand_variance : Variance for random selection, e.g. a variance of 1
+%                   means the best or 2nd best is used, variance 2 means 
+%                   the 1st, 2nd or 3rd best one is used, etc.
+% * decisions     : A cell containing decisions. The value n at index i
+%                   chooses the n-th best for decision no i. An empty
+%                   decision cell is equal to the value 0 and means best
+%                   decision. It can be used to explore better solutions by
+%                   manipulating decisions in several runs.
+%
+% The return values 'comp_time' and 'decisions' containts the computation
+% time of the algorithm and the decision cell of the current run respectively.
+
+%% Examples
+% X = rpag([123,321],'hl_fpga') computes the pipeline sets for the
+% coefficients 123 and 321
+
+function [X,comp_time,decisions] = rpag(coeff,cost_model,bw,exhaustive,rand_variance,decisions)
+
+% used variables:
+%
+% W: Coefficient set of current pipeline stage
+%
+% P: predecessor set of W, if the complete set P is found, all coefficients
+% from W can be realized by add/sub of shifted elements of P
+%
+% s: current pipeline stage
+% S: number of pipeline stages
+%
+% X: Cell array containing all pipeline sets
+
+global verbose;
+
+switch cost_model
+  case 'hl_fpga'
+    cost_add = @cost_add_hl_fpga;
+    cost_reg = @cost_reg_hl_fpga;
+  case 'hl_asic'
+    cost_add = @cost_add_hl_asic;
+    cost_reg = @cost_reg_hl_asic;
+  case 'll_asic'
+    cost_add = @cost_add_ll_asic;
+    cost_reg = @cost_reg_ll_asic;
+  case 'll_fpga'
+    cost_add = @cost_add_ll_fpga;
+    cost_reg = @cost_reg_ll_fpga;
+  case 'mcm_min_ad'
+    cost_add = @cost_add_mcm_min_ad;
+    cost_reg = @cost_reg_mcm_min_ad;
+  case 'asic_icost'
+    cost_add = @cost_add_asic_icost;
+    cost_reg = @cost_reg_asic_icost;
+end
+
+if(~exist('exhaustive'))
+  exhaustive = false;
+end
+if(~exist('rand_variance'))
+  rand_variance = 0;
+end
+if(~exist('decisions'))
+  decisions = cell(0);
+end
+if(~exist('bw'))
+  bw=0;
+end
+
+coeff_unique = setdiff(unique(abs(coeff)),[0]);
+coeff_fun = unique(fundamental(coeff_unique));
+c_max = 2^(ceil(log2(max(coeff_fun)))+1);
+
+if(verbose >= 2)
+  disp(['fundamentals=',num2str(coeff_fun)]);
+  disp(['c_max=',num2str(c_max)]);
+end
+tic();
+
+%find max. AD for number of pipeline stages:
+S=0;
+c_ad_max=0;
+for i=1:length(coeff_fun)
+  s=adder_depth(coeff_fun(i));
+  if s > S
+    S = s;
+    c_ad_max = coeff_fun(i);
+  end
+end
+if(verbose >= 1)
+  disp(['number of pipeline stages: ',num2str(S), ' for coefficient ',num2str(c_ad_max)]);
+end
+
+W=coeff_fun;
+
+%cell for solutions
+X = cell(1,S);
+X{1}=1;
+decision_index = 1;
+
+for s=S:-1:2
+  if(verbose >= 2)
+    disp(['****** optimizing pipeline stage ',num2str(s-1),' ******']);
+  end
+  X{s}=W;
+  P=[];
+    
+  while ~isempty(W)
+    if(verbose >= 2)
+      disp(['P=[',num2str(P),']']);
+      disp(['W=[',num2str(W),']']);
+    end
+
+
+    if(exhaustive)
+      
+      [x_best,gain_single,decisions,decision_index] = rpag_find_best_single_predecessor(W,P,s-1,c_max,rand_variance,bw,cost_add,cost_reg,decisions,decision_index);
+      [x_i_best,x_j_best,gain_msd_pair] = rpag_find_best_predecessor_pair_from_msd(W,P,s-1,c_max,bw,cost_add,cost_reg);
+      
+      if gain_single >= gain_msd_pair
+        if verbose >= 1
+          disp(['choosing ',num2str(x_best)]);
+        end
+        R = succ_set([x_best,P],c_max); %determine realized coefficients
+        if verbose >= 1
+          disp(['coefficient(s) [',num2str(intersect(W,R)),'] can be realized using x=',num2str(x_best),' with gain=',num2str(gain_single)]);
+        end
+        P=[P,x_best];
+      else
+        if verbose >= 1
+          disp(['choosing (',num2str(x_i_best),',',num2str(x_j_best),')']);
+        end
+        R = succ(x_i_best,x_j_best,c_max); %determine realized coefficients
+        if verbose >= 1
+          disp(['coefficient(s) [',num2str(intersect(W,R)),'] can be realized using x_i=',num2str(x_i_best),' and x_j=',num2str(x_j_best),' with gain=',num2str(gain_msd_pair)]);
+        end
+        if x_i_best==x_j_best
+          P=[P,x_i_best];
+        else
+          P=[P,x_i_best,x_j_best];
+        end
+      end
+    else
+      [x_i_best,gain_single,decisions,decision_index] = rpag_find_best_single_predecessor(W,P,s-1,c_max,rand_variance,bw,cost_add,cost_reg,decisions,decision_index);
+
+      if x_i_best > 0
+        %a single predecessor x was selected:
+        R = succ_set([x_i_best,P],2*c_max); %determine realized coefficients
+        if verbose >= 1
+          disp(['coefficient(s) [',num2str(intersect(W,R)),'] can be realized using x=',num2str(x_i_best),' (gain=',num2str(gain_single),')']);
+        end
+        P=[P,x_i_best];
+      else
+        [x_i_best,x_j_best,gain_msd_pair] = rpag_find_best_predecessor_pair_from_msd(W,P,s-1,c_max,bw,cost_add,cost_reg);
+        if x_i_best < 0
+          error('could not find a predecessor pair (this should never happen!)');
+        end
+
+        %a pair (x,y) was was selected:
+        R = succ(x_i_best,x_j_best,c_max); %determine realized coefficients
+        if verbose >= 1
+          disp(['coefficient(s) [',num2str(intersect(W,R)),'] can be realized using x_i=',num2str(x_i_best),' and x_j=',num2str(x_j_best),' (gain=',num2str(gain_msd_pair),')']);
+        end
+        if x_i_best==x_j_best
+          P=[P,x_i_best];
+        else
+          P=[P,x_i_best,x_j_best];
+        end
+      end
+    end
+    W=setdiff(W,R); %remove realized coefficients from W
+  end
+  if(verbose >= 2)
+    disp(['P=[',num2str(P),']']);
+    disp(['W=[',num2str(W),']']);
+    disp('REPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASHREPLACE_WITH_DASH_DASH-');
+  end  
+  W=P;
+end
+X{1}=W;
+
+comp_time = toc();
+if(verbose >= 1)
+  disp(['Elapsed time is ',num2str(comp_time),' seconds.']);
+  disp('solution:');
+end
+
+for s=1:S
+%  X{s} = unique(X{s}); %!!! this should not be neccessary
+  if(verbose >= 1)
+    disp(['fundamentals for pipeline stage ',num2str(s),'=[',num2str(X{s}),']']);
+  end
+end
+
+if(verbose >= 2)
+  disp('checking solution...');
+end
+  for s=2:S
+    if length(X{s}) ~= length(intersect(X{s},succ_set(X{s-1},2*c_max)));
+      X{s}
+      intersect(X{s},succ_set(X{s-1},2*c_max))
+      error('solution is not valid!');
+    end
+  end
+if(verbose >= 2)
+  disp('done!');
+end
+
+decisions = {decisions{1:decision_index-1}};
+
+
+%%%% Definition of cost functions %%%%
+
+% A high level FPGA cost model:
+% registerd adders are assumed to have the same costs than pure registers
+function cost = cost_add_hl_fpga(x,u,v,bw,c_max)
+  cost=1;
+
+function cost = cost_reg_hl_fpga(x,bw)
+  cost=1;
+
+% A low level FPGA cost model:
+% registerd adders are assumed to have the same costs than pure registers
+% but are weighted by the bit width
+function cost = cost_add_ll_fpga(x,u,v,bw,c_max)
+  cost=ceil(log2(x));
+
+function cost = cost_reg_ll_fpga(x,bw)
+  cost=ceil(log2(x));
+
+% A high level ASIC cost model:
+% registerd adders are assumed to have twice the costs of pure registers as
+% a full adder approximately needs the same area than a flip-flop
+
+function cost = cost_add_hl_asic(x,u,v,bw,c_max)
+  cost=2;
+
+function cost = cost_reg_hl_asic(x,bw)
+  cost=1;
+
+% A MCM cost model for minimal adder depth
+
+function cost = cost_add_mcm_min_ad(x,u,v,bw,c_max)
+  cost=1;
+
+function cost = cost_reg_mcm_min_ad(x,bw)
+  cost=0.1;
+
+% A low level ASIC cost model:
+function cost = cost_add_ll_asic(x,u,v,bw,c_max,signed)
+  cost_HA = 26;
+  cost_FA = 62;
+  cost_HAb = 26;
+  cost_INV = 6;
+
+  realization = compute_exponents(x,u,v,c_max,false);
+
+  [N_FA,N_HA,N_HAb,N_INV] = add_sub_ll_components(realization,bw,signed);
+  
+  cost = N_FA*cost_FA+N_HA*cost_HA+N_HAb*cost_HAb+N_INV*cost_INV;
+  disp(['N_FA=',num2str(N_FA),' N_HA=',num2str(N_HA),' N_HAb=',num2str(N_HAb),' N_INV=',num2str(N_INV)]);
+  disp(['cost=',num2str(cost)]);
+  
+function cost = cost_reg_ll_asic(x,bw)
+  cost_FF = 52;
+  cost = cost_FF*(bw+ceil(log2(x)));
+
+function cost = cost_add_asic_icost(x,u,v,bw,c_max,signed)
+  realization = compute_exponents(x,u,v,c_max,false);
+  if ~isempty(realization)
+    cost = add_sub_icost(realization,bw);
+  else
+    warning('no realization found!!!');
+    cost = 1;
+  end
+  cost = cost + cost_reg_asic_icost(x,bw);
+  
+function cost = cost_reg_asic_icost(x,bw)
+  cost_FF = 52;
+  cost = cost_FF*(bw+ceil(log2(x)));
+
+##### SOURCE END #####
+-->
+   </body>
+</html>
