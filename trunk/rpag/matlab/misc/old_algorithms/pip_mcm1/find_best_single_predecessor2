@@ -1,0 +1,41 @@
+function [x_best] = find_best_single_predecessor2(C,P,As,c_max,s_max) 
+
+global verbose;
+
+if verbose >= 2
+  disp('searching for best single predecessor...');
+end
+
+x_hits_max_best = 0;
+x_best=-1;
+for i=1:length(As)
+  x=As(i);
+  hit_map = containers.Map(0,0);
+
+  for j=1:length(C)
+    y = succ(x,C(j),c_max);
+    for k=1:length(y)
+      if adder_depth(y(k)) < s_max
+        if hit_map.isKey(y(k))
+          hit_map(y(k)) = hit_map(y(k))+1;
+        else
+          hit_map(y(k)) = 1;
+        end
+      end
+    end
+  end
+  
+  [y_hits_max,y_hits_key] = max(cell2mat(hit_map.values));
+  
+  x_hits_max = length(xP);
+  if x_hits_max > x_hits_max_best
+    x_hits_max_best = x_hits_max;
+    x_best = x;
+    if verbose >= 3
+      disp(['better x found: x_hits=',num2str(x_hits_max),' for x=',num2str(x)]);
+    end
+  end
+end
+if verbose >= 2
+  disp(['best single predecessor: x=',num2str(x_best),' with ',num2str(x_hits_max_best),' hit(s) in C']);
+end
