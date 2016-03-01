@@ -20,14 +20,15 @@ InputParser::InputParser(const string &filename){
 bool InputParser::parse(){
     CoPa graphs = between("<graph>",(CoPa(PARSE_STR,0)),"</graph>") + event(0);
 
-    CoPa merge_single = CoPa(PARSE_INT,1).repeat_separated(",",'*') + event(1);
-    CoPa merge_cfg = merge_single.repeat_separated(";",'*');
+    CoPa merge_single = splitBy(",",CoPa(PARSE_INT,1)) + event(1);
+    CoPa merge_cfg = splitBy(";",merge_single);
     CoPa merges = merge_cfg.between("<merge>","</merge>") + event(5);
+    merges.print();
 
-    CoPa fixed_single = (("DONT_CARE" + event(4)) | (CoPa(PARSE_INT,2).repeat_separated(",",'*') + event(2)));
-    CoPa fixed_cfg = fixed_single.repeat_separated(";",'*');
+    CoPa fixed_single = (("DONT_CARE" + event(4)) | splitBy(",",(CoPa(PARSE_INT,2)) + event(2)));
+    CoPa fixed_cfg = splitBy(";",fixed_single);
     CoPa fixed_node = fixed_cfg.between("[" ,"]") + "," + CoPa(PARSE_UINT,3) + event(3);
-    CoPa fixed_nodes = fixed_node.between("{","}").repeat_separated(",",'*');
+    CoPa fixed_nodes = splitBy(",",fixed_node.between("{","}"));
     CoPa fixes = fixed_nodes.between( "<fixed>","</fixed>");
 
     CoPa toplevel = ignore(" \t\r\n") + repeat(graphs,'+') + repeat(merges,'+') + (fixes|"");
@@ -76,7 +77,6 @@ void InputParser_Scope::onEvent(int id)
     case 3: //merge_single finished
     {
         cur_fix_node.stage = getValueSingle(3).toInt();
-
         parser->fixed_nodes.push_back( cur_fix_node );
         cur_fix_node.stage = 0;
         cur_fix_node.outputs.clear();
@@ -92,6 +92,7 @@ void InputParser_Scope::onEvent(int id)
     case 5: //merge_single finished
     {
         parser->start_merging.push_back( cur_merge_node );
+        cur_merge_node.clear();
     }
         break;
     }

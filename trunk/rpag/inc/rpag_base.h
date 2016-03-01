@@ -601,7 +601,7 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
       min_adder_depth = adder_depth(*set_iter);
       if(min_adder_depth > 0)
       {
-        (*pipeline_set)[min_adder_depth-1].insert(*set_iter);
+        (*pipeline_set)[min_adder_depth+no_of_extra_stages-1].insert(*set_iter);
       }
     }
 

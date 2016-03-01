@@ -7,6 +7,8 @@ namespace CoPa_clabana{
     class CoPa;
 
     CoPa repeat(CoPa c,const char rep_type='*');
+    CoPa splitBy(const std::string& lhs, CoPa c);
+
     CoPa between(const std::string& lhs, CoPa c, const std::string& rhs);
 
     CoPa event (int id);
