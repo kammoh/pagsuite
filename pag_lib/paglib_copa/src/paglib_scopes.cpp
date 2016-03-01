@@ -181,7 +181,14 @@ void node_scope::buildReg(){
         tree->no_of_input_nodes = parts[0].factors[0].size();
     }
 
-    register_node_t* new_node = new register_node_t();
+    register_node_t* new_node;
+
+    if(current_type=='R' &&
+            (parts[0].factors!=parts[1].factors || parts[0].stage!=parts[1].stage)) // just for compatibility with old syntax; should be deleted
+        new_node = new register_node_t();
+    else
+        new_node = new output_node_t();
+
     new_node->specific_parameters = parameters;
 
     for( unsigned int inp=0;inp< parts.size();inp++)
@@ -218,6 +225,7 @@ void node_scope::onExit(){
     switch(current_type){
     case 'A':
         buildAdder();break;
+    case 'O':
     case 'R':
         buildReg();break;
     case 'M':
@@ -231,12 +239,12 @@ void node_scope::onExit(){
 void node_scope::onEvent(int id){
     if( id == 1 ){
         current_type = 'A';
-    }
-    else if(id == 2){
+    }else if(id == 2){
         current_type = 'R';
-    }
-    else if(id == 3){
+    }else if(id == 3){
         current_type = 'M';
+    }else if(id == 4){
+        current_type = 'O';
     }else if(id == 10){
         std::vector< CoPa_Value > vals = getValueGroup(5);
         if(vals.size()==2){
@@ -328,7 +336,7 @@ void adder_tree_scope::onExit(){
             {
                 ((mux_node_t*)(current_node))->inputs.push_back( input->first );
             }
-            else if (is_a<register_node_t>(*(current_node)))
+            else if (is_a<register_node_t>(*(current_node)) || is_a<output_node_t>(*(current_node)))
             {
                 ((register_node_t*)(current_node))->input = input->first;
             }

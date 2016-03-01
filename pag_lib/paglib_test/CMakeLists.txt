@@ -1,7 +1,11 @@
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wall")
+cmake_minimum_required(VERSION 2.8)
+project(paglib_test)
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../paglib_copa/inc )
+SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../.. )
+
+include(${PAGSUITE_ROOT_DIR}/PagSuiteConfig.cmake)
+configure()
+include_paglib( ${PAGSUITE_ROOT_DIR} )
 
 SET(SRC_FILES 
 	${CMAKE_CURRENT_SOURCE_DIR}/main
@@ -10,3 +14,9 @@ SET(SRC_FILES
 add_executable( paglib_test ${SRC_FILES} )
 target_link_libraries ( paglib_test pag_lib copa )
 set_target_properties(paglib_test PROPERTIES LINKER_LANGUAGE CXX)
+
+INSTALL(TARGETS paglib_test
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)

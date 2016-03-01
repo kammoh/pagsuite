@@ -79,7 +79,8 @@ bool realization_row<T>::use_ternary_adders()
 template<class T>
 char realization_row<T>::type()
 {
-  if((stageW == stageA) && (W == A))
+  //if((stageW == stageA) && (W == A)) //with this line, shifts at the output crashes!
+  if(stageW == stageA)
   {
     return 'O';
   }
@@ -480,8 +481,6 @@ bool getExponents(T &a, T &b, T &c, T &w, int *eA, int *eB, int *eC, int *signA,
   bool neg   = false;
   int permut = 0;
 
-  cout << "k_max=" << k_max << endl;
-
   for(int r_shift = 0; r_shift <= k_max; ++r_shift)
   {
     for(permut = 0; permut <= 2; ++permut)// right shifts can only be detected between a and b. If ther is one between c and another thy have to be switched.
@@ -507,8 +506,6 @@ bool getExponents(T &a, T &b, T &c, T &w, int *eA, int *eB, int *eC, int *signA,
 
           //Z = w - ((c << (*eC)) * (*signC));
           Z = (w << (r_shift)) - ((c << (*eC)) * (*signC));
-          cout << "w=" << w << ", r_shift=" << r_shift << ", c=" << c << ", eC=" << *eC << ", signC=" << *signC << endl;
-          cout << "Z=" << Z << endl;
 
           if (is_it_negative(Z))// this have to be different for the rpag_vector
           {
@@ -525,7 +522,6 @@ bool getExponents(T &a, T &b, T &c, T &w, int *eA, int *eB, int *eC, int *signA,
             int use_solution = 1;
             do
             {
-              //std::cout << "Z= " << Z << "= " << d << " - " << (*signC) << " * " << c << " * 2^" << (*eC) << " " << neg << endl;
               if(Z % 2 == 0)// if Z is evan
               {
                 T Z_odd;
@@ -558,15 +554,12 @@ bool getExponents(T &a, T &b, T &c, T &w, int *eA, int *eB, int *eC, int *signA,
           }
           else
           {
-            //std::cout << "Z= " << Z << "= " << d << " - " << (*signC) << " * " << c << " * 2^" << (*eC) << " " << neg << endl;
             if(Z % 2 == 0)// if Z is evan
             {
               T Z_odd;
               int eZ_odd;
               Z_odd = fundamental_count(Z, eZ_odd);
-              cout << "Z_odd=" << Z_odd << endl;
               found = getExponents(a,b,Z_odd,eA,eB,signA,signB);
-              cout << "found1=" << found << endl;
 
               if(neg)//the getExponent function does not support negativ values.
               {
@@ -579,7 +572,6 @@ bool getExponents(T &a, T &b, T &c, T &w, int *eA, int *eB, int *eC, int *signA,
             else // if Z is odd
             {
               found = getExponents(a,b,Z,eA,eB,signA,signB);
-              cout << "found2=" << found << endl;
 
               if(neg)//the getExponent function does not support negativ values.
               {

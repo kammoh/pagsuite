@@ -621,8 +621,8 @@
       if(!quiet) std::cout << "Finished Syntax Output" << std::endl;
   }
 
-  bool adder_graph_t::parse_to_graph(string commandLine){
-      if( commandLine.find_first_of("AMR") == string::npos )
+  bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes){
+      if( commandLine.find_first_of("AMRO") == string::npos )
             commandLine = convert_old_syntax(commandLine);
 
       adder_graph_t* parsed_graph = Paglib_copa::parse(commandLine);
@@ -630,6 +630,17 @@
       {
           nodes_list.clear();
           nodes_list = parsed_graph->nodes_list;
+          if( ignore_outnodes ){
+                std::list<adder_graph_base_node_t*>::iterator it = nodes_list.begin();
+                while(it!=nodes_list.end()){
+                    if ( is_a<output_node_t>(*(*it)) ){
+                        it = nodes_list.erase(it);
+                    }else{
+                        ++it;
+                    }
+                }
+          }
+
           delete parsed_graph;
           return true;
       }

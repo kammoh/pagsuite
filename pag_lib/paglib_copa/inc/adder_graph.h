@@ -95,6 +95,12 @@ public:
     int64_t input_shift;
 };
 
+class output_node_t : public register_node_t
+{
+public:
+    ~output_node_t(){}
+};
+
 class adder_graph_t
 {
 public:
@@ -108,7 +114,7 @@ public:
   void writesyn(ostream& graphoutstream,bool quiet=false);
   void writesyn(string filename = "./pag_adder_graph.txt",bool quiet=false); // write the graph down in mat syntax
   void print_graph();
-  bool parse_to_graph(string commandLine);
+  bool parse_to_graph(string commandLine,bool ignore_outnodes=true);
   void check_and_correct(string graphstring=""); //check adder graph
   string convert_old_syntax(string commandLine); //ASCII-Convert old syntax graph
 

@@ -47,7 +47,6 @@ public:
     CoPa &operator =(CoPa right);
 
     CoPa between(const string &lhs, const string &rhs);
-    CoPa repeat_separated(const string &sep, const char rep_type);
 
     friend CoPa (::operator+)(CoPa left,CoPa right);
     friend CoPa (::operator+)(const char* left,CoPa right);
@@ -66,6 +65,7 @@ public:
     friend CoPa print ();
     friend CoPa ignore(const char* filter);
     friend CoPa between(const std::string& lhs, CoPa c, const std::string& rhs);
+    friend CoPa splitBy(const std::string& lhs, CoPa c);
 };
 }
 #endif // COPA_H
