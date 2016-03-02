@@ -23,9 +23,8 @@ bool InputParser::parse(){
     CoPa merge_single = splitBy(",",CoPa(PARSE_INT,1)) + event(1);
     CoPa merge_cfg = splitBy(";",merge_single);
     CoPa merges = merge_cfg.between("<merge>","</merge>") + event(5);
-    merges.print();
 
-    CoPa fixed_single = (("DONT_CARE" + event(4)) | splitBy(",",(CoPa(PARSE_INT,2)) + event(2)));
+    CoPa fixed_single = (("DONT_CARE" + event(4)) | splitBy(",",(CoPa(PARSE_INT,2))) + event(2));
     CoPa fixed_cfg = splitBy(";",fixed_single);
     CoPa fixed_node = fixed_cfg.between("[" ,"]") + "," + CoPa(PARSE_UINT,3) + event(3);
     CoPa fixed_nodes = splitBy(",",fixed_node.between("{","}"));
