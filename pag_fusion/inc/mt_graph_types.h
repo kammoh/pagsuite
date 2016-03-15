@@ -21,8 +21,8 @@ public:
     bool is_nop;
     bool isreg;
     bool is_neg;
-    index_type to;
-    index_type to_merged;
+   // index_type to;
+   // index_type to_merged;
     l_int shift;
 
     mt_path();
@@ -38,6 +38,7 @@ public:
     index_type cfg_id;
     index_type id;
     bool is_fixed;
+    bool is_fully_fixed;
     l_int id_merged;
     l_int neg_shift;
     vector<int64_t> values;
@@ -46,6 +47,8 @@ public:
     ushort wordsize;
     vector<mt_path*> paths_up;
     vector<mt_path*> paths_down;
+
+    vector<mt_node*> fixed_to;
 
     mt_node(index_type index);
     ~mt_node();
@@ -60,6 +63,7 @@ class mt_stage
 public:
     index_type id;
     vector<mt_node*> nodes;
+    vector<mt_node*> fully_fixed_nodes;
     mt_stage(index_type index);
 
     ~mt_stage();

@@ -6,34 +6,42 @@ mt_path::mt_path()
     is_nop = false;
     is_neg = false;
     parent = NULL;
+    target = NULL;
 }
 
 mt_path::mt_path(index_type t, short s, bool reg)
 {
     isreg = reg;
-    to = t;
     shift = s;
     is_neg = false;
     is_ghost = false;
     is_nop = false;
+    parent = NULL;
+    target = NULL;
 }
 
 mt_path::mt_path(bool ghost)
 {
     isreg = false;
-    to = 0;
     shift = 0;
     is_neg = false;
     is_ghost = ghost;
     is_nop = !ghost;
+    parent = NULL;
+    target = NULL;
 }
 
 void mt_path::print(ostream& dest)
 {
-    dest<<"\t\t"<<"-<"<<shift<<">->"<<to;
-    dest<<" ("<<to_merged<<")";
+    if( target!=NULL ){
+    dest<<"\t\t"<<"-<"<<shift<<">->"<<target->id;
+    dest<<" ("<<target->id_merged<<")";
     if(isreg) dest <<"R";
     if(is_neg) dest <<"-";
+    }
+    else{
+        dest<<"\t\tghostpath";
+    }
     dest<<endl;
 }
 
@@ -44,6 +52,7 @@ mt_node::mt_node(index_type index)
     id_merged = index;
     is_ternary = false;
     is_fixed = false;
+    is_fully_fixed = false;
     neg_shift = 0;
 }
 
@@ -81,6 +90,7 @@ string mt_node::print_values()
 void mt_node::print(ostream& dest)
 {
     dest<<"\tnode#"<<id<<"|"<<id_merged<<" ("<<print_values()<<" ws:"<<wordsize<<")"<<endl;
+    dest<<"\t\t"<<(is_ternary?"ternary ":"")<<(is_ghost?"ghost":"")<<(is_fully_fixed?"fullyfixed":(is_fixed?"fixed":""))<<endl;
     for(vector<mt_path*>::iterator iter=paths_down.begin(), iter_end = paths_down.end();iter!=iter_end;++iter)
     {
         (*iter)->print(dest);

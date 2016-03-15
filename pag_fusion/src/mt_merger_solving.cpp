@@ -82,11 +82,12 @@ void merger::rec_merge_full(index_type cur_stage, float cur_cost, vector<vector<
         matree2* mat;
         if(matree_tree_n[cur_stage] == NULL)
         {
-            matree_tree_n[cur_stage] = new matree2(stage_node_count[cur_stage],configurations.size(),this);
+            matree_tree_n[cur_stage] = new matree2(stage_node_count[cur_stage]-stage_node_count_ff[cur_stage],configurations.size(),this); // FFNODE: angepasst
         }
 
         mat = matree_tree_n[cur_stage];
         mat->current_stage = cur_stage;
+        mat->constant_add_cost = 0;
         current_stage = cur_stage;
         mat->last_stages_cost = cur_cost;
         mat->best_cost_all = &best_cost_all;
@@ -221,51 +222,73 @@ void merger::rec_merge_full(index_type cur_stage, float cur_cost, vector<vector<
     TREE_PRINT_UP();
 }
 
-void merger::fill_matrix(index_type cur_stage, index_type cur_config, vector<index_type> &current, matree2* matrix,bool allowed)
+void merger::fill_matrix(index_type cur_stage, index_type cur_config, vector<index_type> &current, matree2* matrix, bool has_fixed)
 {
     if(cur_config<configurations.size())
     {
-        int fix_id = -1;
-        for( int i=0;i<cur_config;i++){
-            mt_node* other = configurations[i]->stages[cur_stage]->nodes[current[i]];
-            mt_node* self = configurations[cur_config]->stages[cur_stage]->nodes[current[i]];
-            if( other->is_fixed && self->is_fixed ){
-                fix_id = current[i];
-                break;
-            }
-        }
-
         mt_stage* stage = configurations[cur_config]->stages[cur_stage];
         for(vector<mt_node*>::iterator iter = stage->nodes.begin();iter!=stage->nodes.end();++iter)
         {
             current[cur_config] = (*iter)->id;
-            bool allowed_t = allowed;
-
-            if( fix_id==-1 ){
-                for( int i=0;i<cur_config;i++){
-                    mt_node* other = configurations[i]->stages[cur_stage]->nodes[current[cur_config]];
-                    if( other->is_fixed && (*iter)->is_fixed ){
-                        allowed_t = false;
-                        break;
-                    }
-                }
-            }
-
-            if( (fix_id>=0 && current[cur_config]!=fix_id) )
-                allowed_t = false;
-
-            fill_matrix(cur_stage,cur_config+1,current,matrix,allowed_t);
+            bool has_fixedt = (has_fixed | (*iter)->is_fixed);
+            fill_matrix(cur_stage,cur_config+1,current,matrix,has_fixedt);
         }
     }
     else
     {
          float cost = 0;
-         if( allowed )
+         if( has_fixed ){
+             bool fully_fixed = true;
+             bool has_fully_fixed = false;
+             for(int i=0;i<current.size();++i){
+                 if( !configurations[i]->stages[cur_stage]->nodes[current[i]]->is_fully_fixed ){
+                     fully_fixed = false;
+                 }else{
+                     has_fully_fixed = true;
+                 }
+             }
+             if(fully_fixed){  // <= All nodes fully fixed, check if they fit together
+                 mt_node *f = configurations[0]->stages[cur_stage]->nodes[current[0]];
+                 bool fully_fixed=true;
+                 for(int i=0;i<f->fixed_to.size();++i){
+                    if( current[ f->fixed_to[i]->cfg_id ] != f->fixed_to[i]->id ){
+                        fully_fixed = false;
+                        break;
+                    }
+                 }
+                 if(fully_fixed){
+                     cost = path_combine(current,cur_stage);
+                     matrix->constant_add_cost += cost;
+                 }else{
+                     // <= its not allowed to enter ff-nodes as they don't exist in matrix
+                 }
+             }else if( !has_fully_fixed ){ // <= now we need to check if the fixed nodes fit together
+                 bool matched_fixing = true;
+                 for(int i=0;i<current.size();++i){
+                     mt_node *f = configurations[0]->stages[cur_stage]->nodes[current[0]];
+                     if( f->is_fixed ){
+                         for(int j=0;j<f->fixed_to.size();++f){     // <= i now this will create redundancy, but it's securerer
+                             if( current[ f->fixed_to[i]->cfg_id ] != f->fixed_to[i]->id ){
+                                 matched_fixing = false;
+                                 break;
+                             }
+                         }
+                         if( !matched_fixing )
+                             break;
+                     }
+                 }
+                 if( matched_fixing ){
+                     cost = path_combine(current,cur_stage);
+                     matrix->matrix_set_at( current[0],matrix->matrix_calc->calc_vec_to_int(current),cost );
+                 }else{
+                     cost = numeric_limits<float>::infinity();
+                     matrix->matrix_set_at( current[0],matrix->matrix_calc->calc_vec_to_int(current),cost );
+                 }
+             }
+         }else{
              cost = path_combine(current,cur_stage);
-         else
-             cost = numeric_limits<float>::infinity();
-
-         matrix->matrix_set_at( current[0],matrix->matrix_calc->calc_vec_to_int(current),cost );
+             matrix->matrix_set_at( current[0],matrix->matrix_calc->calc_vec_to_int(current),cost );
+         }
     }
 }
 
@@ -287,9 +310,9 @@ void merger::temp_merge(index_type cur_stage, vector<vector<index_type> > &mat)
             {
                 for(uint j=0, j_end = t_vec.size();j<j_end;++j)
                 {
-                    if(t_vec[j]==(*path_iter)->to)
+                    if(t_vec[j]==(*path_iter)->target->id)
                     {
-                        (*path_iter)->to_merged = j;
+                        (*path_iter)->target->id_merged = j;
                         break;
                     }
                 }

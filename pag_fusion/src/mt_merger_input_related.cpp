@@ -22,8 +22,11 @@ merger::merger(string file_name)
         input_reorder();
         stage_node_count.clear();
         stage_node_count.resize(stage_count+1);
+        stage_node_count_ff.resize(stage_count+1,0);
         start_node_count_check();
+
         fix_nodes(inp.fixed_nodes);
+        move_fixed_nodes();
     }
     else
     {
@@ -45,6 +48,11 @@ void merger::fix_nodes(const vector< InputParser::fix_node >& fnodes){
                         std::swap( configurations[cfg]->stages[it_f->stage]->nodes[node_id]->id_merged, configurations[cfg]->stages[it_f->stage]->nodes[node->id]->id_merged );
                         std::swap( configurations[cfg]->stages[it_f->stage]->nodes[node_id], configurations[cfg]->stages[it_f->stage]->nodes[node->id] );
                         std::swap( configurations[cfg]->stages[it_f->stage]->nodes[node_id]->id, configurations[cfg]->stages[it_f->stage]->nodes[node->id]->id );
+
+                        for(int i=cfg-1;i>=0;--i){
+                            configurations[cfg]->stages[it_f->stage]->nodes[node_id]->fixed_to.push_back( configurations[i]->stages[it_f->stage]->nodes[node_id] );
+                            configurations[i]->stages[it_f->stage]->nodes[node_id]->fixed_to.push_back( configurations[cfg]->stages[it_f->stage]->nodes[node_id] );
+                        }
                     }
                 }
             }
@@ -52,6 +60,37 @@ void merger::fix_nodes(const vector< InputParser::fix_node >& fnodes){
     }
 }
 
+void merger::move_fixed_nodes(){
+    for( int stage = 0; stage < stage_count ; ++stage){
+        for( int node_id=0;node_id<stage_node_count[stage];++node_id ){
+            bool all_fixed = true;
+            for(int cfg=0;cfg<configurations.size();++cfg){
+                mt_node* n = configurations[cfg]->stages[stage]->nodes[node_id];
+                if(!n->is_fixed){
+                    all_fixed=false;
+                    break;
+                }
+            }
+            if(all_fixed){
+                for(int cfg=0;cfg<configurations.size();++cfg){
+                    mt_stage* st = configurations[cfg]->stages[stage];
+                    st->nodes[node_id]->is_fully_fixed = true;
+                    int i=st->nodes.size()-1;
+                    while( i>node_id && st->nodes[i]->is_fully_fixed ){
+                        --i;
+                    }
+                    if(i!=node_id){
+                        std::swap( st->nodes[node_id],st->nodes[i] );
+                        std::swap( st->nodes[node_id]->id,st->nodes[i]->id );
+                        std::swap( st->nodes[node_id]->id_merged,st->nodes[i]->id_merged );
+                    }
+                }
+                //--stage_node_count[node_id];
+                ++stage_node_count_ff[stage];
+            }
+        }
+    }
+}
 
 void merger::add_graph(string graph_string)
 {
@@ -205,7 +244,7 @@ void merger::convert_graph(adder_graph_t *graph)
                 if(tt->inputs[i]!=NULL)
                 {
                     mt_path* new_path = new mt_path(node_to_index,tt->input_shifts.at(i),false);
-                    new_path->to_merged = new_path->to;
+                    //new_path->to_merged = new_path->to;
                     new_path->parent = (*node_cor.find(tt->inputs.at(i))).second;
                     new_path->parent->paths_down.push_back(new_path);
                     new_path->target = (*node_cor.find(tt)).second;
@@ -220,7 +259,7 @@ void merger::convert_graph(adder_graph_t *graph)
         {
             register_node_t* tt = (register_node_t*)t;
             mt_path* new_path = new mt_path(node_to_index,tt->input_shift,true);
-            new_path->to_merged = new_path->to;
+            //new_path->to_merged = new_path->to;
             new_path->parent = (*node_cor.find(tt->input)).second;
             new_path->parent->paths_down.push_back(new_path);
             new_path->target = (*node_cor.find(tt)).second;

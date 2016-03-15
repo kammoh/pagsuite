@@ -69,23 +69,25 @@ void matree2::rec_optimize_full(uint row_id, vector<vector<bool> > &hot_matrix, 
         }
 
         if ( matrix[row_id][cur_index] != numeric_limits<float>::infinity() ){
-            if( global_options.costmodel.strongcost || global_options.complete || (part_cost+last_stages_cost) < *best_cost_all )
+            if( global_options.costmodel.strongcost || global_options.complete || (part_cost+last_stages_cost+constant_add_cost) < *best_cost_all )
             {
                 main_merger->rec_count++;
                 for(uint f=0, f_end = indices.size();f<f_end;++f)
                 {
                     cur_matrix[row_id][f] = indices[f];
                 }
-                TREE_PRINT_DOWN(merger::print_vec(indices),matrix[row_id][cur_index] );
+                TREE_PRINT_DOWN(merger::print_vec(indices),matrix[row_id][cur_index]+constant_add_cost );
                 if(current_stage>0)
                 {
-                    if(global_options.costmodel.strongcost) main_merger->rec_merge_full(current_stage-1,last_stages_cost,cur_matrix);
-                    else main_merger->rec_merge_full(current_stage-1,part_cost+last_stages_cost,cur_matrix);
+                    if(global_options.costmodel.strongcost)
+                        main_merger->rec_merge_full(current_stage-1,last_stages_cost,cur_matrix);
+                    else
+                        main_merger->rec_merge_full(current_stage-1,part_cost+last_stages_cost+constant_add_cost,cur_matrix);
                 }
                 else
                 {
                     if(global_options.costmodel.strongcost) found_result.cost_all = last_stages_cost;
-                    else found_result.cost_all = part_cost+last_stages_cost;
+                    else found_result.cost_all = part_cost+last_stages_cost + constant_add_cost;
                     found_result.found = true;
                     found_result.last_merge = cur_matrix;
                 }
@@ -93,7 +95,7 @@ void matree2::rec_optimize_full(uint row_id, vector<vector<bool> > &hot_matrix, 
             }
             else
             {
-                TREE_PRINT_BREAK("cut",last_stages_cost+part_cost);
+                TREE_PRINT_BREAK("cut",last_stages_cost+part_cost+constant_add_cost);
                 LOG_OP::log("---cut---");
 
                 main_merger->cut_count++;
@@ -229,7 +231,7 @@ void matree2::optimize_full()
         lowest_sum += matrix[i][placements[i][0]];
     }
 
-    if( global_options.costmodel.strongcost || global_options.complete || *best_cost_all > (last_stages_cost + lowest_sum) )
+    if( global_options.costmodel.strongcost || global_options.complete || *best_cost_all > (last_stages_cost+lowest_sum+constant_add_cost) )
     {
         vector<vector<index_type> > vec(node_count);
         vector<index_type> inner_vec(config_count);
@@ -243,7 +245,7 @@ void matree2::optimize_full()
     else
     {
         main_merger->tcut_count++;
-        TREE_PRINT_BREAK("tcut",last_stages_cost + lowest_sum);
+        TREE_PRINT_BREAK("tcut",last_stages_cost+lowest_sum+constant_add_cost);
          LOG_OP::log("---tcut---");
     }
 }
