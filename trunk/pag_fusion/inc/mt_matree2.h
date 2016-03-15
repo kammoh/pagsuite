@@ -63,6 +63,7 @@ public:
     int max_visit;
     float best_cost;
     float last_stages_cost;
+    float constant_add_cost;
     float *best_cost_all;
     index_type current_stage;
 

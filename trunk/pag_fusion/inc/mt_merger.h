@@ -124,6 +124,7 @@ private:
     map<int,vector<vector<index_type> > > current_merge_tree;
 
     vector<index_type> stage_node_count;
+    vector<index_type> stage_node_count_ff;
     vector<vector<index_type> > start_merging;
 
     vector<vector<vector<index_type> > > best_merge_tree_n;
@@ -157,11 +158,12 @@ private:
     void resort_inputs(mt_stage *stage);
     void start_normalize(vector<vector<vector<int64_t> > >& start_nodes);
     void fix_nodes(const vector< InputParser::fix_node >& fnodes);
+    void move_fixed_nodes();
 
     //mt_merger_solving
     void temp_merge(index_type cur_stage, vector<vector<index_type> > &mat);
     float compute_strong_cost(int cur_stage_id);
-    void fill_matrix(index_type cur_stage, index_type cur_config, vector<index_type> &current, matree2* matrix, bool allowed = true);
+    void fill_matrix(index_type cur_stage, index_type cur_config, vector<index_type> &current, matree2* matrix, bool has_fixed = false);
 
     //mt_merger_solving_cost
     float path_combine(vector<index_type> &cur_nodes, index_type cur_stage);

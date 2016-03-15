@@ -34,7 +34,7 @@ float merger::path_combine(vector<index_type> &cur_nodes, index_type cur_stage)
 
 void merger::prepare_decision_nodes(index_type cur_stage)
 {
-    stage_decision_nodes.resize(stage_node_count[cur_stage+1]);
+    stage_decision_nodes.resize(stage_node_count[cur_stage+1]);  // FFNODE: muss das angepasst werden?
 
     for(uint i = 0, i_end = stage_decision_nodes.size();i<i_end;++i)
         stage_decision_nodes[i] = new mt_decision_node(configurations.size());
@@ -68,7 +68,7 @@ void merger::collect_paths(vector<index_type> &cur_nodes, int cur_stage)
             for(vector<mt_path*>::iterator iter=node->paths_down.begin(), iter_end = node->paths_down.end();iter!=iter_end;++iter)
             {
                 mt_path* t = (*iter);
-                mt_decision_node* tt =  stage_decision_nodes[t->to_merged];
+                mt_decision_node* tt =  stage_decision_nodes[t->target->id_merged];
                 if( t->target->neg_shift<0 && t->target->neg_shift<tt->neg_shift )
                     tt->neg_shift = t->target->neg_shift;
 
