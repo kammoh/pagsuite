@@ -26,8 +26,8 @@ bool InputParser::parse(){
 
     CoPa fixed_single = (("DONT_CARE" + event(4)) | splitBy(",",(CoPa(PARSE_INT,2))) + event(2));
     CoPa fixed_cfg = splitBy(";",fixed_single);
-    CoPa fixed_node = fixed_cfg.between("[" ,"]") + "," + CoPa(PARSE_UINT,3) + event(3);
-    CoPa fixed_nodes = splitBy(",",fixed_node.between("{","}"));
+    CoPa fixed_node = print() + fixed_cfg.between("[" ,"]") + "," + CoPa(PARSE_UINT,3) + event(3);
+    CoPa fixed_nodes = "{" + splitBy(",",fixed_node.between("{","}")) + "}";
     CoPa fixes = fixed_nodes.between( "<fixed>","</fixed>");
 
     CoPa toplevel = ignore(" \t\r\n") + repeat(graphs,'+') + repeat(merges,'+') + (fixes|"");
