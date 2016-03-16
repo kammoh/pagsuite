@@ -62,7 +62,7 @@ void merger::fix_nodes(const vector< InputParser::fix_node >& fnodes){
 
 void merger::move_fixed_nodes(){
     for( int stage = 0; stage < stage_count ; ++stage){
-        for( int node_id=0;node_id<stage_node_count[stage];++node_id ){
+        for( int node_id=0;node_id<(stage_node_count[stage]-stage_node_count_ff[stage]);++node_id ){
             bool all_fixed = true;
             for(int cfg=0;cfg<configurations.size();++cfg){
                 mt_node* n = configurations[cfg]->stages[stage]->nodes[node_id];
