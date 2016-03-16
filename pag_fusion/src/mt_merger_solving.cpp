@@ -113,7 +113,7 @@ void merger::rec_merge_full(index_type cur_stage, float cur_cost, vector<vector<
 
         mat->create_placements();
 
-        if(stage_node_count[cur_stage]>1)
+        if((stage_node_count[cur_stage]-stage_node_count_ff[cur_stage])>1)
         {
             if(cur_stage==0)
             {
@@ -164,7 +164,10 @@ void merger::rec_merge_full(index_type cur_stage, float cur_cost, vector<vector<
             }
             else
             {
-                part_cost = mat->matrix_get_at(0,0);
+                if( (stage_node_count[cur_stage] - stage_node_count_ff[cur_stage]) == 0)
+                    part_cost = mat->constant_add_cost;
+                else
+                    part_cost = mat->matrix_get_at(0,0);
             }
             if(cur_stage==0)
             {
@@ -176,14 +179,17 @@ void merger::rec_merge_full(index_type cur_stage, float cur_cost, vector<vector<
             {
                 TREE_PRINT_DOWN("skip stage",-1);
                 vector<vector<index_type> > merge;
-                vector<index_type> inner_merge(configurations.size());
-                merge.push_back(inner_merge);
+                if((stage_node_count[cur_stage] - stage_node_count_ff[cur_stage]) > 0){
+                    vector<index_type> inner_merge(configurations.size());
+                    merge.push_back(inner_merge);
+                }
                 if(global_options.costmodel.strongcost) rec_merge_full(cur_stage-1,cur_cost,merge);
                 else rec_merge_full(cur_stage-1,cur_cost+ part_cost,merge);
 
                 TREE_PRINT_UP();
             }
         }
+
         if(mat->found_result.found)
         {
             if(best_cost_all > mat->found_result.cost_all)

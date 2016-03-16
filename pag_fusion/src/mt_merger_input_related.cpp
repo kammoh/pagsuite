@@ -36,24 +36,39 @@ merger::merger(string file_name)
 
 void merger::fix_nodes(const vector< InputParser::fix_node >& fnodes){
     for( vector< InputParser::fix_node >::const_iterator it_f = fnodes.begin();it_f!=fnodes.end();++it_f ){
-        int cfg=0,node_id=-1;
+        int cfg = 0;
+        bool fully_fixed = true;
+        std::vector<mt_node*> nodes;
         for( vector<vector<int64_t> >::const_iterator it_cfg = it_f->outputs.begin();it_cfg!=it_f->outputs.end();++it_cfg,++cfg ){
             if( !it_cfg->empty() ){
                 mt_node* node = find_node(cfg,it_f->stage,*it_cfg );
                 if( node!=NULL ){
+                    nodes.push_back(node);
                     node->is_fixed = true;
-                    if(node_id==-1){
-                        node_id = node->id;
-                    }else if(node_id != node->id){
-                        std::swap( configurations[cfg]->stages[it_f->stage]->nodes[node_id]->id_merged, configurations[cfg]->stages[it_f->stage]->nodes[node->id]->id_merged );
-                        std::swap( configurations[cfg]->stages[it_f->stage]->nodes[node_id], configurations[cfg]->stages[it_f->stage]->nodes[node->id] );
-                        std::swap( configurations[cfg]->stages[it_f->stage]->nodes[node_id]->id, configurations[cfg]->stages[it_f->stage]->nodes[node->id]->id );
-
-                        for(int i=cfg-1;i>=0;--i){
-                            configurations[cfg]->stages[it_f->stage]->nodes[node_id]->fixed_to.push_back( configurations[i]->stages[it_f->stage]->nodes[node_id] );
-                            configurations[i]->stages[it_f->stage]->nodes[node_id]->fixed_to.push_back( configurations[cfg]->stages[it_f->stage]->nodes[node_id] );
-                        }
-                    }
+                }else{
+                    nodes.push_back(NULL);
+                    std::cerr << "Didn't find node to fix." << std::endl;
+                    fully_fixed = false;
+                }
+            }else{
+                nodes.push_back(NULL);
+                fully_fixed = false;
+            }
+        }
+        if(fully_fixed){    // <= MOVE to back
+            ++stage_node_count_ff[it_f->stage];
+            for(int cfg=0;cfg<configurations.size();++cfg){
+                const int node_id = nodes[cfg]->id;
+                mt_stage* st = configurations[cfg]->stages[it_f->stage];
+                st->nodes[ nodes[cfg]->id ]->is_fully_fixed = true;
+                int i=st->nodes.size()-1;
+                while( i>node_id && st->nodes[i]->is_fully_fixed ){
+                    --i;
+                }
+                if(i!=node_id){
+                    std::swap( st->nodes[node_id],st->nodes[i] );
+                    std::swap( st->nodes[node_id]->id,st->nodes[i]->id );
+                    std::swap( st->nodes[node_id]->id_merged,st->nodes[i]->id_merged );
                 }
             }
         }
@@ -61,35 +76,7 @@ void merger::fix_nodes(const vector< InputParser::fix_node >& fnodes){
 }
 
 void merger::move_fixed_nodes(){
-    for( int stage = 0; stage < stage_count ; ++stage){
-        for( int node_id=0;node_id<(stage_node_count[stage]-stage_node_count_ff[stage]);++node_id ){
-            bool all_fixed = true;
-            for(int cfg=0;cfg<configurations.size();++cfg){
-                mt_node* n = configurations[cfg]->stages[stage]->nodes[node_id];
-                if(!n->is_fixed){
-                    all_fixed=false;
-                    break;
-                }
-            }
-            if(all_fixed){
-                for(int cfg=0;cfg<configurations.size();++cfg){
-                    mt_stage* st = configurations[cfg]->stages[stage];
-                    st->nodes[node_id]->is_fully_fixed = true;
-                    int i=st->nodes.size()-1;
-                    while( i>node_id && st->nodes[i]->is_fully_fixed ){
-                        --i;
-                    }
-                    if(i!=node_id){
-                        std::swap( st->nodes[node_id],st->nodes[i] );
-                        std::swap( st->nodes[node_id]->id,st->nodes[i]->id );
-                        std::swap( st->nodes[node_id]->id_merged,st->nodes[i]->id_merged );
-                    }
-                }
-                //--stage_node_count[node_id];
-                ++stage_node_count_ff[stage];
-            }
-        }
-    }
+
 }
 
 void merger::add_graph(string graph_string)
