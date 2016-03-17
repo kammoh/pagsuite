@@ -29,7 +29,7 @@ public:
 
     mt_path(index_type t,short s,bool reg);
     mt_path(bool ghost);
-    void print(ostream& dest = cout);
+    void print(ostream& dest = cout, std::string pre = "");
 };
 
 class mt_node
@@ -55,7 +55,7 @@ public:
 
     void add(index_type t,ushort s,bool isreg=false);
     string print_values();
-    void print(ostream& dest = cout);
+    void print(ostream& dest = cout,std::string pre="");
 };
 
 class mt_stage
@@ -68,7 +68,7 @@ public:
 
     ~mt_stage();
     void add(mt_node* node);
-    void print(ostream& dest = cout);
+    void print(ostream& dest = cout,std::string pre="");
 };
 
 class mt_graph{
