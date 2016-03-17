@@ -271,10 +271,10 @@ void merger::fill_matrix(index_type cur_stage, index_type cur_config, vector<ind
              }else if( !has_fully_fixed ){ // <= now we need to check if the fixed nodes fit together
                  bool matched_fixing = true;
                  for(int i=0;i<current.size();++i){
-                     mt_node *f = configurations[0]->stages[cur_stage]->nodes[current[0]];
+                     mt_node *f = configurations[i]->stages[cur_stage]->nodes[current[i]];
                      if( f->is_fixed ){
-                         for(int j=0;j<f->fixed_to.size();++f){     // <= i now this will create redundancy, but it's securerer
-                             if( current[ f->fixed_to[i]->cfg_id ] != f->fixed_to[i]->id ){
+                         for(int j=0;j<f->fixed_to.size();++j){     // <= i now this will create redundancy, but it's securerer
+                             if( current[ f->fixed_to[j]->cfg_id ] != f->fixed_to[j]->id ){
                                  matched_fixing = false;
                                  break;
                              }

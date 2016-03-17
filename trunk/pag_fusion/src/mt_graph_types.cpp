@@ -31,16 +31,16 @@ mt_path::mt_path(bool ghost)
     target = NULL;
 }
 
-void mt_path::print(ostream& dest)
+void mt_path::print(ostream& dest, std::string pre)
 {
     if( target!=NULL ){
-    dest<<"\t\t"<<"-<"<<shift<<">->"<<target->id;
-    dest<<" ("<<target->id_merged<<")";
-    if(isreg) dest <<"R";
-    if(is_neg) dest <<"-";
+        dest<< pre <<"--<"<<shift<<">->"<<target->id;
+        dest<<" ("<<target->id_merged<<")";
+        if(isreg) dest <<"R";
+        if(is_neg) dest <<"-";
     }
     else{
-        dest<<"\t\tghostpath";
+        dest<<pre<<"ghostpath";
     }
     dest<<endl;
 }
@@ -87,13 +87,32 @@ string mt_node::print_values()
     return ss.str();
 }
 
-void mt_node::print(ostream& dest)
+void mt_node::print(ostream& dest, std::string pre)
 {
-    dest<<"\tnode#"<<id<<"|"<<id_merged<<" ("<<print_values()<<" ws:"<<wordsize<<")"<<endl;
-    dest<<"\t\t"<<(is_ternary?"ternary ":"")<<(is_ghost?"ghost":"")<<(is_fully_fixed?"fullyfixed":(is_fixed?"fixed":""))<<endl;
-    for(vector<mt_path*>::iterator iter=paths_down.begin(), iter_end = paths_down.end();iter!=iter_end;++iter)
-    {
-        (*iter)->print(dest);
+    dest<< "--* node#"<<id<<"|"<<id_merged<<" ("<<print_values()<<" ws:"<<wordsize<<") " << (is_ternary?"ternary ":"")<<(is_ghost?"ghost":"")<<(is_fully_fixed?"fullyfixed":(is_fixed?"fixed":""))<<endl;
+    if( !fixed_to.empty() ){
+
+        dest<< pre << (paths_down.empty()?"\\":"|") <<"--* fixed to:"<<endl;
+        for(int i=0;i<fixed_to.size();++i){
+            if(i==(fixed_to.size()-1))
+                dest<< pre << (paths_down.empty()?" ":"|") <<"  \\--> node#"<<fixed_to[i]->id << " in cfg#" <<fixed_to[i]->cfg_id <<endl;
+            else
+                dest<< pre << (paths_down.empty()?" ":"|") <<"  |--> node#"<<fixed_to[i]->id << " in cfg#" <<fixed_to[i]->cfg_id <<endl;
+        }
+    }
+    if( !paths_down.empty() ){
+        dest<< pre <<"\\--* paths:"<<endl;
+        for(vector<mt_path*>::iterator iter=paths_down.begin(), iter_end = paths_down.end();iter!=iter_end;++iter)
+        {
+            if( (*iter) != paths_down.back() ){
+                dest << pre << "   |";
+                (*iter)->print(dest,"");
+            }
+            else{
+                dest << pre << "   \\";
+                (*iter)->print(dest,"");
+            }
+        }
     }
 }
 
@@ -116,12 +135,19 @@ void mt_stage::add(mt_node* node)
     nodes.push_back(node);
 }
 
-void mt_stage::print(ostream& dest)
+void mt_stage::print(ostream& dest, std::string pre)
 {
-    dest<<"stage#"<<id<<endl;
+    dest<<"--* stage#"<<id<<endl;
     for(vector<mt_node*>::iterator iter=nodes.begin(), iter_end = nodes.end();iter!=iter_end;++iter)
     {
-        (*iter)->print(dest);
+        if( (*iter)!=nodes.back() ){
+            dest << pre << "|";
+            (*iter)->print(dest,pre+"|  ");
+        }else{
+            dest << pre << "\\";
+            (*iter)->print(dest,pre+"   ");
+        }
+
     }
 }
 
@@ -147,6 +173,12 @@ void mt_graph::print(index_type id,ostream& dest)
     dest<<"____________graph#"<<id<<"____________"<<endl;
     for(vector<mt_stage*>::iterator iter=stages.begin(), iter_end = stages.end();iter!=iter_end;++iter)
     {
-        (*iter)->print(dest);
+        if( (*iter)!=stages.back() ){
+            dest << "|";
+            (*iter)->print(dest,"|  ");
+        }else{
+            dest << "\\";
+            (*iter)->print(dest,"   ");
+        }
     }
 }

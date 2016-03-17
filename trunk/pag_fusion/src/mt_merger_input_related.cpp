@@ -74,10 +74,12 @@ void merger::fix_nodes(const vector< InputParser::fix_node >& fnodes){
         }
 
         for(int i=0;i<nodes.size();++i){
+            if(nodes[i]!=NULL){
             for(int j=0;j<nodes.size();++j){
-                if(i!=j){
+                if(i!=j && nodes[j]!=NULL){
                     nodes[i]->fixed_to.push_back( nodes[j] );
                 }
+            }
             }
         }
     }
