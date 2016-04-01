@@ -41,7 +41,8 @@ void merger::rec_merge_full(index_type cur_stage, float cur_cost, vector<vector<
 {
     if ( global_options.timeout != 0 || EXIT_REQUEST){
         run_time.stop();
-        if( run_time.time_elapsed > global_options.timeout )
+
+        if( run_time.time_elapsed > global_options.timeout || EXIT_REQUEST )
             exit_call();
     }
 
