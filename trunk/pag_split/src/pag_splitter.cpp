@@ -19,8 +19,13 @@ pag_splitter::pag_splitter(string complete_graph,string instance_name)
         source_graph->check_and_correct(complete_graph);
         source_graph->nodes_list.remove_if(&output_reg_selector);
 
-        source_graph->normalize_graph();
-        source_graph->check_and_correct(complete_graph);
+        if( graph_has_negshift() ){
+            std::cerr << "[PAG_SPLIT] Source graph is incompatible because it contains negative shifts." << std::endl;
+            exit(-1);
+            //throw std::runtime_error("[PAG_SPLIT] Incompatible graph input.");
+        }
+        //source_graph->normalize_graph();
+        //source_graph->check_and_correct(complete_graph);
         source_graph->drawdot(instance_name+"split_input.dot");
         get_output_nodes();
     }
@@ -314,6 +319,29 @@ void pag_splitter::generate_input_file(string instance_name,vector<vector<vector
     file.open(filename.c_str());
     file << outstream.str();
     file.close();
+}
+
+bool pag_splitter::graph_has_negshift(){
+    std::vector<int> nn;
+    int max_stage=0;
+    for(list<adder_graph_base_node_t*>::iterator it= source_graph->nodes_list.begin(), it_end = source_graph->nodes_list.end();
+        it!=it_end;
+        ++it)
+    {
+        if (is_a<adder_subtractor_node_t>(*(*it))){
+            adder_subtractor_node_t* t = (adder_subtractor_node_t*)*it;
+            if(t->stage>max_stage)
+                max_stage = t->stage;
+            for(int i=0;i<t->input_shifts.size();++i)
+                if( t->input_shifts[i] < 0 )
+                    nn.push_back(t->stage);
+        }
+    }
+    for(int i=0;i<nn.size();++i)
+        if(nn[i]<max_stage)
+            return true;
+
+    return false;
 }
 
 void pag_splitter::detox_graph()
