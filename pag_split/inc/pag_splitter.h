@@ -38,6 +38,8 @@ public:
     void split();
     void print_all_splitted(string instance_name);
     void generate_input_file(string instance_name, vector<vector<vector<int64_t> > > &groups);
+
+    bool graph_has_negshift();
 };
 
 
