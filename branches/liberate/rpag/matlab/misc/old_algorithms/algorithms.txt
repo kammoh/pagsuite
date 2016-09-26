@@ -1,0 +1,5 @@
+Short Description of algorithms:
+pip_mcm1 - First version, simple search of single and pair predecessors
+pip_mcm2 - Search of predecessor pair from MSD represenation included
+pip_mcm3 - Simple modification (a single predecessor is allways searched first)
+pip_mcm4 - A more detailed cost model was included for adder/register cost

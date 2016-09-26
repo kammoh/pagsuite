@@ -1,0 +1,21 @@
+PROJECT( pag_split CXX )
+cmake_minimum_required(VERSION 2.8)
+
+SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. )
+
+include(${PAGSUITE_ROOT_DIR}/PagSuiteConfig.cmake)
+configure()
+include_paglib( ${PAGSUITE_ROOT_DIR} )
+
+include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/inc )
+
+FILE( GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+FILE( GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/inc/*.h)
+
+ADD_EXECUTABLE( pag_split ${SOURCES} ${HEADERS})
+
+set_target_properties( pag_split PROPERTIES LINKER_LANGUAGE CXX)
+
+TARGET_LINK_LIBRARIES( pag_split pag_lib copa )
+
+
