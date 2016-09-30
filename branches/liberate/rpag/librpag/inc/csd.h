@@ -12,6 +12,7 @@
 #include "types.h"
 #include "debug.h"
 
+namespace rpag {
 
 inline int csd_nonzeros2(int_t x)
 {
@@ -96,5 +97,7 @@ void msd_vec2vec(sd_vec_t& msd_vec, vec_t& vec);
 
 int compute_word_size(vec_t vec, int input_word_size);
 int compute_word_size(int_t x, int input_word_size);
+
+}
 
 #endif // CSD_H

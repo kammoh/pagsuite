@@ -16,6 +16,8 @@
 #include "cost_model.h"
 #include "rpag_functions.h"
 
+namespace rpag {
+
 int insert_into_predecessor_pair_set(set<pair<vec_t,vec_t> > *predecessor_pair_set, vec_pair_t in);
 int insert_into_predecessor_pair_set(set<pair<int_t,int_t> > *predecessor_pair_set, vec_pair_t in);
 int insert_into_predecessor_triplet_set(set<triplet<vec_t,vec_t,vec_t> > *predecessor_triplet_set, vec_triplet_t in);
@@ -845,5 +847,6 @@ void rpag_base<T>::compute_topology_e_predecessors_2_add(T w1, T w2, int l_max, 
   }
 }
 
+}
 
 #endif // RPAG_TOPOLOGIES_H

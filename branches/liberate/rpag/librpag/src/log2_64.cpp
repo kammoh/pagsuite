@@ -8,7 +8,7 @@
 
 #include "log2_64.h"
 #include <math.h>
-
+namespace rpag {
 //64 bit implementation of floor(log2(int x))
 int log2f_64(uint64_t n)
 {
@@ -78,4 +78,6 @@ int log3c_64(uint64_t n)
     if(n <= 177147){return 11;}
     if(n <= 531441){return 12;}
     return (int) ceil(logf((float) n)/logf(3));
+}
+
 }

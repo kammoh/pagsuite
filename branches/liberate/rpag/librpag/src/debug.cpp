@@ -13,6 +13,8 @@ using namespace std;
 #include "types.h"
 #include "debug.h"
 
+namespace rpag {
+
 int global_verbose=0;
 
 ostream& operator<<(ostream &s, sd_t& sd)
@@ -43,3 +45,4 @@ ostream& operator<<(ostream &s, sd_set_t& msd_set)
   return s;
 }
 
+}

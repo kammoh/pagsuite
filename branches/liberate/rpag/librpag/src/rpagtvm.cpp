@@ -20,7 +20,7 @@
 #include "type_class.h"
 
 using namespace::std;
-
+namespace rpag {
 rpagtvm::rpagtvm()
 {}
 rpagtvm::~rpagtvm()
@@ -258,4 +258,5 @@ void  rpagtvm::get_best_multi_predecessor(const vec_set_t &working_set, vec_set_
   best_multi_predecessor_set->insert(predecessor_triplet_best.second);
   best_multi_predecessor_set->insert(predecessor_triplet_best.third);
 
+}
 }

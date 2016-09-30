@@ -8,6 +8,10 @@
 
 #include "rpag_pointer.h"
 
+int rpag::rpag_pointer::input_wordsize = -1;
+
+namespace rpag {
+
 int rpag_pointer::set_cost_FF(float FF)
 {
   if(cost_FF == -1)
@@ -71,4 +75,6 @@ rpag_pointer* rpag_pointer::set_parameter_equal_to (rpag_pointer* rhs)
 
     this->ternary_sign_filter         = rhs->ternary_sign_filter;
     return this;
+}
+
 }

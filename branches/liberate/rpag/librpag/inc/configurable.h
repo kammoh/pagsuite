@@ -10,6 +10,8 @@
 #define CONFIGURABLE_H
 #include "rpag_vec.h"
 
+namespace rpag {
+
 template<typename T, typename Alloc = std::allocator<T> >
 class conf_predecessor : public rpag_vec<T, Alloc>
 {
@@ -20,5 +22,5 @@ public:
   vector<bool> dontcare;
   set<int> conf;
 };
-
+}
 #endif //CONFIGURABLE_H

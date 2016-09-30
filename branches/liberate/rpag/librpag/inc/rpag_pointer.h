@@ -12,6 +12,8 @@
 #include <vector>
 #include "cost_model.h"
 
+namespace rpag {
+
 enum rpag_type{typ_rpag, typ_rpagvm, typ_rpagt, typ_rpagtvm};
 
 class rpag_pointer
@@ -74,5 +76,6 @@ public:
 
 };
 
+}
 
 #endif // RPAG_POINTER_H

@@ -75,6 +75,8 @@
             ++it_r;}}else{std::cout << "\n!rpag_vector error: return self; size difference!\n"; exit(-1);}\
          return *this;
 
+namespace rpag {
+
 template<typename T, typename Alloc = std::allocator<T> >
 class rpag_vec : public std::vector<T, Alloc>
 {
@@ -388,6 +390,8 @@ public:
     }
 };
 
+
+
 template<typename T, typename Alloc> unsigned int rpag_vec<T, Alloc>::default_elem_count = 1;
 template<typename T, typename Alloc> char rpag_vec<T, Alloc>::stream_seperate_symbol = ';';
 
@@ -447,5 +451,7 @@ template<typename T, typename Alloc>
     }
   }
 
+
+}
 
 #endif // RPAG_VEC_H

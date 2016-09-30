@@ -10,13 +10,15 @@
 #include "debug.h"
 #include "log2_64.h"
 
-#include <algorithm>
+#include "rpag_functions.h"
 
+#include <algorithm>
+namespace rpag {
 void dec2bin(int_t x, sd_t* csd)
 {
   IF_VERBOSE(7) std::cout << "\n" << x << " in csd\n";
   //assert(x >= 0);
-  if(x < 0){x *= -1;}// this is necessary because of the vector matrix multiplication, which have to work with negative numbers in a specific way.
+  if(x < 0){x *= -1;}// this is ecessary because of the vector matrix multiplication, which have to work with negative numbers in a specific way.
   if(x!=0)
   {
     while(x != 0)
@@ -338,5 +340,5 @@ int compute_word_size(int_t x, int input_wordsize)
   return input_wordsize+log2c_64(x);
 }
 
-
+}
 

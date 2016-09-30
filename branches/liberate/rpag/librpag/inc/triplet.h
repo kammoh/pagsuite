@@ -9,6 +9,8 @@
 #ifndef TRIPLET_H
 #define TRIPLET_H
 
+namespace rpag {
+
 template <typename T1, typename T2, typename T3>
 class triplet
 {
@@ -73,5 +75,7 @@ public:
   }
 
 };
+
+}
 
 #endif //TRIPLET_H

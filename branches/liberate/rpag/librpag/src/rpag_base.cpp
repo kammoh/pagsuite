@@ -8,3 +8,6 @@
 
 #include "rpag_base.h"
 
+namespace rpag {
+
+}

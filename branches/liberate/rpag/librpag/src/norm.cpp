@@ -7,8 +7,10 @@
 */
 
 #include "norm.h"
-
+#include "rpag_functions.h"
 #include <algorithm>
+
+namespace rpag {
 
 int_t norm(int_t in, bool *switched)
 {
@@ -27,7 +29,7 @@ int_t norm(int_t in, bool *switched)
 	}
 	else
 	{
-	  return abs(in);
+      return abs(in);
 	}
 }
 
@@ -49,4 +51,6 @@ vec_t norm(vec_t in, bool *switched) // the first element witch is different  to
 	}
 	if(switched != NULL){*switched = false;}
 	return out;
+}
+
 }

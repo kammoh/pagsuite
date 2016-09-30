@@ -12,6 +12,8 @@
 #include "type_class.h"
 #include "debug.h"
 
+namespace rpag {
+
 //returns the fundamental of x
 inline int_t fundamental(int_t x)//inline and template doesn't work together
 {
@@ -117,5 +119,7 @@ inline int_t fundamental_unsave(int_t x)
 
 void fundamental(int_set_t *set);
 void fundamental(vec_set_t *set);
+
+}
 
 #endif //FUNDAMENTAL_H

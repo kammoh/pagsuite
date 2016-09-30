@@ -13,6 +13,8 @@
 #include "rpag_base.h"
 #include "rpag_topologies.h"
 
+namespace rpag {
+
 class rpag : public rpag_base<int_t>
 {
 public:
@@ -31,5 +33,7 @@ private:
   void update_pair_gain_map(set<pair<int_t,int_t> > &predecessor_pair_set, int_t w, const int_set_t &working_set, int_pair_double_map_t &pair_gain_map);
 
 };
+
+}
 
 #endif // RPAG_H

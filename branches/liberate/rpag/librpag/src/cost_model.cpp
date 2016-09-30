@@ -8,3 +8,6 @@
 
 #include "cost_model.h"
 
+namespace rpag {
+
+}

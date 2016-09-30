@@ -33,6 +33,8 @@
 
 using namespace std;
 
+namespace rpag {
+
 //typedef int int_t; //type of integer numbers
 typedef long long int int_t; //type of integer numbers
 typedef vector<int_t> int_vec_t;
@@ -65,5 +67,7 @@ typedef map<int_triplet_t, double> int_triplet_double_map_t;
 typedef triplet<vec_t, vec_t, vec_t> vec_triplet_t;
 typedef set<vec_triplet_t> vec_triplet_set_t;
 typedef map<vec_triplet_t, double> vec_triplet_double_map_t;
+
+}
 
 #endif //TYPES_H

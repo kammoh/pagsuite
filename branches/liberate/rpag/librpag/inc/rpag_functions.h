@@ -14,6 +14,8 @@
 #include "type_class.h"
 #include "fundamental.h"
 
+namespace rpag {
+
 template <class T>
 class realization_row
 {
@@ -207,6 +209,7 @@ string realization_row<T>::to_ss_matlab()
   return s.str();
 }
 
+int_t abs(const int_t &rhs);
 
 int_t max_elem(const vec_t &rhs);
 int_t max_elem(const int_t &rhs);
@@ -860,7 +863,7 @@ string output_adder_graph(list< realization_row<T> > &pipelined_adder_graph, boo
   return output.str();
 }
 
-
+}
 
 #endif //RPAG_FUNCTIONS
 
