@@ -89,7 +89,7 @@ string rpag_info(vector<string> &start_arguments, bool new_line)
 {
   stringstream output_stream;
   string out;
-
+  output_stream << "  version \t\t\t = " << RPAG_VERSION ;              if(new_line==true){ output_stream << std::endl;}
   output_stream << "  last full compile \t\t = " << __DATE__ << " " << __TIME__;              if(new_line==true){ output_stream << std::endl << std::endl;}
   unsigned long long MAX_INT32_var  = MAX_INT32;
   unsigned long long MAX_UINT32_var = MAX_UINT32;
