@@ -7,6 +7,7 @@
 */
 
 #include "fundamental.h"
+namespace rpag {
 
 void fundamental(int_set_t *set)
 {
@@ -38,4 +39,5 @@ void fundamental(vec_set_t *set)
       set->insert(fun);
     }
   }
+}
 }

@@ -10,6 +10,7 @@
 #define RPAGT_H
 
 #include "rpag.h"
+namespace rpag {
 
 class rpagt : public rpag
 {
@@ -25,4 +26,5 @@ public:
   void get_best_multi_predecessor(const int_set_t &working_set, int_set_t *best_multi_predecessor_set, int s);
 };
 
+}
 #endif // RPAGT_H

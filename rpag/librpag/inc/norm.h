@@ -12,9 +12,12 @@
 #include "type_class.h"
 #include "debug.h"
 
+namespace rpag {
+
 int_t norm(int_t in, bool *switched = NULL);
 vec_t norm(vec_t in, bool *switched = NULL);
 
+}
 
 
 

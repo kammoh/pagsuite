@@ -18,6 +18,9 @@
 #include <algorithm>
 
 #include"rpag_topologies.h"
+
+namespace rpag {
+
 rpag::rpag()
 {}
 
@@ -234,3 +237,4 @@ int rpag::adder_depth(int_t x)
   return log2c_64(nonzeros(x));
 }
 
+}

@@ -31,6 +31,8 @@
 #include "tic_toc.h"
 #include "abstraction_time.h"
 
+namespace rpag {
+
 template <class T>
 class rpag_base : public rpag_pointer
 {
@@ -185,7 +187,7 @@ rpag_base<T>::rpag_base()
   stages_input_pag=-1;
   stages_output_pag=-1;
   force_minimal_depth=false;
-  input_wordsize=-1;
+  //input_wordsize=-1;
   no_of_extra_stages=0;
   benchmark =false;
 
@@ -1167,6 +1169,8 @@ void rpag_base<T>::check_constraints(int no_of_pipeline_stages)
       }
     }
   }
+}
+
 }
 
 #endif // RPAG_BASE_H

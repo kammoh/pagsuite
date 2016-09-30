@@ -21,6 +21,8 @@
 
 using namespace::std;
 
+namespace rpag {
+
 rpagt::rpagt()
 {
 }
@@ -256,3 +258,4 @@ void  rpagt::get_best_multi_predecessor(const int_set_t &working_set, int_set_t 
 
 }
 
+}

@@ -42,17 +42,22 @@ endmacro( configure )
 macro( include_copa PAGSUITE_ROOT_DIR )
 	IF( NOT TARGET copa_static )
 		IF( EXISTS ${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME} )
-			IF ( NOT STATIC_ONLY )
-				add_library(copa SHARED IMPORTED GLOBAL )
-				IF ( SYSTEM_PREFIX STREQUAL "win"  )
-					set_target_properties(copa PROPERTIES IMPORTED_LOCATION "${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME}/libcopa.dll.a" )
-				ELSE ( SYSTEM_PREFIX STREQUAL "win"  )
-					set_target_properties(copa PROPERTIES IMPORTED_LOCATION "${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME}/libcopa.so" )
-				ENDIF ( SYSTEM_PREFIX STREQUAL "win"  )
-			ENDIF ( NOT STATIC_ONLY )
+			find_library( COPA
+				NAMES copa libcopa
+				PATHS "${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME}"
+				REQUIRED
+				)
 			include_directories( ${PAGSUITE_ROOT_DIR}/libs/copa/include )
-			add_library(copa_static STATIC IMPORTED GLOBAL)
-			set_target_properties(copa_static PROPERTIES IMPORTED_LOCATION "${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME}/libcopa.a" )
+
+			find_library( COPA_STATIC
+				NAMES libcopa.a
+				PATHS "${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME}"
+				REQUIRED
+				)
+			IF ( NOT COPA )
+				Message( "Copa not found." )
+			ENDIF ( NOT COPA )
+
 		ELSE( EXISTS ${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME} )
 			message( FATAL_ERROR "There is no copa binary for your system." )
 		ENDIF( EXISTS ${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME} )

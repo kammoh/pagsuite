@@ -23,6 +23,8 @@
 
 using namespace std;
 
+namespace rpag {
+
 extern int global_verbose;
 
 #define IF_VERBOSE(verbose) if(global_verbose >= verbose) for(int i=0; i < verbose; i++) cout << "  "; if(global_verbose >= verbose)
@@ -214,6 +216,7 @@ std::string toString(const T& t)
      return stream.str();
 }
 
+}
 
 #endif //_DEBUG_H
 

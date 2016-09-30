@@ -7,7 +7,7 @@
 */
 
 #include "rpagvm.h"
-
+namespace rpag {
 
   rpagvm::rpagvm()
   {}
@@ -240,3 +240,4 @@
     }
   }
 
+}

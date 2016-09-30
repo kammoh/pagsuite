@@ -28,6 +28,8 @@ using namespace std;
 #include "fundamental.h"
 #include "cost_model.h"
 
+using namespace rpag;
+
 int print_short_help()
 {
   cout << "usage: rpag [OPTIONS] coefficients" << endl;
@@ -202,14 +204,12 @@ void set_cost_model(cost_model_t cost_model, rpag_pointer *rpagp)
   }
 }
 
-int rpag_pointer::input_wordsize;
-
 int main(int argc, char *argv[])
 {
   global_verbose=0;
 
   rpag_pointer *rpagp = NULL;
-  rpagp = new rpag(); //default is RPAG with 2 input adders
+  rpagp = new rpag::rpag(); //default is RPAG with 2 input adders
   cost_model_t cost_model = HL_FPGA;// with default value
   bool ternary_adders = false;
   bool vector_input = false;

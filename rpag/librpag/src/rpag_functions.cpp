@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <string> // for rpag_atoll
 
+namespace rpag {
+
 int_t max_elem(const vec_t &rhs)
 {
   return abs(rhs).max();
@@ -299,4 +301,8 @@ bool just_one_negative_sign(vec_t &a, vec_t &b, vec_t &c)
     return true;
 }
 
+int_t abs(const int_t &rhs){
+    return ::abs(rhs);
+}
 
+}

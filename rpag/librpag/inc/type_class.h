@@ -13,6 +13,8 @@
 #include "csd.h"
 using namespace std;
 
+namespace rpag {
+
 class int_double_map_cmp
 {
   public:
@@ -123,5 +125,7 @@ class T_pair_or_tripl_double_map_nz_cmp
         }
     }
  };
+
+}
 
 #endif //TYPE_CLASS_H

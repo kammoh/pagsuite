@@ -7,7 +7,7 @@
 */
 
 #include "rpag_topologies.h"
-
+namespace rpag {
 int insert_into_predecessor_pair_set(set<pair<vec_t,vec_t> > *predecessor_pair_set, vec_pair_t in)
 {
      predecessor_pair_set->insert(in);
@@ -34,3 +34,4 @@ int insert_into_predecessor_triplet_set(set<triplet<int_t,int_t,int_t> > *predec
     return 0;
 }
 
+}

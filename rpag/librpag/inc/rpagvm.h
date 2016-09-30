@@ -11,7 +11,7 @@
 #include "type_class.h"
 #include "rpag_base.h"
 #include "rpag_topologies.h"
-
+namespace rpag {
 class rpagvm : public rpag_base<vec_t>
 {
 public:
@@ -31,5 +31,5 @@ private:
 
   void update_pair_gain_map(set<pair<vec_t,vec_t> > &predecessor_pair_set, vec_t w, const vec_set_t &working_set, vec_pair_double_map_t &pair_gain_map);
 };
-
+}
 #endif // RPAGVM_H

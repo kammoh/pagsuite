@@ -10,7 +10,7 @@
 #define RPAGTVM_H
 
 #include "rpagvm.h"
-
+namespace rpag {
 class rpagtvm : public rpagvm
 {
 public:
@@ -25,5 +25,5 @@ public:
   vec_t get_best_single_predecessor(const vec_set_t &working_set, const vec_set_t &predecessor_set, int s);
   void get_best_multi_predecessor(const vec_set_t &working_set, vec_set_t *best_multi_predecessor_set, int s);
 };
-
+}
 #endif // RPAGTVM_H

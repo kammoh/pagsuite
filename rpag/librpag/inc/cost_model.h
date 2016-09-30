@@ -22,7 +22,7 @@
 #include "compute_successor_set.h"
 #include "norm.h"
 #include "rpag_functions.h"
-
+namespace rpag {
 typedef enum {LL_FPGA,HL_FPGA,LL_ASIC,HL_ASIC,MIN_AD_FPGA,HL_FPGA_OLD,LL_FPGA_OLD,MIN_GPC} cost_model_t;
 
 class cost_model_pointer // the class is neccesary to implement a tmeplate indipendent pointer in the rpag_pointer class.
@@ -583,5 +583,7 @@ double cost_model_LL_old<T_ELEM, T_CLASS>::cost_pag(vector<set<T_ELEM> > *pipeli
 }
 //##### cost_model_Low_Level_old
 //######################################################################
+
+}
 
 #endif //COST_MODEL_H
