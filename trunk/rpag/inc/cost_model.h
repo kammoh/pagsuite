@@ -23,7 +23,7 @@
 #include "norm.h"
 #include "rpag_functions.h"
 
-typedef enum {LL_FPGA,HL_FPGA,LL_ASIC,HL_ASIC,MIN_AD_FPGA,HL_FPGA_OLD,LL_FPGA_OLD,MIN_GPC} cost_model_t;
+typedef enum {LL_FPGA,HL_FPGA,LL_ASIC,HL_ASIC,HL_MIN_AD,LL_MIN_AD,HL_FPGA_OLD,LL_FPGA_OLD,MIN_GPC} cost_model_t;
 
 class cost_model_pointer // the class is neccesary to implement a tmeplate indipendent pointer in the rpag_pointer class.
 {
@@ -252,12 +252,12 @@ double cost_model_LL<T_ELEM, T_CLASS>::cost_pag(vector<set<T_ELEM> > *pipeline_s
 //######################################################################
 
 //######################################################################
-//##### cost_model_min_add
+//##### cost_model_ll_min_add
 template<class T_ELEM, class T_CLASS>
-class cost_model_min_ad : public cost_model_base<T_ELEM>
+class cost_model_hl_min_ad : public cost_model_base<T_ELEM>
 {
   public:
-  cost_model_min_ad (T_CLASS *rpag_p_in);
+  cost_model_hl_min_ad (T_CLASS *rpag_p_in);
   double cost_reg(T_ELEM w, int c_max = 1);
   double cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max = 1);
   double cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3);
@@ -267,7 +267,7 @@ class cost_model_min_ad : public cost_model_base<T_ELEM>
 };
 
 template<class T_ELEM, class T_CLASS>
-cost_model_min_ad<T_ELEM, T_CLASS>::cost_model_min_ad (T_CLASS *rpag_p_in)
+cost_model_hl_min_ad<T_ELEM, T_CLASS>::cost_model_hl_min_ad (T_CLASS *rpag_p_in)
 {
   rpag_p = rpag_p_in;
   this->cost_FA = rpag_p->cost_FA;
@@ -275,7 +275,7 @@ cost_model_min_ad<T_ELEM, T_CLASS>::cost_model_min_ad (T_CLASS *rpag_p_in)
 }
 
 template<class T_ELEM, class T_CLASS>
-double cost_model_min_ad<T_ELEM, T_CLASS>::cost_reg(T_ELEM w, int c_max)
+double cost_model_hl_min_ad<T_ELEM, T_CLASS>::cost_reg(T_ELEM w, int c_max)
 {
   UNUSED(w);
   UNUSED(c_max);
@@ -283,7 +283,7 @@ double cost_model_min_ad<T_ELEM, T_CLASS>::cost_reg(T_ELEM w, int c_max)
 }
 
 template<class T_ELEM, class T_CLASS>
-double cost_model_min_ad<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max)
+double cost_model_hl_min_ad<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max)
 {
   UNUSED(w);
   UNUSED(p1);
@@ -293,7 +293,7 @@ double cost_model_min_ad<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM 
 }
 
 template<class T_ELEM, class T_CLASS>
-double cost_model_min_ad<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
+double cost_model_hl_min_ad<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
 {
   UNUSED(w);
   UNUSED(p1);
@@ -303,7 +303,7 @@ double cost_model_min_ad<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1,
 }
 
 template<class T_ELEM, class T_CLASS>
-double cost_model_min_ad<T_ELEM, T_CLASS>::cost_pag(vector<set<T_ELEM> > *pipeline_set)
+double cost_model_hl_min_ad<T_ELEM, T_CLASS>::cost_pag(vector<set<T_ELEM> > *pipeline_set)
 {
   int no_of_adders = 0;
   typename set<T_ELEM>::iterator set_iter;
@@ -330,7 +330,138 @@ double cost_model_min_ad<T_ELEM, T_CLASS>::cost_pag(vector<set<T_ELEM> > *pipeli
   }
   return no_of_adders;
 }
-//##### cost_model_min_add
+//##### cost_model_hl_min_add
+//######################################################################
+
+//######################################################################
+//##### cost_model_ll_min_add
+template<class T_ELEM, class T_CLASS>
+class cost_model_ll_min_ad : public cost_model_base<T_ELEM>
+{
+  public:
+  cost_model_ll_min_ad (T_CLASS *rpag_p_in);
+  double cost_reg(T_ELEM w, int c_max = 1);
+  double cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max = 1);
+  double cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3);
+  double cost_pag(vector<set<T_ELEM> > *pipeline_set);
+  T_CLASS *rpag_p;
+  int current_stage;
+};
+
+template<class T_ELEM, class T_CLASS>
+cost_model_ll_min_ad<T_ELEM, T_CLASS>::cost_model_ll_min_ad (T_CLASS *rpag_p_in)
+{
+  rpag_p = rpag_p_in;
+  this->cost_FA = rpag_p->cost_FA;
+  this->cost_FF = rpag_p->cost_FF;
+}
+
+template<class T_ELEM, class T_CLASS>
+double cost_model_ll_min_ad<T_ELEM, T_CLASS>::cost_reg(T_ELEM w, int c_max)
+{
+  UNUSED(w);
+  UNUSED(c_max);
+  return 0;
+}
+
+template<class T_ELEM, class T_CLASS>
+double cost_model_ll_min_ad<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max)
+{
+    UNUSED(c_max);
+
+    //register or adder with single predecessor:
+    int predecessor_word_size = compute_word_size(p1 , rpag_p->input_wordsize);
+    float cost_predecessor;
+
+    //determine predecessor cost:
+    if(rpag_p->adder_depth(p1) < this->p_state-1)
+    {
+      //predecessor u can be potentially realized as register
+      cost_predecessor = predecessor_word_size * this->cost_FF;
+    }
+    else
+    {
+      //predecessor u must be realized as adder
+      cost_predecessor = predecessor_word_size * this->cost_FA;
+    }
+
+    if(no_of_predecessors_used == 2)
+    {
+      //adder with two predecessors:
+      //determine cost of 2nd predecessor:
+      predecessor_word_size = compute_word_size(p2 , rpag_p->input_wordsize);
+      if(rpag_p->adder_depth(p2) < this->p_state-1)
+      {
+        //predecessor u can be potentially realized as register
+        cost_predecessor += predecessor_word_size * this->cost_FF;
+      }
+      else
+      {
+        //predecessor u must be realized as adder
+        cost_predecessor += predecessor_word_size * this->cost_FA;
+      }
+    }
+    //determine working set element cost:
+    float cost_working_set_element;
+    int working_set_element_word_size = compute_word_size(w , rpag_p->input_wordsize);
+
+    if(no_of_predecessors_used == 0)
+    {
+      //register:
+      cost_working_set_element = working_set_element_word_size*this->cost_FF;
+    }
+    else
+    {
+      //adder:
+      cost_working_set_element = working_set_element_word_size*this->cost_FA;
+    }
+
+    return cost_predecessor/cost_working_set_element;
+}
+
+template<class T_ELEM, class T_CLASS>
+double cost_model_ll_min_ad<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
+{
+  UNUSED(w);
+  UNUSED(p1);
+  UNUSED(p2);
+  UNUSED(p3);
+  return compute_word_size(w, rpag_p->input_wordsize);
+}
+
+template<class T_ELEM, class T_CLASS>
+double cost_model_ll_min_ad<T_ELEM, T_CLASS>::cost_pag(vector<set<T_ELEM> > *pipeline_set)
+{
+  int no_of_adders = 0;
+  typename set<T_ELEM>::iterator set_iter;
+
+
+  double cost = 0.0;
+
+  for(unsigned int s = 0; s < pipeline_set->size(); ++s)
+  {
+    for(set_iter = (*pipeline_set)[s].begin(); set_iter != (*pipeline_set)[s].end(); ++set_iter)
+    {
+      if(s == 0)
+      {
+        if(nonzeros(*set_iter) != 1)
+          cost += (double) compute_word_size(*set_iter, rpag_p->input_wordsize);
+      }
+      else
+      {
+        //seach element in previous stage
+        if((*pipeline_set)[s-1].find(*set_iter) == (*pipeline_set)[s-1].end())
+        {
+          //element not found -> count as adder
+          cost += (double) compute_word_size(*set_iter, rpag_p->input_wordsize);
+        }
+      }
+    }
+  }
+  return cost;
+;
+}
+//##### cost_model_ll_min_add
 //######################################################################
 
 //######################################################################
