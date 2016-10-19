@@ -593,7 +593,7 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
   }
 #endif
 
-  if((cost_model == MIN_AD_FPGA) || (cost_model == MIN_GPC))
+  if((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC))
   {
     int min_adder_depth=0;
     for(set_iter = target_fun_set->begin(); set_iter != target_fun_set->end(); ++set_iter)

@@ -42,7 +42,8 @@ int print_short_help()
   cout << "                                               hl_fpga: high level cost model for FPGAs, the cost of each adder and register are equal to one" << endl;
   cout << "                                               ll_fpga: low level cost model for FPGAs, the cost of each adder and register are equal to its word size (input word size + coeff. word size)" << endl;
   cout << "                                               hl_asic: high level cost model for ASICs,the cost of adder is twice than of a register (c_a=2, c_r=1)" << endl;
-  cout << "                                               min_ad_fpga: each target is scheduled according to its minimal adder depth; the cost of each adder is one, the cost of a register is zero" << endl;
+  cout << "                                               hl_min_ad: high level cost model where each target is computed with its minimal adder depth; the cost of each adder is one, the cost of a register is zero" << endl;
+  cout << "                                               ll_min_ad: low level cost model where each target is computed with its minimal adder depth; the cost of each adder is equal to its word size (input word size + coeff. word size), the cost of a register is zero" << endl;
   cout << "                                               min_gpc: " << endl;
   cout << "                                               Example: --cost_model=hl_asic" << endl;
   //features not implemented:
@@ -138,14 +139,14 @@ void set_cost_model(cost_model_t cost_model, rpag_pointer *rpagp)
   switch(cost_model)
   {
   case HL_FPGA:
-    IF_VERBOSE(2) cout << "using hl_fpga cost model" << endl;
+    IF_VERBOSE(2) cout << "using high level cost model for FPGA" << endl;
     rpagp->set_cost_FF(COST_FF_DEFAULT_FPGA);
     rpagp->set_cost_FA(COST_FA_DEFAULT_FPGA);
     rpagp->cost_pointer = new cost_model_HL<T, rpag_base<T> >( (rpag_base<T>*)rpagp );
     break;
 
   case LL_FPGA:
-    IF_VERBOSE(2) cout << "using ll_fpga cost model" << endl;
+    IF_VERBOSE(2) cout << "using low level cost model for FPGA" << endl;
     rpagp->set_cost_FF(COST_FF_DEFAULT_FPGA);
     rpagp->set_cost_FA(COST_FA_DEFAULT_FPGA);
     rpagp->cost_pointer= new cost_model_LL<T, rpag_base<T> >( (rpag_base<T>*)rpagp );
@@ -165,17 +166,24 @@ void set_cost_model(cost_model_t cost_model, rpag_pointer *rpagp)
     break;
 
   case HL_ASIC:
-    IF_VERBOSE(2) cout << "using hl_asic cost model" << endl;
+    IF_VERBOSE(2) cout << "using high level cost model for ASIC" << endl;
     rpagp->set_cost_FF(COST_FF_DEFAULT_ASIC);
     rpagp->set_cost_FA(COST_FA_DEFAULT_ASIC);
     rpagp->cost_pointer= new cost_model_HL<T, rpag_base<T> >( (rpag_base<T>*)rpagp );
     break;
 
-  case MIN_AD_FPGA:
-    IF_VERBOSE(2) cout << "using cost model for minimal adder depth" << endl;
+  case HL_MIN_AD:
+    IF_VERBOSE(2) cout << "using high level cost model for minimal adder depth" << endl;
     rpagp->set_cost_FF(0.001); //!!??!!
-    rpagp->set_cost_FA(COST_FA_DEFAULT_FPGA);
-    rpagp->cost_pointer= new cost_model_min_ad<T, rpag_base<T> >( (rpag_base<T>*)rpagp );
+    rpagp->set_cost_FA(1);
+    rpagp->cost_pointer= new cost_model_hl_min_ad<T, rpag_base<T> >( (rpag_base<T>*)rpagp );
+    break;
+
+  case LL_MIN_AD:
+    IF_VERBOSE(2) cout << "using high level cost model for minimal adder depth" << endl;
+    rpagp->set_cost_FF(0.001); //!!??!!
+    rpagp->set_cost_FA(1);
+    rpagp->cost_pointer= new cost_model_ll_min_ad<T, rpag_base<T> >( (rpag_base<T>*)rpagp );
     break;
 
   case HL_FPGA_OLD:
@@ -274,9 +282,13 @@ int main(int argc, char *argv[])
         {
           cost_model = LL_ASIC;
         }
-        else if(!strcmp(argv[i]+13,"min_ad_fpga"))
+        else if(!strcmp(argv[i]+13,"hl_min_ad"))
         {
-          cost_model = MIN_AD_FPGA;
+          cost_model = HL_MIN_AD;
+        }
+        else if(!strcmp(argv[i]+13,"ll_min_ad"))
+        {
+          cost_model = LL_MIN_AD;
         }
         else if(!strcmp(argv[i]+13,"min_gpc"))
         {
