@@ -1,4 +1,3 @@
-cmake_minimum_required(VERSION 2.8)
 project(paglib_copa)
 
 SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../.. )
@@ -47,9 +46,9 @@ IF ( NOT STATIC_ONLY )
 		VERSION ${PAGLIB_VERSION}
 	)
 	INSTALL(TARGETS pag_lib
-	  RUNTIME DESTINATION paglib/lib
-	  LIBRARY DESTINATION paglib/lib
-	  ARCHIVE DESTINATION paglib/lib
+	  RUNTIME DESTINATION bin
+	  LIBRARY DESTINATION lib
+	  ARCHIVE DESTINATION lib
 	)
 ENDIF ( NOT STATIC_ONLY )
 
@@ -59,11 +58,11 @@ target_link_libraries( pag_lib_static ${COPA_STATIC} )
 target_include_directories(pag_lib_static PUBLIC inc)
 
 INSTALL(FILES ${HEADERS_EXPORT}
-    DESTINATION paglib/include
+    DESTINATION include/pag_lib
 )
 
 INSTALL(TARGETS pag_lib_static
-  RUNTIME DESTINATION paglib/lib
-  LIBRARY DESTINATION paglib/lib
-  ARCHIVE DESTINATION paglib/lib
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
 )

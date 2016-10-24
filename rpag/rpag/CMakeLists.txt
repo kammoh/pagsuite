@@ -1,5 +1,4 @@
 PROJECT( rpag_exe CXX )
-cmake_minimum_required(VERSION 2.4)
 
 SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../.. )
 SET( STATIC_ONLY 1 )
