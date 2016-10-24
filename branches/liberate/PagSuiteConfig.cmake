@@ -1,5 +1,11 @@
 macro( configure )
 	IF( NOT PAGSUITE_CONFIGURED )
+		cmake_minimum_required(VERSION 2.6)
+		if(COMMAND cmake_policy)
+			cmake_policy(SET CMP0005 NEW)
+			cmake_policy(SET CMP0003 NEW)
+		endif(COMMAND cmake_policy)
+
 		if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 		    SET( BITNESS 64 )
 		else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
@@ -23,7 +29,7 @@ macro( configure )
 
 		SET( SYSTEM_NAME ${SYSTEM_PREFIX}${BITNESS} )
 		message( "Building for " ${SYSTEM_NAME} )
-		SET(PAGSUITE_CONFIGURED true)
+		SET(PAGSUITE_CONFIGURED true CACHE INTERNAL "pagsuite_conf")
 
 		set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 		set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -40,29 +46,29 @@ macro( configure )
 endmacro( configure )
 
 macro( include_copa PAGSUITE_ROOT_DIR )
-	IF( NOT TARGET copa_static )
-		IF( EXISTS ${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME} )
-			find_library( COPA
-				NAMES copa libcopa
-				PATHS "${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME}"
-				REQUIRED
-				)
-			include_directories( ${PAGSUITE_ROOT_DIR}/libs/copa/include )
+	IF( NOT COPA_FOUND )
+		find_library( COPA
+			NAMES copa libcopa.so
+			REQUIRED
+			)
+		
+		find_library( COPA_STATIC
+			NAMES libcopa.a
+			REQUIRED
+			)
 
-			find_library( COPA_STATIC
-				NAMES libcopa.a
-				PATHS "${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME}"
-				REQUIRED
-				)
-			IF ( NOT COPA )
-				Message( "Copa not found." )
-			ENDIF ( NOT COPA )
+		find_path( COPA_INCLUDE_DIRS NAMES copa/copa.h )
+		include_directories( ${COPA_INCLUDE_DIRS} )
+		IF ( NOT COPA )
+			Message( FATAL_ERROR "Copa not found." )
+		ELSE ( NOT COPA )
+			Message( "Copa found at: ${COPA}")
+			Message( "Copa static found at: ${COPA_STATIC}")
+			Message( "Copa inc path found at: ${COPA_INCLUDE_DIRS}")
+		ENDIF ( NOT COPA )
 
-		ELSE( EXISTS ${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME} )
-			message( FATAL_ERROR "There is no copa binary for your system." )
-		ENDIF( EXISTS ${PAGSUITE_ROOT_DIR}/libs/copa/lib/${SYSTEM_NAME} )
-		SET(COPA_INCLUDED true)
-	ENDIF( NOT TARGET copa_static )
+		SET(COPA_FOUND true CACHE INTERNAL "copa_found")
+	ENDIF( NOT COPA_FOUND )
 endmacro( include_copa )
 
 macro( include_paglib PAGSUITE_ROOT_DIR )

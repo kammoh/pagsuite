@@ -1,5 +1,5 @@
 #include "paglib_copa.h"
-#include "copa.h"
+#include "copa/copa.h"
 #include "paglib_scopes.h"
 
 using namespace CoPa_clabana;

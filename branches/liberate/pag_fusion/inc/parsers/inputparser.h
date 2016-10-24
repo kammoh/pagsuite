@@ -3,7 +3,7 @@
 
 #include <string>
 #include "mt_types.h"
-#include "copa_scope.h"
+#include "copa/copa_scope.h"
 
 class InputParser
 {

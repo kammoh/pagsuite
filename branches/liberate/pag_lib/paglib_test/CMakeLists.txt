@@ -5,6 +5,7 @@ SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../.. )
 
 include(${PAGSUITE_ROOT_DIR}/PagSuiteConfig.cmake)
 configure()
+include_copa( ${PAGSUITE_ROOT_DIR} )
 include_paglib( ${PAGSUITE_ROOT_DIR} )
 
 SET(SRC_FILES 
@@ -12,7 +13,7 @@ SET(SRC_FILES
 )
 
 add_executable( paglib_test ${SRC_FILES} )
-target_link_libraries ( paglib_test pag_lib copa )
+target_link_libraries ( paglib_test pag_lib_static ${COPA_STATIC} )
 set_target_properties(paglib_test PROPERTIES LINKER_LANGUAGE CXX)
 
 INSTALL(TARGETS paglib_test

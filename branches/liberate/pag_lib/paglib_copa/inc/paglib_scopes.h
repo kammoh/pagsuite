@@ -7,7 +7,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include <set>
-#include "copa.h"
+#include "copa/copa.h"
 #include "adder_graph.h"
 
 using namespace std;

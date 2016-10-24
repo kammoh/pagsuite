@@ -1,5 +1,5 @@
 #include "parsers/inputparser.h"
-#include "copa.h"
+#include "copa/copa.h"
 #include <fstream>
 
 using namespace CoPa_clabana;
