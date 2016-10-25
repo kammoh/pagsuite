@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 2.8)
 PROJECT( pag_fusion CXX )
 
 SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. )
@@ -16,9 +17,9 @@ ADD_EXECUTABLE( pag_fusion ${SOURCES} ${HEADERS})
 set_target_properties( pag_fusion PROPERTIES LINKER_LANGUAGE CXX)
 
 TARGET_LINK_LIBRARIES( pag_fusion pag_lib_static ${COPA_STATIC} )
-IF( ${SYSTEM_PREFIX} STREQUAL "lin" )
+IF( SYSTEM_PREFIX STREQUAL "lin" )
 	TARGET_LINK_LIBRARIES( pag_fusion rt )
-ENDIF()
+ENDIF( SYSTEM_PREFIX STREQUAL "lin" )
 
 INSTALL(TARGETS pag_fusion
   RUNTIME DESTINATION bin
