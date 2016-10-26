@@ -61,20 +61,20 @@ macro( include_copa PAGSUITE_ROOT_DIR )
 
 			find_path( COPA_INCLUDE_DIRS NAMES copa/copa.h )
 			include_directories( ${COPA_INCLUDE_DIRS} )
-		ELSE( COPA_DIR STREQUAL "none" )
+		ELSE( COPA_DIR STREQUAL "none" )		
 			find_library( COPA
 				NAMES copa libcopa.so
-				HINTS ${COPA_DIR}
+				HINTS ${COPA_DIR}/lib
 				REQUIRED
 				)
 		
 			find_library( COPA_STATIC
 				NAMES libcopa.a
-				HINTS ${COPA_DIR}
+				HINTS ${COPA_DIR}/lib
 				REQUIRED
 				)
 
-			find_path( COPA_INCLUDE_DIRS NAMES copa.h HINTS ${COPA_DIR} )
+			find_path( COPA_INCLUDE_DIRS NAMES copa/copa.h HINTS ${COPA_DIR}/lib )
 			include_directories( ${COPA_INCLUDE_DIRS} )
 		ENDIF( COPA_DIR STREQUAL "none" )
 
