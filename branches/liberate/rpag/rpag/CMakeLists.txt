@@ -19,7 +19,7 @@ FILE( GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/inc/*.h)
 ADD_EXECUTABLE( rpag_exe ${SOURCES} ${HEADERS})
 set_target_properties( rpag_exe PROPERTIES OUTPUT_NAME rpag)
 set_target_properties( rpag_exe PROPERTIES LINKER_LANGUAGE CXX)
-IF( ${SYSTEM_PREFIX} STREQUAL "lin" )
+IF( SYSTEM_PREFIX STREQUAL "lin" )
 	TARGET_LINK_LIBRARIES( rpag_exe rt )
 ENDIF()
 

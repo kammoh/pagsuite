@@ -1,6 +1,7 @@
 macro( configure )
 	IF( NOT PAGSUITE_CONFIGURED )
 		cmake_minimum_required(VERSION 2.6)
+		SET(COPA_DIR "none" CACHE STRING "Some user-specified option")
 		if(COMMAND cmake_policy)
 			cmake_policy(SET CMP0005 NEW)
 			cmake_policy(SET CMP0003 NEW)
@@ -47,18 +48,36 @@ endmacro( configure )
 
 macro( include_copa PAGSUITE_ROOT_DIR )
 	IF( NOT COPA_FOUND )
-		find_library( COPA
-			NAMES copa libcopa.so
-			REQUIRED
-			)
+		IF( COPA_DIR STREQUAL "none" )
+			find_library( COPA
+				NAMES copa libcopa.so
+				REQUIRED
+				)
 		
-		find_library( COPA_STATIC
-			NAMES libcopa.a
-			REQUIRED
-			)
+			find_library( COPA_STATIC
+				NAMES libcopa.a
+				REQUIRED
+				)
 
-		find_path( COPA_INCLUDE_DIRS NAMES copa/copa.h )
-		include_directories( ${COPA_INCLUDE_DIRS} )
+			find_path( COPA_INCLUDE_DIRS NAMES copa/copa.h )
+			include_directories( ${COPA_INCLUDE_DIRS} )
+		ELSE( COPA_DIR STREQUAL "none" )
+			find_library( COPA
+				NAMES copa libcopa.so
+				HINTS ${COPA_DIR}
+				REQUIRED
+				)
+		
+			find_library( COPA_STATIC
+				NAMES libcopa.a
+				HINTS ${COPA_DIR}
+				REQUIRED
+				)
+
+			find_path( COPA_INCLUDE_DIRS NAMES copa.h HINTS ${COPA_DIR} )
+			include_directories( ${COPA_INCLUDE_DIRS} )
+		ENDIF( COPA_DIR STREQUAL "none" )
+
 		IF ( NOT COPA )
 			Message( FATAL_ERROR "Copa not found." )
 		ELSE ( NOT COPA )

@@ -23,4 +23,5 @@ public:
   set<int> conf;
 };
 }
+
 #endif //CONFIGURABLE_H
