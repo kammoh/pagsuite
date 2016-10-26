@@ -87,6 +87,8 @@ macro( include_copa PAGSUITE_ROOT_DIR )
 		ENDIF ( NOT COPA )
 
 		SET(COPA_FOUND true CACHE INTERNAL "copa_found")
+	ELSE( NOT COPA_FOUND )
+		include_directories( ${COPA_INCLUDE_DIRS} )
 	ENDIF( NOT COPA_FOUND )
 endmacro( include_copa )
 
