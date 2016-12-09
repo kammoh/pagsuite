@@ -184,6 +184,11 @@ void set_cost_model(cost_model_t cost_model, rpag_pointer *rpagp)
     rpagp->set_cost_FF(0.001); //!!??!!
     rpagp->set_cost_FA(1);
     rpagp->cost_pointer= new cost_model_ll_min_ad<T, rpag_base<T> >( (rpag_base<T>*)rpagp );
+    if(rpagp->input_wordsize < 0)
+    {
+      cerr << "Error: input word size necessary for ll_min_ad cost model (parameter: --input_wordsize)" << endl;
+      exit(-1);
+    }
     break;
 
   case HL_FPGA_OLD:
