@@ -635,7 +635,7 @@ bool getExponents(realization_row<T>& row, int_t c_max, bool ternary_sign_filter
 }
 
 template <class T>
-void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realization_row<T> > *pipelined_adder_graph, bool is_this_a_two_input_system, int_t c_max, bool ternarry_sign_filter=false)
+void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realization_row<T> > &pipelined_adder_graph, bool is_this_a_two_input_system, int_t c_max, bool ternarry_sign_filter=false)
 {
   bool ternary_adders = !is_this_a_two_input_system; //the funktion ask for a two input system. And this funktion works with a ternary adder flag... so it has to be inverted
 
@@ -751,7 +751,7 @@ void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realizati
           row.C       = c;
           row.stageC  = s-1;
           row.eC      = eC;
-          pipelined_adder_graph->push_back(row);
+          pipelined_adder_graph.push_back(row);
 
         }
         else
@@ -776,7 +776,7 @@ void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realizati
           row.B       = b;
           row.stageB  = s-1;
           row.eB      = eB;
-          pipelined_adder_graph->push_back(row);
+          pipelined_adder_graph.push_back(row);
         }
       }
       else
@@ -804,36 +804,142 @@ void validate_adder_graph(list< realization_row<T> >& adder_graph)
 }
 
 template <class T>
-void append_targets_to_adder_graph(list< realization_row<T> > *pipelined_adder_graph, set<T> *target_set)
+void append_targets_to_adder_graph(vector< set<T> > &pipeline_set, list< realization_row<T> > &pipelined_adder_graph, set<T> &target_set)
 {
   //determine no. of stages:
   int no_of_pipeline_stages=0;
   typename list< realization_row<T> >::iterator iter;
-  for(iter = pipelined_adder_graph->begin(); iter != pipelined_adder_graph->end(); ++iter)
+  for(iter = pipelined_adder_graph.begin(); iter != pipelined_adder_graph.end(); ++iter)
   {
     if(no_of_pipeline_stages < (*iter).stageW)
       no_of_pipeline_stages = (*iter).stageW;
   }
 
   //append output coefficients:
-  for(typename set<T>::iterator t_iter = target_set->begin(); t_iter != target_set->end(); ++t_iter)
+  for(typename set<T>::iterator t_iter = target_set.begin(); t_iter != target_set.end(); ++t_iter)
   {
-    T t = *t_iter;
+    T w = *t_iter;
 
     int shift;
     T t_fun;
-    t_fun = fundamental_count(t, shift);
+    t_fun = fundamental_count(w, shift);
+
+    bool wFound=false;
+    for(unsigned s=0; s <= no_of_pipeline_stages; s++)
+    {
+        if(pipeline_set[s].find(w) != pipeline_set[s].end())
+        {
+            wFound=true;
+        }
+        else
+        {
+            if(wFound)
+            {
+                //w was computed before and has to be repeaded now until the output
+                realization_row<T> row;
+                row.W       = w;
+                row.stageW  = s;
+                row.A       = t_fun;
+                row.stageA  = s-1;
+                row.eA      = shift;
+
+                IF_VERBOSE(4) cout << "adding target: " << row.to_ss_matlab() << endl;
+                pipelined_adder_graph.push_back(row);
+            }
+        }
+    }
 
     realization_row<T> row;
-    row.W       = t;
+    row.W       = w;
     row.stageW  = no_of_pipeline_stages;
     row.A       = t_fun;
     row.stageA  = no_of_pipeline_stages;
     row.eA      = shift;
 
-    pipelined_adder_graph->push_back(row);
+    IF_VERBOSE(4) cout << "adding target: " << row.to_ss_matlab() << endl;
+    pipelined_adder_graph.push_back(row);
 
   }
+}
+
+template <class T>
+void remove_redundant_inputs_from_adder_graph(list< realization_row<T> > &pipelined_adder_graph, vector< set<T> > &pipeline_set_best)
+{
+    //prepare a set of all bases (input vectors):
+    set<T> base_set;
+    for(unsigned int i=0; i < vec_t::default_elem_count; ++i)
+    {
+        T base;//in CMM case, this is a Vector of Dimension 1 filled with zeros
+        base = 0;// it is not possible to set the elements before they are created.
+        make_one_by(base,i);
+        base_set.insert(base);
+    }
+
+    vector<set<T> > required_base_nodes;
+    required_base_nodes.resize(pipeline_set_best.size());
+
+    typename list< realization_row<T> >::iterator it;
+    for(it = pipelined_adder_graph.begin(); it != pipelined_adder_graph.end(); ++it)
+    {
+        realization_row<T> & row = *it;
+        IF_VERBOSE(4) cout << "processing row: " << row.to_ss_matlab() << endl;
+
+        //check whether element is an input or not:
+        if(base_set.find(row.W) == base_set.end())
+        {
+            IF_VERBOSE(5) cout << "  row is not an input" << endl;
+            if(row.stageA > 0)
+            {
+                if(base_set.find(row.A) != base_set.end())
+                {
+                    IF_VERBOSE(5) cout << "    input " << row.A << " is required in stage " << row.stageA << endl;
+                    for(unsigned s=row.stageA; s > 0; s--)
+                        required_base_nodes[s].insert(row.A);
+                }
+                if(row.B > 0)
+                {
+                    if(base_set.find(row.B) != base_set.end())
+                    {
+                        IF_VERBOSE(5) cout << "    input " << row.B << " is required in stage " << row.stageB << endl;
+                        for(unsigned s=row.stageB; s > 0; s--)
+                            required_base_nodes[s].insert(row.B);
+                    }
+                }
+                if(row.C > 0)
+                {
+                    if(base_set.find(row.C) != base_set.end())
+                    {
+                        IF_VERBOSE(5) cout << "    input " << row.C << " is required in stage " << row.stageC << endl;
+                        for(unsigned s=row.stageC; s > 0; s--)
+                            required_base_nodes[s].insert(row.C);
+                    }
+                }
+            }
+        }
+    }
+
+    //now, filter out all nodes that are not in required_base_nodes
+    for(it = pipelined_adder_graph.begin(); it != pipelined_adder_graph.end();)
+    {
+        realization_row<T> & row = *it;
+        IF_VERBOSE(6) cout << "processing row: " << row.to_ss_matlab() << endl;
+        if(base_set.find(row.W) != base_set.end())
+        {
+            IF_VERBOSE(5) cout << "  row is an input" << endl;
+            if(required_base_nodes[row.stageW].find(row.W) == required_base_nodes[row.stageW].end())
+            {
+                IF_VERBOSE(4) cout << "  row " << row.to_ss_matlab() << " is not required and will be removed from adder graph" << endl;
+                typename set<T>::iterator it2 = pipeline_set_best[row.stageW].find(row.W);
+                if(it2 != pipeline_set_best[row.stageW].end())
+                {
+                    pipeline_set_best[row.stageW].erase(it2);
+                }
+                pipelined_adder_graph.erase(it++);
+                continue;
+            }
+        }
+        ++it;
+    }
 }
 
 template <class T>

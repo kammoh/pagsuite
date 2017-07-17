@@ -593,6 +593,7 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
   }
 #endif
 
+  //for non-pipelined cost models, add input node(s) at every stage:
   if((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC))
   {
     int min_adder_depth=0;
@@ -610,8 +611,8 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
     {
         for(unsigned int i=0; i < vec_t::default_elem_count; ++i)
         {
-            T base;//in CMM Case this is a Vector of Dimension 1 fild with zeros
-            base = 0;// it is not possible to set the elemts bevor they are created.
+            T base;//in CMM case, this is a Vector of Dimension 1 filled with zeros
+            base = 0;// it is not possible to set the elements before they are created.
             make_one_by(base,i);
             (*pipeline_set)[s].insert(base);
         }
@@ -1077,19 +1078,25 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
         no_of_registered_ops += pipeline_set_best[s].size();
       }
 
-      IF_VERBOSE(0) output_stream << "pipeline_set_best=" << pipeline_set_best << endl;
+      //compute adder graph:
+    stringstream pag;
+    list< realization_row<T> > pipelined_adder_graph;
+    pipeline_set_to_adder_graph(pipeline_set_best, pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);
+    append_targets_to_adder_graph(pipeline_set_best, pipelined_adder_graph, *target_set);
 
-      if(show_adder_graph)
-      {
-        stringstream pag;
-        list< realization_row<T> > pipelined_adder_graph;
-        pipeline_set_to_adder_graph(pipeline_set_best, &pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);
-        append_targets_to_adder_graph(&pipelined_adder_graph, target_set);
 
+    //for non-pipelined cost models, remove unused input nodes:
+    if((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC))
+    {
+        remove_redundant_inputs_from_adder_graph(pipelined_adder_graph, pipeline_set_best);
+    }
+
+    IF_VERBOSE(0) output_stream << "pipeline_set_best=" << pipeline_set_best << endl;
+    if(show_adder_graph)
+    {
         pag << "pipelined_adder_graph=" << output_adder_graph(pipelined_adder_graph,file_output) << endl;
         IF_VERBOSE(0) output_stream << pag.str();// the endl is inluded in the pag string
-      }
-
+    }
       IF_VERBOSE(0) output_stream << "pag_cost=" << pag_cost_best << endl;
       IF_VERBOSE(1) output_stream << "no_of_pipeline_stages=" << pipeline_set_best.size()-1 << std::endl;
       IF_VERBOSE(1) output_stream << "no_of_registered_ops=" << no_of_registered_ops << std::endl;

@@ -100,7 +100,7 @@ int print_short_help()
   cout << "Examples:" << endl;
   cout << "rpag 123 321                                   Finds the pipelined adder graph nodes for output coefficients 123 and 321" << endl;
   cout << endl;
-  cout << "rpag --cost_model=min_ad_hl_fpga 123 321       Finds the adder graph nodes with minimal adder depth for output coefficients 123 and 321" << endl;
+  cout << "rpag --cost_model=hl_min_ad 123 321            Finds the adder graph nodes with minimal adder depth for output coefficients 123 and 321" << endl;
   cout << endl;
   cout << "rpag --ternary_adders 11280171 13342037        As above, but by using ternary adders" << endl;
   cout << endl;
