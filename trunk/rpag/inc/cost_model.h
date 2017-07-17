@@ -521,7 +521,7 @@ double cost_model_min_gpc<T_ELEM, T_CLASS>::cost_pag(vector<set<T_ELEM> > *pipel
   double gpcTotal=0;
 
   typename std::list<realization_row<T_ELEM> > pipelined_adder_graph;
-  pipeline_set_to_adder_graph(*pipeline_set, &pipelined_adder_graph,rpag_p->is_this_a_two_input_system(),rpag_p->get_c_max(),rpag_p->ternary_sign_filter);;
+  pipeline_set_to_adder_graph(*pipeline_set, pipelined_adder_graph,rpag_p->is_this_a_two_input_system(),rpag_p->get_c_max(),rpag_p->ternary_sign_filter);;
 
   map<T_ELEM, int> gpcMap;
   for(unsigned int i=0; i < vec_t::default_elem_count; ++i)
