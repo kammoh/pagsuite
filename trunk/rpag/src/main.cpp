@@ -488,7 +488,7 @@ int main(int argc, char *argv[])
     cout << "    optimize for ternary adders=" << ternary_adders << endl;
 
     cout << "    matlab output=" << rpagp->matlab_output << endl;
-    cout << "    matlab out adress sting=" << rpagp->matlab_out_address_string << endl;
+    cout << "    matlab out adress string=" << rpagp->matlab_out_address_string << endl;
   }
 
   //select cost model:

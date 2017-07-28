@@ -17,6 +17,9 @@ function write_pipelined_realization_graph_dot(filename, pipelined_realization, 
     end
   end
 
+  if length(pipelined_realization)==0
+    return
+  end
   %write root (input) node(s):
   first_factor=pipelined_realization{1}(1);
   vec_size = size(first_factor{1},2);

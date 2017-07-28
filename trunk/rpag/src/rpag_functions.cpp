@@ -237,14 +237,25 @@ int compute_k_max(vec_t &r1, vec_t &r2, vec_t r3, int_t &c_max)
   }
 }
 
-void make_one_by(vec_t &var, unsigned int i)
+void create_unit_element(vec_t &var, unsigned int i)
 {
 var[i] = 1;
 }
-void make_one_by(int_t &var, unsigned int i)
+void create_unit_element(int_t &var, unsigned int i)
 {
 UNUSED(i);
 var = 1;
+}
+
+
+void create_null_element(vec_t &var)
+{
+  for(unsigned i=0; i < var.size(); i++)
+    var[i] = 0;
+}
+void create_null_element(int_t &var)
+{
+  var = 0;
 }
 
 bool just_one_negative_sign(bool a, bool b, bool c)

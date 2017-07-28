@@ -613,7 +613,7 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
         {
             T base;//in CMM case, this is a Vector of Dimension 1 filled with zeros
             base = 0;// it is not possible to set the elements before they are created.
-            make_one_by(base,i);
+            create_unit_element(base,i);
             (*pipeline_set)[s].insert(base);
         }
     }
@@ -991,104 +991,108 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
     vec_t dummi;// it is nessesary to have an object to switch the seperate symbol
     dummi.set_stream_seperate_symbol(',');// the output has a "special" or different syntax
   }
-  stringstream output_stream; // to be able to stram the output in file and display
+  stringstream output_stream; // to be able to stream the output in file and display
 
-    if(benchmark || matlab_output)
+  //compute adder graph:
+  stringstream pag;
+  list< realization_row<T> > pipelined_adder_graph;
+  pipeline_set_to_adder_graph(pipeline_set_best, pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);
+  append_targets_to_adder_graph(pipeline_set_best, pipelined_adder_graph, *target_set);
+
+
+  //for non-pipelined cost models, remove unused input nodes:
+  if((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC))
+  {
+      remove_redundant_inputs_from_adder_graph(pipelined_adder_graph, pipeline_set_best);
+  }
+
+  if(benchmark || matlab_output)
+  {
+    int no_of_adders=0,no_of_registers=0,no_of_registered_ops=0;
+    typename set<T>::iterator set_iter;
+    for(unsigned int s = 0; s < pipeline_set_best.size(); ++s)
     {
-      int no_of_adders=0,no_of_registers=0,no_of_registered_ops=0;
-      typename set<T>::iterator set_iter;
-      for(unsigned int s = 0; s < pipeline_set_best.size(); ++s)
+      for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
       {
-        for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
+        if(s == 0)
         {
-          if(s == 0)
+          if(nonzeros(*set_iter) == 1)
+            no_of_registers++;
+          else
+            no_of_adders++;
+        }
+        else
+        {
+          //seach element in previous stage
+          if(pipeline_set_best[s-1].find(*set_iter) != pipeline_set_best[s-1].end())
           {
-            if(nonzeros(*set_iter) == 1)
-              no_of_registers++;
-            else
-              no_of_adders++;
+            //element found -> count as register
+            no_of_registers++;
           }
           else
           {
-            //seach element in previous stage
-            if(pipeline_set_best[s-1].find(*set_iter) != pipeline_set_best[s-1].end())
-            {
-              //element found -> count as register
-              no_of_registers++;
-            }
-            else
-            {
-              no_of_adders++;
-            }
+            no_of_adders++;
           }
         }
-        no_of_registered_ops += pipeline_set_best[s].size();
       }
-
-      if(benchmark)
-      {
-        output_stream << "no_of_pipeline_stages=\t" << pipeline_set_best.size()-1 << std::endl;
-        output_stream << "no_of_registered_ops=\t" << no_of_registered_ops << std::endl;
-        output_stream << "no_of_registers=\t" << no_of_registers << std::endl;
-        output_stream << "no_of_adders=\t\t" << no_of_adders << std::endl;
-        output_stream << "pag_cost=\t\t" << pag_cost_best << std::endl;
-      }
-      if(matlab_output)
-      {
-        output_stream << "no_of_adders{" << matlab_out_address_string << "}=" << no_of_adders <<"; ";
-        output_stream << "no_of_registers{" << matlab_out_address_string << "}=" << no_of_registers <<"; ";
-        output_stream << "already_computed(" << matlab_out_address_string << ")=1; ";
-        output_stream << "pipeline_set_best{" << matlab_out_address_string << "}=" << pipeline_set_best <<"; " ;
-        output_stream << "needed_time_in_s(" << matlab_out_address_string << ")=" << std::fixed << std::setprecision(3) << (timer.time_elapsed * 1E-6) <<"; " ;
-        output_stream << "rpag_info{" << matlab_out_address_string << "}='" << rpag_info(start_arguments,false) <<"';" ;
-        output_stream << std::endl;
-      }
+      no_of_registered_ops += pipeline_set_best[s].size();
     }
 
-    if(!matlab_output)
+    if(benchmark)
     {
-      int no_of_adders=0,no_of_registers=0,no_of_registered_ops=0;
-      typename set<T>::iterator set_iter;
-
-      for(unsigned int s = 0; s < pipeline_set_best.size(); ++s)
+      output_stream << "no_of_pipeline_stages=\t" << pipeline_set_best.size()-1 << std::endl;
+      output_stream << "no_of_registered_ops=\t" << no_of_registered_ops << std::endl;
+      output_stream << "no_of_registers=\t" << no_of_registers << std::endl;
+      output_stream << "no_of_adders=\t\t" << no_of_adders << std::endl;
+      output_stream << "pag_cost=\t\t" << pag_cost_best << std::endl;
+    }
+    if(matlab_output)
+    {
+      output_stream << "no_of_adders{" << matlab_out_address_string << "}=" << no_of_adders <<"; ";
+      output_stream << "no_of_registers{" << matlab_out_address_string << "}=" << no_of_registers <<"; ";
+//      output_stream << "already_computed(" << matlab_out_address_string << ")=1; ";
+      output_stream << "pipeline_set_best{" << matlab_out_address_string << "}=" << pipeline_set_best <<"; " ;
+      if(show_adder_graph)
       {
-        for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
-        {
-          if(s == 0)
-          {
-            if(nonzeros(*set_iter) == 1)
-              no_of_registers++;
-            else
-              no_of_adders++;
-          }
-          else
-          {
-            //seach element in previous stage
-            if(pipeline_set_best[s-1].find(*set_iter) != pipeline_set_best[s-1].end())
-            {
-              //element found -> count as register
-              no_of_registers++;
-            }
-            else
-            {
-              no_of_adders++;
-            }
-          }
-        }
-        no_of_registered_ops += pipeline_set_best[s].size();
+          output_stream << "pipelined_adder_graph{" << matlab_out_address_string << "}=" << output_adder_graph(pipelined_adder_graph,file_output) << ";" << endl;
       }
+      output_stream << "needed_time_in_s(" << matlab_out_address_string << ")=" << std::fixed << std::setprecision(3) << (timer.time_elapsed * 1E-6) <<"; " ;
+//      output_stream << "rpag_info{" << matlab_out_address_string << "}='" << rpag_info(start_arguments,false) <<"';" ;
+      output_stream << std::endl;
+    }
+  }
 
-      //compute adder graph:
-    stringstream pag;
-    list< realization_row<T> > pipelined_adder_graph;
-    pipeline_set_to_adder_graph(pipeline_set_best, pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);
-    append_targets_to_adder_graph(pipeline_set_best, pipelined_adder_graph, *target_set);
+  if(!matlab_output)
+  {
+    int no_of_adders=0,no_of_registers=0,no_of_registered_ops=0;
+    typename set<T>::iterator set_iter;
 
-
-    //for non-pipelined cost models, remove unused input nodes:
-    if((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC))
+    for(unsigned int s = 0; s < pipeline_set_best.size(); ++s)
     {
-        remove_redundant_inputs_from_adder_graph(pipelined_adder_graph, pipeline_set_best);
+    for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
+    {
+      if(s == 0)
+      {
+        if(nonzeros(*set_iter) == 1)
+          no_of_registers++;
+        else
+          no_of_adders++;
+      }
+      else
+      {
+        //seach element in previous stage
+        if(pipeline_set_best[s-1].find(*set_iter) != pipeline_set_best[s-1].end())
+        {
+          //element found -> count as register
+          no_of_registers++;
+        }
+        else
+        {
+          no_of_adders++;
+        }
+      }
+    }
+    no_of_registered_ops += pipeline_set_best[s].size();
     }
 
     IF_VERBOSE(0) output_stream << "pipeline_set_best=" << pipeline_set_best << endl;
