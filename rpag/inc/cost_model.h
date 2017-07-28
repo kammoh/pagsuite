@@ -528,7 +528,7 @@ double cost_model_min_gpc<T_ELEM, T_CLASS>::cost_pag(vector<set<T_ELEM> > *pipel
   {
       T_ELEM base;//in CMM Case this is a Vector of Dimension 1 fild with zeros
       base = 0;// it is not possible to set the elemts bevor they are created.
-      make_one_by(base,i);
+      create_unit_element(base,i);
       gpcMap[base] = 0;;
   }
 

@@ -41,22 +41,21 @@ for l=1:size(pipelined_realization,2)
     end
 
     %check end node without add or sub (only shift)
-    sign_str='';
-    if pipelined_realization_element{6} ~= 0
-      if pipelined_realization_element{6} < 0
-        sign_str='-';
-      else
-        sign_str='+';
-      end
-        
-      if size(pipelined_realization_element,2) == 11
-        if ~all([pipelined_realization_element{9:11}] == [000])
-          if pipelined_realization_element{9} < 0
-            sign_str=[sign_str,' -'];
-          else
-            sign_str=[sign_str,' +'];
-          end
+    if pipelined_realization_element{6} == 0
+      sign_str='';
+    else
+      vec = pipelined_realization_element{3};
+      vec1_nonzero = vec(vec~=0);
+      vec = pipelined_realization_element{6};
+      if length(vec) > 0
+        vec2_nonzero = vec(vec~=0);
+        if (sign(vec1_nonzero(1))*sign(vec2_nonzero(1))) < 0
+          sign_str='-';
+        else
+          sign_str='+';
         end
+      else
+        sign_str='';
       end
     end
     if pipelined_realization_element{2} == pipelined_realization_element{4}
@@ -91,21 +90,10 @@ for l=1:size(pipelined_realization,2)
       fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',mat2str(pipelined_realization_element{5}),'",fontsize=12]\n']);
     end
   else
-    
-    ternary_adder=false;
-    if size(pipelined_realization_element,2) == 11
-      if ~all([pipelined_realization_element{9:11}] == [000])
-        ternary_adder=true;
-      end
-    end
-
     %two input adders:
     fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',num2str(pipelined_realization_element{5}),' ",fontsize=12]\n']);
     fprintf(fid, ['x_',vec2dot(pipelined_realization_element{6},'_'),'_s',num2str(pipelined_realization_element{7}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',num2str(pipelined_realization_element{8}),' ",fontsize=12]\n']);
-
-    if ternary_adder
-      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{9},'_'),'_s',num2str(pipelined_realization_element{10}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',num2str(pipelined_realization_element{11}),' ",fontsize=12]\n']);
-    end
+    
     
 %     %check no of adder inputs:
 %     if size(pipelined_realization,2) == 8
@@ -136,23 +124,26 @@ function str = vec2dot(vec,delim)
 
   str='';
   vec_nonzero = vec(vec~=0);
-  if vec_nonzero(1) < 0
-    vec = vec*-1;
-  end
-  for i=1:length(vec)
-    sgn_str='';
-    if vec(i) < 0
-      if (delim == '_')
-        sgn_str = 'm';
-      else
-        sgn_str = '-';
+  if length(vec_nonzero) > 0
+    if vec_nonzero(1) < 0
+      vec = vec*-1;
+    end
+    for i=1:length(vec)
+      sgn_str='';
+      if vec(i) < 0
+        if (delim == '_')
+          sgn_str = 'm';
+        else
+          sgn_str = '-';
+        end
       end
+      if i==length(vec)
+        delim='';
+      end
+      str = [str,sgn_str,num2str(abs(vec(i))),delim];
     end
-    if i==length(vec)
-      delim='';
-    end
-    str = [str,sgn_str,num2str(abs(vec(i))),delim];
+  else
+    str = '0';
   end
-  
 end
 

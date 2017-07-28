@@ -31,20 +31,45 @@ end
 if file_name == 0
   file_name = 'realization';
 
-  coeff_values = [];
-  for i=1:size(pipelined_realization,2)
-    coeff_values = [coeff_values,pipelined_realization{i}(1)];
+  if ~iscell(pipelined_realization)
+    coeff_values = unique(pipelined_realization(:,1)');
+    for i=1:length(coeff_values)
+      file_name = [file_name, '_', num2str(coeff_values(i))];
+    end
+    %limit file name length to 100:
+    file_name = file_name(1:min(length(file_name),100));
   end
-  coeff_values = unique(cell2mat(coeff_values));
-  for i=1:length(coeff_values)
-    file_name = [file_name, '_', num2str(coeff_values(i))];
-  end
-  %limit file name length to 100:
-  file_name = file_name(1:min(length(file_name),100));
 end
 
+if iscell(pipelined_realization)
+  if(isstr(pipelined_realization{1}{1}))
+    %cell array is the (most modern) cell format where the first element
+    %describes the operation
+    %lets convert it to the 'old' format:
+    pipelined_realization_old = cell(1,length(pipelined_realization));
+    for i=1:length(pipelined_realization)
+      switch pipelined_realization{i}{1}
+        case 'A'
+          pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},pipelined_realization{i}{7},pipelined_realization{i}{8},pipelined_realization{i}{9}};
+        case 'R'
+          pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},0,0,0,0};
+        case 'O'
+          pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},0,0,0};
+      end
+    end
+    pipelined_realization = pipelined_realization_old;
+  end
+end
+
+
 [pdf_path,'/',file_name,'.dot'];
-write_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep);
+if ~iscell(pipelined_realization)
+  %matrices are used to describe PMCM solutions with 2-input adders or ternary adders:
+  write_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep);
+else
+  %cells are used to describe PCMM solutions (with 2-input adders):
+  write_cmm_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep);
+end
 dot2pdf([pdf_path,'/',file_name]);
-system([delete_cmd,' ',pdf_path,'/',file_name,'.dot']);
+%system([delete_cmd,' ',pdf_path,'/',file_name,'.dot']);
 showpdf([pdf_path,'/',file_name,'.pdf'])

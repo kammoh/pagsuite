@@ -228,8 +228,11 @@ bool just_one_negative_sign(int &a, int &b, int &c);
 bool just_one_negative_sign(vec_t &a, vec_t &b, vec_t &c);
 bool just_one_negative_sign(int_t &a, int_t &b, int_t &c);
 
-void make_one_by(vec_t &var, unsigned int i);
-void make_one_by(int_t &var, unsigned int i);
+void create_unit_element(vec_t &var, unsigned int i);
+void create_unit_element(int_t &var, unsigned int i);
+
+void create_null_element(vec_t &var);
+void create_null_element(int_t &var);
 
 
 template <class T>
@@ -651,7 +654,7 @@ void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realizati
     {
         T base;
         base = 0;// it is not possible to set the elemts before they are created.
-        make_one_by(base,i);
+        create_unit_element(base,i);
         base_set.insert(base);
     }
     pipeline_set.insert(pipeline_set.begin(),base_set);
@@ -871,10 +874,14 @@ void remove_redundant_inputs_from_adder_graph(list< realization_row<T> > &pipeli
     {
         T base;//in CMM case, this is a Vector of Dimension 1 filled with zeros
         base = 0;// it is not possible to set the elements before they are created.
-        make_one_by(base,i);
+        create_unit_element(base,i);
         base_set.insert(base);
     }
 
+    T null_element;
+    create_null_element(null_element);
+
+    cout << "base_set=" << base_set << endl;
     vector<set<T> > required_base_nodes;
     required_base_nodes.resize(pipeline_set_best.size());
 
@@ -890,24 +897,24 @@ void remove_redundant_inputs_from_adder_graph(list< realization_row<T> > &pipeli
             IF_VERBOSE(5) cout << "  row is not an input" << endl;
             if(row.stageA > 0)
             {
-                if(base_set.find(row.A) != base_set.end())
+                if(base_set.find(norm(row.A)) != base_set.end())
                 {
                     IF_VERBOSE(5) cout << "    input " << row.A << " is required in stage " << row.stageA << endl;
                     for(unsigned s=row.stageA; s > 0; s--)
                         required_base_nodes[s].insert(row.A);
                 }
-                if(row.B > 0)
+                if(norm(row.B) != null_element)
                 {
-                    if(base_set.find(row.B) != base_set.end())
+                    if(base_set.find(norm(row.B)) != base_set.end())
                     {
                         IF_VERBOSE(5) cout << "    input " << row.B << " is required in stage " << row.stageB << endl;
                         for(unsigned s=row.stageB; s > 0; s--)
-                            required_base_nodes[s].insert(row.B);
+                            required_base_nodes[s].insert(norm(row.B));
                     }
                 }
-                if(row.C > 0)
+                if(norm(row.C) != null_element)
                 {
-                    if(base_set.find(row.C) != base_set.end())
+                    if(base_set.find(norm(row.C)) != base_set.end())
                     {
                         IF_VERBOSE(5) cout << "    input " << row.C << " is required in stage " << row.stageC << endl;
                         for(unsigned s=row.stageC; s > 0; s--)

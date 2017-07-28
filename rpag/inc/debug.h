@@ -43,7 +43,7 @@ ostream& operator<<(ostream &s, vector<T>& vec)
     s << *iter;
     ++iter;
     if(iter != vec.end())
-      s  << ",";
+      s  << "*,";
   }
   return s;
 }
@@ -54,9 +54,9 @@ ostream& operator<<(ostream &s, const set<T>& st)
   typename set<T>::iterator iter;
   for(iter = st.begin(); iter != st.end(); )
   {
-    if(typeid(T)!=typeid(int_t)) s << "(";
+    if(typeid(T)!=typeid(int_t)) s << "[";
     s << (*iter);
-    if(typeid(T)!=typeid(int_t)) s << ")";
+    if(typeid(T)!=typeid(int_t)) s << "]";
     ++iter;
     if(iter != st.end())
       s  << " ";
