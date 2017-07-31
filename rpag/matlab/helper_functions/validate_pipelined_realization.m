@@ -25,8 +25,8 @@ if iscell(pipelined_realization)
       assert(all(row{2}==row{4}*2.^row{6}+row{7}*2.^row{9}),['Realization inconsistent (adder): ',mat2str(row{2}),' ~= ',mat2str(row{4}),'*2^',num2str(row{6}),'+',mat2str(row{7}),'*2^',num2str(row{9})]);
       
       %check existance of inputs:
-      assert((row{5} == 0) || vector_is_member_of_matrix(row{4},pipeline_sets{row{5}}),['Realization inconsistent (adder): Input ',mat2str(row{4}),' not found in stage ',num2str(row{5})]);
-      assert((row{8} == 0) || vector_is_member_of_matrix(row{7},pipeline_sets{row{8}}) || vector_is_member_of_matrix((-1)*row{7},pipeline_sets{row{8}}),['Realization inconsistent (adder): Input ',mat2str(row{7}),' not found in stage ',num2str(row{8})]);
+      assert((row{5} == 0) || vector_is_member_of_matrix(norm(row{4}),pipeline_sets{row{5}}),['Realization inconsistent (adder): Input ',mat2str(row{4}),' not found in stage ',num2str(row{5})]);
+      assert((row{8} == 0) || vector_is_member_of_matrix(norm(row{7}),pipeline_sets{row{8}}) || vector_is_member_of_matrix((-1)*row{7},pipeline_sets{row{8}}),['Realization inconsistent (adder): Input ',mat2str(row{7}),' not found in stage ',num2str(row{8})]);
       
       %check for valid pipeline:
       assert(all(row{3}==row{5}+1),['Realization inconsistent (adder): ',mat2str(row{2}),' in stage ',row{3},' depends on ',mat2str(row{4}),' of stage ',num2str(row{5})]);
@@ -66,6 +66,14 @@ else
     end
 
   end
+end
+
+
+function vr_norm = norm(vr)
+  if vr(1) < 0
+    vr_norm = -vr;
+  else
+    vr_norm = vr;
 end
 
 %checks is a row vector vr is contained in any row of matrix M and returns
