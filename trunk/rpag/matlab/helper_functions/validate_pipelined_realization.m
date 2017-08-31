@@ -1,8 +1,17 @@
-function validate_pipelined_realization(pipelined_realization,check_sign)
+function validate_pipelined_realization(pipelined_realization,varargin)
 
-if ~exist('check_sign')
-  check_sign=true;
+
+check_sign=true;
+coeff=[];
+for k=1:2:size(varargin,2)
+  switch(varargin{k})
+    case 'checksign'
+      checksign = varargin{k+1};
+    case 'coeff'
+      coeff = varargin{k+1};
+  end
 end
+
 
 if iscell(pipelined_realization)
   pipeline_depth=0;
@@ -68,6 +77,16 @@ else
   end
 end
 
+if ~isempty(coeff)
+  %check output coefficients:
+  for i=1:length(pipelined_realization)
+    row = pipelined_realization{i};
+    if row{1} == 'O'
+      assert(vector_is_member_of_matrix_abs(row{2},coeff),['output coefficient ',mat2str(row{2}),' does not appear in specified coefficients: ',mat2str(coeff)])
+%      assert(vector_is_member_of_matrix_normed(row{2},coeff),['output coefficient ',mat2str(row{2}),' does not appear in specified coefficients: ',mat2str(coeff)])     
+    end
+  end
+end
 
 function vr_norm = norm(vr)
   if vr(1) < 0
@@ -86,3 +105,27 @@ function is_member = vector_is_member_of_matrix(vr,M)
     end
   end
   is_member=false;
+
+%checks is a normed row vector vr is contained in any normed row of matrix M and returns
+%true, if yes
+function is_member = vector_is_member_of_matrix_normed(vr,M)
+  for i=1:size(M,1)
+    if all(norm(vr)==norm(M(i,:)))
+      is_member=true;
+      return;
+    end
+  end
+  is_member=false;
+
+%checks is a absolute row vector vr is contained in any absolute row of matrix M and returns
+%true, if yes
+function is_member = vector_is_member_of_matrix_abs(vr,M)
+  for i=1:size(M,1)
+    if all(abs(vr)==abs(M(i,:)))
+      is_member=true;
+      return;
+    end
+  end
+  is_member=false;
+  
+  

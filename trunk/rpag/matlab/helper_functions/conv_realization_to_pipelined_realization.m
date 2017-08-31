@@ -10,6 +10,7 @@ computed_nodes{1}=1; %index is stage+1
 
 output_coeffs = fundamental(abs(output_coeffs));
 
+pipelined_realization_graph={};
 %pipelined_realization_graph=cell(1,length(realization_graph))
 k=1;
 for stage=1:no_of_stages
