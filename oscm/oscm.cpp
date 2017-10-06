@@ -75,6 +75,10 @@ int main(int argc, char *args[])
     {
       noOfAddersMax = atol(value);
     }
+    else if(getCmdParameter(args[i],"--indicator_constraints",value))
+    {
+      useIndicatorConstraints=true;
+    }
     else
     {
       if(args[i][0] != '-')
@@ -124,6 +128,7 @@ int main(int argc, char *args[])
   cout << "max shift=" << shiftMax << endl;
   cout << "max coeff=" << coeffMax << endl;
   cout << "big M=" << bigM << endl;
+  cout << "use indicator constraints=" << useIndicatorConstraints << endl;
 
 //  exit(0);//!!!
 
@@ -134,7 +139,7 @@ int main(int argc, char *args[])
       cout << "******************************************************" << endl;
       cout << "  starting optimization with " << noOfAdders << " adders" << endl;
       cout << "******************************************************" << endl;
-      ILP::Solver sol = ILP::Solver(ILP::newSolverDynamic({"Gurobi","CPLEX","SCIP","LPSolve"}));
+      ILP::Solver sol = ILP::Solver(ILP::newSolverDynamic({"CPLEX","Gurobi","SCIP","LPSolve"}));
 
       // disable solver output
       sol.quiet=false;
