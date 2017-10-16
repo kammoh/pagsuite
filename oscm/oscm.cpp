@@ -1,9 +1,9 @@
 
 #include <iostream>
 
-#include <ILP/Solver.h>
-#include <ILP/Exception.h>    // ILP::Exception
-#include <ILP/SolverDynamic.h> // ILP::newSolverDynamic
+#include <ScaLP/Solver.h>
+#include <ScaLP/Exception.h>    // ScaLP::Exception
+#include <ScaLP/SolverDynamic.h> // ScaLP::newSolverDynamic
 
 #include <vector>
 #include <cmath>
@@ -134,12 +134,12 @@ int main(int argc, char *args[])
 
   try
   {
-    for(int noOfAdders=noOfAddersMin; noOfAdders < noOfAddersMax; noOfAdders++)
+    for(int noOfAdders=noOfAddersMin; noOfAdders <= noOfAddersMax; noOfAdders++)
     {
       cout << "******************************************************" << endl;
       cout << "  starting optimization with " << noOfAdders << " adders" << endl;
       cout << "******************************************************" << endl;
-      ILP::Solver sol = ILP::Solver(ILP::newSolverDynamic({"CPLEX","Gurobi","SCIP","LPSolve"}));
+      ScaLP::Solver sol = ScaLP::Solver(ScaLP::newSolverDynamic({"CPLEX","Gurobi","SCIP","LPSolve"}));
 
       // disable solver output
       sol.quiet=false;
@@ -157,50 +157,50 @@ int main(int argc, char *args[])
       }
 
       //create and initialize variables:
-      vector<ILP::Variable> coeff(noOfAdders+1);
-      vector<ILP::Variable> coeffLeft(noOfAdders+1);
-      vector<ILP::Variable> coeffRight(noOfAdders+1);
-      vector<ILP::Variable> coeffShiftedLeft(noOfAdders+1);
-      vector<ILP::Variable> coeffShiftedRight(noOfAdders+1);
-      vector<ILP::Variable> coeffShiftedSignLeft(noOfAdders+1);
-      vector<ILP::Variable> coeffShiftedSignRight(noOfAdders+1);
-      vector<vector<ILP::Variable> > coeffIskLeft(noOfAdders+1, vector<ILP::Variable>(noOfAdders+1));
-      vector<vector<ILP::Variable> > coeffIskRight(noOfAdders+1, vector<ILP::Variable>(noOfAdders+1));
-      vector<vector<ILP::Variable> > shiftIsSLeft(noOfAdders+1, vector<ILP::Variable>(shiftMax));
-      vector<vector<ILP::Variable> > shiftIsSRight(noOfAdders+1, vector<ILP::Variable>(shiftMax));
-      vector<ILP::Variable> signLeft(noOfAdders+1);
-      vector<ILP::Variable> signRight(noOfAdders+1);
+      vector<ScaLP::Variable> coeff(noOfAdders+1);
+      vector<ScaLP::Variable> coeffLeft(noOfAdders+1);
+      vector<ScaLP::Variable> coeffRight(noOfAdders+1);
+      vector<ScaLP::Variable> coeffShiftedLeft(noOfAdders+1);
+      vector<ScaLP::Variable> coeffShiftedRight(noOfAdders+1);
+      vector<ScaLP::Variable> coeffShiftedSignLeft(noOfAdders+1);
+      vector<ScaLP::Variable> coeffShiftedSignRight(noOfAdders+1);
+      vector<vector<ScaLP::Variable> > coeffIskLeft(noOfAdders+1, vector<ScaLP::Variable>(noOfAdders+1));
+      vector<vector<ScaLP::Variable> > coeffIskRight(noOfAdders+1, vector<ScaLP::Variable>(noOfAdders+1));
+      vector<vector<ScaLP::Variable> > shiftIsSLeft(noOfAdders+1, vector<ScaLP::Variable>(shiftMax));
+      vector<vector<ScaLP::Variable> > shiftIsSRight(noOfAdders+1, vector<ScaLP::Variable>(shiftMax));
+      vector<ScaLP::Variable> signLeft(noOfAdders+1);
+      vector<ScaLP::Variable> signRight(noOfAdders+1);
 
       for(unsigned int i=0; i <= noOfAdders; i++)
       {
-        coeff[i] = ILP::newIntegerVariable("c" + to_string(i),0,coeffMax);
-        coeffLeft[i] = ILP::newIntegerVariable("c" + to_string(i) + "_in_l",0,coeffMax);
-        coeffRight[i] = ILP::newIntegerVariable("c" + to_string(i) + "_in_r",0,coeffMax);
-        coeffShiftedLeft[i] = ILP::newIntegerVariable("c" + to_string(i) + "_in_sh_l",0,coeffMax);
-        coeffShiftedRight[i] = ILP::newIntegerVariable("c" + to_string(i) + "_in_sh_r",0,coeffMax);
-        coeffShiftedSignLeft[i] = ILP::newIntegerVariable("c" + to_string(i) + "_in_sh_sg_l",-coeffMax,coeffMax);
-        coeffShiftedSignRight[i] = ILP::newIntegerVariable("c" + to_string(i) + "_in_sh_sg_r",-coeffMax,coeffMax);
-        signLeft[i] = ILP::newBinaryVariable("sign"  + to_string(i) + "l");
-        signRight[i] = ILP::newBinaryVariable("sign"  + to_string(i) + "r");
+        coeff[i] = ScaLP::newIntegerVariable("c" + to_string(i),0,coeffMax);
+        coeffLeft[i] = ScaLP::newIntegerVariable("c" + to_string(i) + "_in_l",0,coeffMax);
+        coeffRight[i] = ScaLP::newIntegerVariable("c" + to_string(i) + "_in_r",0,coeffMax);
+        coeffShiftedLeft[i] = ScaLP::newIntegerVariable("c" + to_string(i) + "_in_sh_l",0,coeffMax);
+        coeffShiftedRight[i] = ScaLP::newIntegerVariable("c" + to_string(i) + "_in_sh_r",0,coeffMax);
+        coeffShiftedSignLeft[i] = ScaLP::newIntegerVariable("c" + to_string(i) + "_in_sh_sg_l",-coeffMax,coeffMax);
+        coeffShiftedSignRight[i] = ScaLP::newIntegerVariable("c" + to_string(i) + "_in_sh_sg_r",-coeffMax,coeffMax);
+        signLeft[i] = ScaLP::newBinaryVariable("sign"  + to_string(i) + "l");
+        signRight[i] = ScaLP::newBinaryVariable("sign"  + to_string(i) + "r");
         for(unsigned int k=0; k <= noOfAdders-1; k++)
         {
-          coeffIskLeft[i][k] = ILP::newBinaryVariable("c"  + to_string(i) + "_in_l_is_" + to_string(k));
-          coeffIskRight[i][k] = ILP::newBinaryVariable("c"  + to_string(i) + "_in_r_is_" + to_string(k));
+          coeffIskLeft[i][k] = ScaLP::newBinaryVariable("c"  + to_string(i) + "_in_l_is_" + to_string(k));
+          coeffIskRight[i][k] = ScaLP::newBinaryVariable("c"  + to_string(i) + "_in_r_is_" + to_string(k));
         }
         for(unsigned int s=0; s < shiftMax; s++)
         {
-          shiftIsSLeft[i][s] = ILP::newBinaryVariable("shift"  + to_string(i) + "_in_l_is_" + to_string(s));
-          shiftIsSRight[i][s] = ILP::newBinaryVariable("shift"  + to_string(i) + "_in_r_is_" + to_string(s));
+          shiftIsSLeft[i][s] = ScaLP::newBinaryVariable("shift"  + to_string(i) + "_in_l_is_" + to_string(s));
+          shiftIsSRight[i][s] = ScaLP::newBinaryVariable("shift"  + to_string(i) + "_in_r_is_" + to_string(s));
         }
       }
 
-      ILP::Term obj(0);
+      ScaLP::Term obj(0);
       for(unsigned int i=1; i <= noOfAdders; i++)
       {
         obj += coeff[i];
       }
-      sol.setObjective(ILP::minimize(obj));
-//      sol.setObjective(ILP::maximize(obj));
+      sol.setObjective(ScaLP::minimize(obj));
+//      sol.setObjective(ScaLP::maximize(obj));
 
       //constraint C1:
       sol << (coeff[noOfAdders] == targetCoeff);
@@ -248,7 +248,7 @@ int main(int argc, char *args[])
         }
 
         //constraints C5:
-        ILP::Term c5l(0),c5r(0);
+        ScaLP::Term c5l(0),c5r(0);
         for(unsigned int k=0; k <= noOfAdders-1; k++)
         {
           c5l += coeffIskLeft[a][k];
@@ -275,7 +275,7 @@ int main(int argc, char *args[])
         }
 
         //constraints C7:
-        ILP::Term c7l(0),c7r(0);
+        ScaLP::Term c7l(0),c7r(0);
         for(int s=0; s < shiftMax; s++)
         {
           c7l += shiftIsSLeft[a][s];
@@ -288,13 +288,13 @@ int main(int argc, char *args[])
         if(useIndicatorConstraints)
         {
           //sign is +:
-          sol << (signLeft[a] == 1 then coeffShiftedSignLeft[a] - coeffShiftedLeft[a] == 0 );
+          sol << (signLeft[a] == 1 then coeffShiftedSignLeft[a] + coeffShiftedLeft[a] == 0 );
           //sign is -:
-          sol << (signLeft[a] == 0 then coeffShiftedSignLeft[a] + coeffShiftedLeft[a] == 0 );
+          sol << (signLeft[a] == 0 then coeffShiftedSignLeft[a] - coeffShiftedLeft[a] == 0 );
           //sign is +:
-          sol << (signRight[a] == 1 then coeffShiftedSignRight[a] - coeffShiftedRight[a] == 0 );
+          sol << (signRight[a] == 1 then coeffShiftedSignRight[a] + coeffShiftedRight[a] == 0 );
           //sign is -:
-          sol << (signRight[a] == 0 then coeffShiftedSignRight[a] + coeffShiftedRight[a] == 0 );
+          sol << (signRight[a] == 0 then coeffShiftedSignRight[a] - coeffShiftedRight[a] == 0 );
         }
         else
         {
@@ -318,14 +318,14 @@ int main(int argc, char *args[])
       sol.writeLP("oscm.lp");
 
       // Try to solve
-      ILP::status stat = sol.solve();
+      ScaLP::status stat = sol.solve();
 
       // print results
-      ILP::Result res = sol.getResult();
+      ScaLP::Result res = sol.getResult();
       cout << res << endl;
 
       cout << "Optimization result: " << stat << endl;
-      if((stat == ILP::status::FEASIBLE) || (stat == ILP::status::OPTIMAL))
+      if((stat == ScaLP::status::FEASIBLE) || (stat == ScaLP::status::OPTIMAL))
       {
         cout << "no of adders:" << noOfAdders << endl;
 
@@ -379,7 +379,7 @@ int main(int argc, char *args[])
       }
     }
   }
-  catch(ILP::Exception &e)
+  catch(ScaLP::Exception &e)
   {
     cerr << "Error: " << e << endl;
   }
