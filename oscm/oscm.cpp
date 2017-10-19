@@ -52,6 +52,7 @@ int main(int argc, char *args[])
   bool useIndicatorConstraints=false;
   long bigM=-1;
   string ilpSolver="";
+  int threads=0;
 
   set<long> targetCoeffs;
 
@@ -61,6 +62,10 @@ int main(int argc, char *args[])
     if(getCmdParameter(args[i],"--timeout=",value))
     {
       timeout = atol(value);
+    }
+    if(getCmdParameter(args[i],"--threads=",value))
+    {
+      threads = atol(value);
     }
     else if(getCmdParameter(args[i],"--max_shift=",value))
     {
@@ -167,7 +172,7 @@ int main(int argc, char *args[])
   cout << "max coeff=" << coeffMax << endl;
   cout << "big M=" << bigM << endl;
   cout << "use indicator constraints=" << useIndicatorConstraints << endl;
-
+  cout << "threads=" << threads << endl;
   cout << "target coefficients=";
   for(long c : targetCoeffs)
   {
@@ -194,6 +199,9 @@ int main(int argc, char *args[])
 
       // enable presolving
       sol.presolve=true;
+
+      //set threads
+      sol.threads=threads;
 
       // set the timeout of the solver
       if(timeout > 0)
