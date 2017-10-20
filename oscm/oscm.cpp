@@ -53,6 +53,7 @@ int main(int argc, char *args[])
   long bigM=-1;
   string ilpSolver="";
   int threads=0;
+  string objective="none";
 
   set<long> targetCoeffs;
 
@@ -90,6 +91,10 @@ int main(int argc, char *args[])
     else if(getCmdParameter(args[i],"--indicator_constraints",value))
     {
       useIndicatorConstraints=true;
+    }
+    else if(getCmdParameter(args[i],"--objective=",value))
+    {
+      objective=value;
     }
     else if(getCmdParameter(args[i],"--solver=",value))
     {
@@ -164,6 +169,7 @@ int main(int argc, char *args[])
   cout << endl;
 
   cout << "settings:" << endl;
+  cout << "objective=" << objective << endl;
   cout << "no of adders min=" << noOfAddersMin << endl;
   cout << "no of adders max=" << noOfAddersMax << endl;
   cout << "no of outputs=" << noOfOutputs << endl;
@@ -254,11 +260,43 @@ int main(int argc, char *args[])
       vector<ScaLP::Variable> output(noOfOutputs);
       vector<vector<ScaLP::Variable> > outputIsa(noOfOutputs, vector<ScaLP::Variable>(noOfAdders+1));
 
-      ScaLP::Term obj(0);
-      for(unsigned int i=1; i <= noOfAdders; i++)
+      //define variables for minGPC objective:
+      vector<ScaLP::Variable> gpc(noOfAdders+1);
+      vector<ScaLP::Variable> gpcLeft(noOfAdders+1);
+      vector<ScaLP::Variable> gpcRight(noOfAdders+1);
+
+      ScaLP::Term obj(0); //this corresponds to objective == "none"
+      if(objective == "none")
       {
-//        obj += coeff[i];
+        //nothing to do
       }
+      else if(objective == "minAccSum")
+      {
+        for(unsigned int a=1; a <= noOfAdders; a++)
+        {
+          obj += coeff[a];
+        }
+      }
+      else if(objective == "minGPC")
+      {
+        for(unsigned int a=0; a <= noOfAdders; a++)
+        {
+          //initialize the GPC variables:
+          gpc[a] = ScaLP::newIntegerVariable("gpc" + to_string(a)); //could be also real but then it gets numerically unstable (at least with gurobi)
+          gpcLeft[a] = ScaLP::newRealVariable("gpc_l" + to_string(a));
+          gpcRight[a] = ScaLP::newRealVariable("gpc_r" + to_string(a));
+        }
+        for(unsigned int a=1; a <= noOfAdders; a++)
+        {
+          obj += gpc[a];
+        }
+      }
+      else
+      {
+        cout << "Error: objective " << objective << " unknown" << endl;
+        exit(-1); //ToDo: print a short help
+      }
+
       sol.setObjective(ScaLP::minimize(obj));
 //      sol.setObjective(ScaLP::maximize(obj));
 
@@ -318,22 +356,22 @@ int main(int argc, char *args[])
         //constraints C3:
         sol << (coeff[a] - coeffShiftedSignLeft[a] - coeffShiftedSignRight[a] == 0);
 
-        for(unsigned int k=0; k <= a-1; k++)
+        for(unsigned int j=0; j <= a-1; j++)
         {
           //constraints C4:
           if(useIndicatorConstraints)
           {
-            sol << (coeffIskLeft[a][k]==1 then coeffLeft[a] - coeff[k] == 0);
-            sol << (coeffIskRight[a][k]==1 then coeffRight[a] - coeff[k] == 0);
+            sol << (coeffIskLeft[a][j]==1 then coeffLeft[a] - coeff[j] == 0);
+            sol << (coeffIskRight[a][j]==1 then coeffRight[a] - coeff[j] == 0);
           }
           else
           {
 //                s << (coeff[k] - BigM + BigM*coeffIskLeft[i][k] <= coeffLeft[i] <= coeff[k] + BigM - BigM*coeffIskLeft[i][k]);
 //                s << (coeff[k] - BigM + BigM*coeffIskRight[i][k] <= coeffRight[i] <= coeff[k] + BigM - BigM*coeffIskRight[i][k]);
-            sol << (coeff[k] - bigM + bigM*coeffIskLeft[a][k] - coeffLeft[a] <= 0);
-            sol << (coeffLeft[a] - coeff[k] - bigM + bigM*coeffIskLeft[a][k] <= 0);
-            sol << (coeff[k] - bigM + bigM*coeffIskRight[a][k] - coeffRight[a] <= 0);
-            sol << (coeffRight[a] - coeff[k] - bigM + bigM*coeffIskRight[a][k] <= 0);
+            sol << (coeff[j] - bigM + bigM*coeffIskLeft[a][j] - coeffLeft[a] <= 0);
+            sol << (coeffLeft[a] - coeff[j] - bigM + bigM*coeffIskLeft[a][j] <= 0);
+            sol << (coeff[j] - bigM + bigM*coeffIskRight[a][j] - coeffRight[a] <= 0);
+            sol << (coeffRight[a] - coeff[j] - bigM + bigM*coeffIskRight[a][j] <= 0);
           }
         }
 
@@ -409,6 +447,36 @@ int main(int argc, char *args[])
 
       //    y==0 then x1+x2+x3==0
 
+      //optional GPC constraints:
+      if(objective == "minGPC")
+      {
+        //constraint C10a:
+        sol << (gpc[0] == 0);
+
+        //constraint C10b:
+        for(unsigned int a=1; a <= noOfAdders; a++)
+        {
+          for(unsigned int k=0; k <= a-1; k++)
+          {
+            if(useIndicatorConstraints)
+            {
+              sol << (coeffIskLeft[a][k]==1 then gpcLeft[a] - gpc[k] == 0);
+              sol << (coeffIskRight[a][k]==1 then gpcRight[a] - gpc[k] == 0);
+            }
+            else
+            {
+              sol << (gpc[k] - bigM + bigM*coeffIskLeft[a][k] - gpcLeft[a] <= 0);
+              sol << (gpcLeft[a] - gpc[k] - bigM + bigM*coeffIskLeft[a][k] <= 0);
+              sol << (gpc[k] - bigM + bigM*coeffIskRight[a][k] - gpcRight[a] <= 0);
+              sol << (gpcRight[a] - gpc[k] - bigM + bigM*coeffIskRight[a][k] <= 0);
+            }
+          }
+
+          //constraint C10c:
+          sol << (gpc[a] - gpcLeft[a] - gpcRight[a] == 1);
+        }
+      }
+
       sol.writeLP("oscm.lp");
 
       // Try to solve
@@ -423,8 +491,6 @@ int main(int argc, char *args[])
       cout << "Optimization result: " << stat << endl;
       if((stat == ScaLP::status::FEASIBLE) || (stat == ScaLP::status::OPTIMAL) || (stat == ScaLP::status::TIMEOUT))
       {
-        cout << "no of adders:" << noOfAdders << endl;
-
         for(unsigned int a=1; a <= noOfAdders; a++)
         {
           cout << coeff[a] << "=" << res.values[coeff[a]] << "=Aop(" << res.values[coeffLeft[a]] << "," << res.values[coeffRight[a]] << ")" << endl;
@@ -445,6 +511,8 @@ int main(int argc, char *args[])
         }
 
         stringstream adderMatrix;
+
+        cout << "no of adders:" << noOfAdders << endl;
 
         adderMatrix << "[";
         for(unsigned int a=1; a <= noOfAdders; a++)
