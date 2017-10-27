@@ -361,7 +361,7 @@ void evaluateTernarySCMTopologies::evaluateTopology(int addCount, int topoId)
 
 void evaluateTernarySCMTopologies::evaluateAll()
 {
-  for(int addCount=1; addCount <= 3; addCount++)
+  for(int addCount=1; addCount <= noOfAddersMax; addCount++)
   {
     cout << "computing " << addCount << " adder coefficients..." << endl;
     for(int topoId=1; topoId <= maxTopoIDs[addCount]; topoId++)
@@ -536,7 +536,7 @@ void evaluateTernarySCMTopologies::outputCoeffTopologies()
 
 void evaluateTernarySCMTopologies::outputTopologiesCoverage()
 {
-  for(int addCount=1; addCount <= 3; addCount++)
+  for(int addCount=1; addCount <= noOfAddersMax; addCount++)
   {
     int noOfTotalCoeff = hset[addCount].size();
     for(int topoId=1; topoId <= maxTopoIDs[addCount]; topoId++)
@@ -549,7 +549,7 @@ void evaluateTernarySCMTopologies::outputTopologiesCoverage()
 
 void evaluateTernarySCMTopologies::outputNOFSets()
 {
-  for(int addCount=1; addCount <= 3; addCount++)
+  for(int addCount=1; addCount <= noOfAddersMax; addCount++)
   {
     for(int topoId=1; topoId <= maxTopoIDs[addCount]; topoId++)
     {
@@ -586,7 +586,7 @@ void evaluateTernarySCMTopologies::outputCoeffCoverageForTopology(int addCount, 
 
 void evaluateTernarySCMTopologies::outputCoeffCoveragePerTopology()
 {
-  for(int addCount=1; addCount <= 3; addCount++)
+  for(int addCount=1; addCount <= noOfAddersMax; addCount++)
   {
     for(int topoId=1; topoId <= maxTopoIDs[addCount]; topoId++)
     {
