@@ -40,6 +40,26 @@ bool getCmdParameter(char* argv, const char* parameter, char* &value)
   }
 }
 
+void print_short_help()
+{
+    cout << "usage: omcm [OPTIONS] coefficient(s)" << endl;
+    cout << endl;
+    cout << "-----------------------------------------------" << endl;
+    cout << "General Options:" << endl;
+    cout << "Option                                  Meaning" << endl;
+    cout << "--solver=[Gurobi|CPLEX|SCIP|LPSolve]    ILP solver (if available in ScaLP library), also a comma separated wish list of solvers can be provided" << endl;
+    cout << "--timeout=[int]                         ILP solver Timeout in seconds" << endl;
+    cout << "--threads=[int]                         Number of threads for the ILP solver" << endl;
+    cout << "--max_shift=[int]                       Maximum bit shift which is considered in the adder graph" << endl;
+    cout << "--max_coeff=[int]                       Maximum coefficient that is expected in an adder node" << endl;
+    cout << "--big_M=[int]                           Value of the big-M variable" << endl;
+    cout << "--indicator_constraints                 When specified, indicator constraints are used instead of big-M constraints" << endl;
+    cout << "--no_of_adders_min=[int]                Minimum number of adders for which a solution is searched (default is the number of unique odd coefficients as lower bound)" << endl;
+    cout << "--no_of_adders_max=[int]                Maximum number of adders for which a solution is searched (default is infinity)" << endl;
+    cout << "--objective=[none|minAccSum|minGPC]     Secondary objective, none: only the adders are minimized, minAccSum: the sum of coefficients is minimized leading to low word size solutions, minGPC: the glitch path cound (GPC) is minimized" << endl;
+    cout << endl;
+
+}
 int main(int argc, char *args[])
 {
   long targetCoeff=-1;
@@ -115,7 +135,8 @@ int main(int argc, char *args[])
       else
       {
         cout << "Error: Illegal Option: " << args[i] << endl;
-        exit(-1); //ToDo: print a short help
+        print_short_help();
+        exit(-1);
       }
     }
 
@@ -124,7 +145,8 @@ int main(int argc, char *args[])
   if(targetCoeffs.empty())
   {
     cout << "Error: No coefficient(s) provided" << endl;
-    exit(-1); //ToDo: print a short help
+    print_short_help();
+    exit(-1);
   }
 
   long targetCoeffMax = -1;
