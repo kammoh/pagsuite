@@ -54,6 +54,7 @@ void print_short_help()
     cout << "--max_coeff=[int]                       Maximum coefficient that is expected in an adder node" << endl;
     cout << "--big_M=[int]                           Value of the big-M variable" << endl;
     cout << "--indicator_constraints                 When specified, indicator constraints are used instead of big-M constraints" << endl;
+    cout << "--use_relaxations                       When specified, relaxations to real variables are used where possible" << endl;
     cout << "--no_of_adders_min=[int]                Minimum number of adders for which a solution is searched (default is the number of unique odd coefficients as lower bound)" << endl;
     cout << "--no_of_adders_max=[int]                Maximum number of adders for which a solution is searched (default is infinity)" << endl;
     cout << "--objective=[none|minAccSum|minGPC]     Secondary objective, none: only the adders are minimized, minAccSum: the sum of coefficients is minimized leading to low word size solutions, minGPC: the glitch path cound (GPC) is minimized" << endl;
@@ -74,6 +75,7 @@ int main(int argc, char *args[])
   string ilpSolver="";
   int threads=0;
   string objective="none";
+  bool useRelaxation=false;
 
   set<long> targetCoeffs;
 
@@ -111,6 +113,10 @@ int main(int argc, char *args[])
     else if(getCmdParameter(args[i],"--indicator_constraints",value))
     {
       useIndicatorConstraints=true;
+    }
+    else if(getCmdParameter(args[i],"--use_relaxations",value))
+    {
+      useRelaxation=true;
     }
     else if(getCmdParameter(args[i],"--objective=",value))
     {
@@ -200,6 +206,7 @@ int main(int argc, char *args[])
   cout << "max coeff=" << coeffMax << endl;
   cout << "big M=" << bigM << endl;
   cout << "use indicator constraints=" << useIndicatorConstraints << endl;
+  cout << "use relaxations=" << useRelaxation << endl;
   cout << "threads=" << threads << endl;
   cout << "target coefficients=";
   for(long c : targetCoeffs)
@@ -227,6 +234,7 @@ int main(int argc, char *args[])
 
       // enable presolving
       sol.presolve=true;
+//      sol.presolve=false; //!!!
 
       //set threads
       sol.threads=threads;
@@ -239,6 +247,8 @@ int main(int argc, char *args[])
 
 //      sol.intFeasTol = 1E-5;
 //      sol.intFeasTol = 1E-9;
+
+      sol.intFeasTol = 1E-6;
 
       //define and initialize variables:
       vector<ScaLP::Variable> coeff(noOfAdders+1);
@@ -258,12 +268,25 @@ int main(int argc, char *args[])
       for(unsigned int a=0; a <= noOfAdders; a++)
       {
         coeff[a] = ScaLP::newIntegerVariable("c" + to_string(a),0,coeffMax); //could be also real but then it gets numerically unstable (at least with gurobi)
-        coeffLeft[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_l",0,coeffMax);
-        coeffRight[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_r",0,coeffMax);
-        coeffShiftedLeft[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_l",0,coeffMax);
-        coeffShiftedRight[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_r",0,coeffMax);
-        coeffShiftedSignLeft[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_sg_l",-coeffMax,coeffMax);
-        coeffShiftedSignRight[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_sg_r",-coeffMax,coeffMax);
+
+        if(useRelaxation)
+        {
+            coeffLeft[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_l",0,coeffMax);
+            coeffRight[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_r",0,coeffMax);
+            coeffShiftedLeft[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_l",0,coeffMax);
+            coeffShiftedRight[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_r",0,coeffMax);
+            coeffShiftedSignLeft[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_sg_l",-coeffMax,coeffMax);
+            coeffShiftedSignRight[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_sg_r",-coeffMax,coeffMax);
+        }
+        else
+        {
+            coeffLeft[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_l",0,coeffMax);
+            coeffRight[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_r",0,coeffMax);
+            coeffShiftedLeft[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_sh_l",0,coeffMax);
+            coeffShiftedRight[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_sh_r",0,coeffMax);
+            coeffShiftedSignLeft[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_sh_sg_l",-coeffMax,coeffMax);
+            coeffShiftedSignRight[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_sh_sg_r",-coeffMax,coeffMax);
+        }
         signLeft[a] = ScaLP::newBinaryVariable("sign"  + to_string(a) + "l");
         signRight[a] = ScaLP::newBinaryVariable("sign"  + to_string(a) + "r");
         for(unsigned int k=0; k <= noOfAdders-1; k++) //!!
@@ -322,7 +345,7 @@ int main(int argc, char *args[])
       sol.setObjective(ScaLP::minimize(obj));
 //      sol.setObjective(ScaLP::maximize(obj));
 
-      //constraint C1:
+      //constraint C6:
       if(noOfOutputs == 1) //SCM problem
       {
         sol << (coeff[noOfAdders] == targetCoeff);
@@ -342,11 +365,9 @@ int main(int argc, char *args[])
         unsigned int j=0;
         for(long targetCoeff : targetCoeffs)
         {
-          //constraint C1a:
-          sol << (output[j] == targetCoeff);
+          //constraint C6a:
           for(unsigned int a=0; a <= noOfAdders; a++)
           {
-            //constraint C1b:
             if(useIndicatorConstraints)
             {
               sol << (outputIsa[j][a]==1 then output[j] - coeff[a] == 0);
@@ -357,7 +378,9 @@ int main(int argc, char *args[])
               sol << (-output[j] + coeff[a] - bigM + bigM*outputIsa[j][a]  <= 0);
             }
           }
-          //constraint C1c:
+          //constraint C6b:
+          sol << (output[j] == targetCoeff);
+          //constraint C6c:
           ScaLP::Term c1c(0);
           for(unsigned int a=0; a <= noOfAdders; a++)
           {
@@ -370,44 +393,44 @@ int main(int argc, char *args[])
 
       }
 
-      //constraint C2:
+      //constraint C1:
       sol << (coeff[0] == 1);
 
       for(unsigned int a=1; a <= noOfAdders; a++)
       {
-        //constraints C3:
+        //constraints C2:
         sol << (coeff[a] - coeffShiftedSignLeft[a] - coeffShiftedSignRight[a] == 0);
 
-        for(unsigned int j=0; j <= a-1; j++)
+        for(unsigned int k=0; k <= a-1; k++)
         {
-          //constraints C4:
+          //constraints C3a:
           if(useIndicatorConstraints)
           {
-            sol << (coeffIskLeft[a][j]==1 then coeffLeft[a] - coeff[j] == 0);
-            sol << (coeffIskRight[a][j]==1 then coeffRight[a] - coeff[j] == 0);
+            sol << (coeffIskLeft[a][k]==1 then coeffLeft[a] - coeff[k] == 0);
+            sol << (coeffIskRight[a][k]==1 then coeffRight[a] - coeff[k] == 0);
           }
           else
           {
 //                s << (coeff[k] - BigM + BigM*coeffIskLeft[i][k] <= coeffLeft[i] <= coeff[k] + BigM - BigM*coeffIskLeft[i][k]);
 //                s << (coeff[k] - BigM + BigM*coeffIskRight[i][k] <= coeffRight[i] <= coeff[k] + BigM - BigM*coeffIskRight[i][k]);
-            sol << (coeff[j] - bigM + bigM*coeffIskLeft[a][j] - coeffLeft[a] <= 0);
-            sol << (coeffLeft[a] - coeff[j] - bigM + bigM*coeffIskLeft[a][j] <= 0);
-            sol << (coeff[j] - bigM + bigM*coeffIskRight[a][j] - coeffRight[a] <= 0);
-            sol << (coeffRight[a] - coeff[j] - bigM + bigM*coeffIskRight[a][j] <= 0);
+            sol << (coeff[k] - bigM + bigM*coeffIskLeft[a][k] - coeffLeft[a] <= 0);
+            sol << (coeffLeft[a] - coeff[k] - bigM + bigM*coeffIskLeft[a][k] <= 0);
+            sol << (coeff[k] - bigM + bigM*coeffIskRight[a][k] - coeffRight[a] <= 0);
+            sol << (coeffRight[a] - coeff[k] - bigM + bigM*coeffIskRight[a][k] <= 0);
           }
         }
 
-        //constraints C5:
-        ScaLP::Term c5l(0),c5r(0);
+        //constraints C3b:
+        ScaLP::Term c3bl(0),c3br(0);
         for(unsigned int k=0; k <= a-1; k++)
         {
-          c5l += coeffIskLeft[a][k];
-          c5r += coeffIskRight[a][k];
+          c3bl += coeffIskLeft[a][k];
+          c3br += coeffIskRight[a][k];
         }
-        sol << (c5l == 1);
-        sol << (c5r == 1);
+        sol << (c3bl == 1);
+        sol << (c3br == 1);
 
-        //constraints C6:
+        //constraints C4a:
         for(int s=0; s < shiftMax; s++)
         {
           if(useIndicatorConstraints)
@@ -424,8 +447,12 @@ int main(int argc, char *args[])
             sol << ((1LL << s)*coeffRight[a] - bigM + bigM*shiftIsSRight[a][s] - coeffShiftedRight[a] <= 0);
 */
           }
+          if(s > 0)
+            sol << (shiftIsSRight[a][s] == 0 ); //shift at right input is zero for all positive shifts
+          else
+            sol << (shiftIsSRight[a][s] == 1 ); //right shift at right input is currently disabled
         }
-        sol << (coeffShiftedRight[a] - coeffRight[a] == 0 ); //right shift is disabled per default
+        sol << (coeffShiftedRight[a] - coeffRight[a] == 0 ); //right shift is currently disabled
         //constraints C7:
         ScaLP::Term c7l(0),c7r(0);
         for(int s=0; s < shiftMax; s++)
@@ -499,7 +526,7 @@ int main(int argc, char *args[])
         }
       }
 
-      sol.writeLP("oscm.lp");
+      sol.writeLP("omcm.lp");
 
       // Try to solve
       ScaLP::status stat = sol.solve();
@@ -511,7 +538,7 @@ int main(int argc, char *args[])
 //      std::setprecision(20);
 
       cout << "Optimization result: " << stat << endl;
-      if((stat == ScaLP::status::FEASIBLE) || (stat == ScaLP::status::OPTIMAL) || (stat == ScaLP::status::TIMEOUT))
+      if((stat == ScaLP::status::FEASIBLE) || (stat == ScaLP::status::OPTIMAL) || (stat == ScaLP::status::TIMEOUT_FEASIBLE))
       {
         for(unsigned int a=1; a <= noOfAdders; a++)
         {
@@ -540,7 +567,8 @@ int main(int argc, char *args[])
         for(unsigned int a=1; a <= noOfAdders; a++)
         {
           int sl,sr;
-          double c = round(res.values[coeff[a]]);
+          double c = res.values[coeff[a]];
+          int cRounded = round(c);
           for(int s=0; s < shiftMax; s++)
           {
             if(round(res.values[shiftIsSLeft[a][s]]) == 1)
@@ -563,19 +591,25 @@ int main(int argc, char *args[])
           else
             signR = "+";
 
-          double cl = round(res.values[coeffLeft[a]]);
-          double cr = round(res.values[coeffRight[a]]);
+          double cl = res.values[coeffLeft[a]];
+          double cr = res.values[coeffRight[a]];
+          int clRounded = round(cl);
+          int crRounded = round(cr);
 
-          cout << coeff[a] << "=" << c << "=" << signL << cl << "*2^" << sl << " " << signR << " " << cr << "*2^" << sr << endl;
+          cout << coeff[a] << "=" << cRounded << "=" << signL << clRounded << "*2^" << sl << " " << signR << " " << crRounded << "*2^" << sr << endl;
 
-          int cls = signL=="-" ? -cl : cl;
-          int crs = signR=="-" ? -cr : cr;
-          if(c != (((int) cls) << sl) + (((int) crs) << sr))
+          std::setprecision(20);
+//          cout << std::setprecision(std::numeric_limits<double>::digits10+1)
+          cout << coeff[a] << "=" << cRounded << "=" << signL << cl << "*2^" << sl << " " << signR << " " << cr << "*2^" << sr << endl;
+
+          int cls = signL=="-" ? -clRounded : clRounded;
+          int crs = signR=="-" ? -crRounded : crRounded;
+          if(cRounded != (((int) cls) << sl) + (((int) crs) << sr))
           {
-            cerr << "Error in result: " << c << " != " << (((int) cls) << sl) + (((int) crs) << sr) << endl;
+            cerr << "Error in result: " << cRounded << " != " << (((int) cls) << sl) + (((int) crs) << sr) << endl;
           }
 
-          adderMatrix << c << " " << signL << cl << " " << sl << " " << signR << cr << " " << sr;
+          adderMatrix << cRounded << " " << signL << clRounded << " " << sl << " " << signR << crRounded << " " << sr;
           if(a != noOfAdders) adderMatrix << ";";
         }
         adderMatrix << "]";
