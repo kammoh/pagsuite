@@ -248,7 +248,7 @@ int main(int argc, char *args[])
 //      sol.intFeasTol = 1E-5;
 //      sol.intFeasTol = 1E-9;
 
-      sol.intFeasTol = 1E-6;
+      sol.intFeasTol = 1/((double) 2*bigM);
 
       //define and initialize variables:
       vector<ScaLP::Variable> coeff(noOfAdders+1);
