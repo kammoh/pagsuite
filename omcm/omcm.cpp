@@ -55,6 +55,7 @@ void print_short_help()
     cout << "--big_M=[int]                           Value of the big-M variable" << endl;
     cout << "--indicator_constraints                 When specified, indicator constraints are used instead of big-M constraints" << endl;
     cout << "--use_relaxations                       When specified, relaxations to real variables are used where possible" << endl;
+    cout << "--ternary_add                           When specified, ternary adders are considered instead of 2-input adders" << endl;
     cout << "--no_of_adders_min=[int]                Minimum number of adders for which a solution is searched (default is the number of unique odd coefficients as lower bound)" << endl;
     cout << "--no_of_adders_max=[int]                Maximum number of adders for which a solution is searched (default is infinity)" << endl;
     cout << "--objective=[none|minAccSum|minGPC]     Secondary objective, none: only the adders are minimized, minAccSum: the sum of coefficients is minimized leading to low word size solutions, minGPC: the glitch path cound (GPC) is minimized" << endl;
@@ -72,10 +73,12 @@ int main(int argc, char *args[])
   int timeout=-1; //default -1 means no timeout
   bool useIndicatorConstraints=false;
   long bigM=-1;
+  long bigMGPC=1000; //should be enough
   string ilpSolver="";
   int threads=0;
   string objective="none";
   bool useRelaxation=false;
+  bool useTernaryAdder=false;
 
   set<long> targetCoeffs;
 
@@ -114,7 +117,11 @@ int main(int argc, char *args[])
     {
       useIndicatorConstraints=true;
     }
-    else if(getCmdParameter(args[i],"--use_relaxations",value))
+    else if(getCmdParameter(args[i],"--ternary_add",value))
+    {
+      useTernaryAdder=true;
+    }
+    else if(getCmdParameter(args[i],"--relaxations",value))
     {
       useRelaxation=true;
     }
@@ -245,10 +252,12 @@ int main(int argc, char *args[])
         sol.timeout = timeout;
       }
 
-//      sol.intFeasTol = 1E-5;
+      sol.intFeasTol = 1E-5;
 //      sol.intFeasTol = 1E-9;
 
-      sol.intFeasTol = 1/((double) 2*bigM);
+      double minTol = 1/((double) 2*bigM); //the minimum tolerance accepted by the model
+      if(sol.intFeasTol > minTol)
+        sol.intFeasTol = minTol;
 
       //define and initialize variables:
       vector<ScaLP::Variable> coeff(noOfAdders+1);
@@ -265,6 +274,14 @@ int main(int argc, char *args[])
       vector<ScaLP::Variable> signLeft(noOfAdders+1);
       vector<ScaLP::Variable> signRight(noOfAdders+1);
 
+      //the 'middle' input is used for ternary adders
+      vector<ScaLP::Variable> coeffMiddle(noOfAdders+1);
+      vector<ScaLP::Variable> coeffShiftedMiddle(noOfAdders+1);
+      vector<ScaLP::Variable> coeffShiftedSignMiddle(noOfAdders+1);
+      vector<vector<ScaLP::Variable> > coeffIskMiddle(noOfAdders+1, vector<ScaLP::Variable>(noOfAdders+1));
+      vector<vector<ScaLP::Variable> > shiftIsSMiddle(noOfAdders+1, vector<ScaLP::Variable>(shiftMax));
+      vector<ScaLP::Variable> signMiddle(noOfAdders+1);
+
       for(unsigned int a=0; a <= noOfAdders; a++)
       {
         coeff[a] = ScaLP::newIntegerVariable("c" + to_string(a),0,coeffMax); //could be also real but then it gets numerically unstable (at least with gurobi)
@@ -277,6 +294,12 @@ int main(int argc, char *args[])
             coeffShiftedRight[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_r",0,coeffMax);
             coeffShiftedSignLeft[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_sg_l",-coeffMax,coeffMax);
             coeffShiftedSignRight[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_sg_r",-coeffMax,coeffMax);
+            if(useTernaryAdder)
+            {
+              coeffMiddle[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_m",0,coeffMax);
+              coeffShiftedMiddle[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_m",0,coeffMax);
+              coeffShiftedSignMiddle[a] = ScaLP::newRealVariable("c" + to_string(a) + "_in_sh_sg_m",-coeffMax,coeffMax);
+            }
         }
         else
         {
@@ -286,18 +309,36 @@ int main(int argc, char *args[])
             coeffShiftedRight[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_sh_r",0,coeffMax);
             coeffShiftedSignLeft[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_sh_sg_l",-coeffMax,coeffMax);
             coeffShiftedSignRight[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_sh_sg_r",-coeffMax,coeffMax);
+            if(useTernaryAdder)
+            {
+              coeffMiddle[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_m",0,coeffMax);
+              coeffShiftedMiddle[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_sh_m",0,coeffMax);
+              coeffShiftedSignMiddle[a] = ScaLP::newIntegerVariable("c" + to_string(a) + "_in_sh_sg_m",-coeffMax,coeffMax);
+            }
         }
         signLeft[a] = ScaLP::newBinaryVariable("sign"  + to_string(a) + "l");
         signRight[a] = ScaLP::newBinaryVariable("sign"  + to_string(a) + "r");
+        if(useTernaryAdder)
+        {
+          signMiddle[a] = ScaLP::newBinaryVariable("sign"  + to_string(a) + "m");
+        }
         for(unsigned int k=0; k <= noOfAdders-1; k++) //!!
         {
           coeffIskLeft[a][k] = ScaLP::newBinaryVariable("c"  + to_string(a) + "_in_l_is_" + to_string(k));
           coeffIskRight[a][k] = ScaLP::newBinaryVariable("c"  + to_string(a) + "_in_r_is_" + to_string(k));
+          if(useTernaryAdder)
+          {
+            coeffIskMiddle[a][k] = ScaLP::newBinaryVariable("c"  + to_string(a) + "_in_m_is_" + to_string(k));
+          }
         }
         for(unsigned int s=0; s < shiftMax; s++)
         {
           shiftIsSLeft[a][s] = ScaLP::newBinaryVariable("shift"  + to_string(a) + "_in_l_is_" + to_string(s));
           shiftIsSRight[a][s] = ScaLP::newBinaryVariable("shift"  + to_string(a) + "_in_r_is_" + to_string(s));
+          if(useTernaryAdder)
+          {
+            shiftIsSMiddle[a][s] = ScaLP::newBinaryVariable("shift"  + to_string(a) + "_in_m_is_" + to_string(s));
+          }
         }
       }
 
@@ -309,6 +350,7 @@ int main(int argc, char *args[])
       vector<ScaLP::Variable> gpc(noOfAdders+1);
       vector<ScaLP::Variable> gpcLeft(noOfAdders+1);
       vector<ScaLP::Variable> gpcRight(noOfAdders+1);
+      vector<ScaLP::Variable> gpcMiddle(noOfAdders+1);
 
       ScaLP::Term obj(0); //this corresponds to objective == "none"
       if(objective == "none")
@@ -330,6 +372,10 @@ int main(int argc, char *args[])
           gpc[a] = ScaLP::newIntegerVariable("gpc" + to_string(a)); //could be also real but then it gets numerically unstable (at least with gurobi)
           gpcLeft[a] = ScaLP::newRealVariable("gpc_l" + to_string(a));
           gpcRight[a] = ScaLP::newRealVariable("gpc_r" + to_string(a));
+          if(useTernaryAdder)
+          {
+            gpcMiddle[a] = ScaLP::newRealVariable("gpc_m" + to_string(a));
+          }
         }
         for(unsigned int a=1; a <= noOfAdders; a++)
         {
@@ -399,7 +445,14 @@ int main(int argc, char *args[])
       for(unsigned int a=1; a <= noOfAdders; a++)
       {
         //constraints C2:
-        sol << (coeff[a] - coeffShiftedSignLeft[a] - coeffShiftedSignRight[a] == 0);
+        if(useTernaryAdder)
+        {
+          sol << (coeff[a] - coeffShiftedSignLeft[a] - coeffShiftedSignMiddle[a] - coeffShiftedSignRight[a] == 0);
+        }
+        else
+        {
+          sol << (coeff[a] - coeffShiftedSignLeft[a] - coeffShiftedSignRight[a] == 0);
+        }
 
         for(unsigned int k=0; k <= a-1; k++)
         {
@@ -408,6 +461,8 @@ int main(int argc, char *args[])
           {
             sol << (coeffIskLeft[a][k]==1 then coeffLeft[a] - coeff[k] == 0);
             sol << (coeffIskRight[a][k]==1 then coeffRight[a] - coeff[k] == 0);
+            if(useTernaryAdder)
+              sol << (coeffIskMiddle[a][k]==1 then coeffMiddle[a] - coeff[k] == 0);
           }
           else
           {
@@ -417,18 +472,27 @@ int main(int argc, char *args[])
             sol << (coeffLeft[a] - coeff[k] - bigM + bigM*coeffIskLeft[a][k] <= 0);
             sol << (coeff[k] - bigM + bigM*coeffIskRight[a][k] - coeffRight[a] <= 0);
             sol << (coeffRight[a] - coeff[k] - bigM + bigM*coeffIskRight[a][k] <= 0);
+            if(useTernaryAdder)
+            {
+              sol << (coeff[k] - bigM + bigM*coeffIskMiddle[a][k] - coeffMiddle[a] <= 0);
+              sol << (coeffMiddle[a] - coeff[k] - bigM + bigM*coeffIskMiddle[a][k] <= 0);
+            }
           }
         }
 
         //constraints C3b:
-        ScaLP::Term c3bl(0),c3br(0);
+        ScaLP::Term c3bl(0),c3bm(0),c3br(0);
         for(unsigned int k=0; k <= a-1; k++)
         {
           c3bl += coeffIskLeft[a][k];
           c3br += coeffIskRight[a][k];
+          if(useTernaryAdder)
+            c3bm += coeffIskMiddle[a][k];
         }
         sol << (c3bl == 1);
         sol << (c3br == 1);
+        if(useTernaryAdder)
+          sol << (c3bm == 1);
 
         //constraints C4a:
         for(int s=0; s < shiftMax; s++)
@@ -437,33 +501,46 @@ int main(int argc, char *args[])
           {
             sol << (shiftIsSLeft[a][s] == 1 then coeffShiftedLeft[a] - (1LL << s)*coeffLeft[a] == 0 );
 //            sol << (shiftIsSRight[a][s] == 1 then coeffShiftedRight[a] - (1LL << s)*coeffRight[a] == 0 );
+            if(useTernaryAdder)
+              sol << (shiftIsSMiddle[a][s] == 1 then coeffShiftedMiddle[a] - (1LL << s)*coeffMiddle[a] == 0 );
           }
           else
           {
             sol << (coeffShiftedLeft[a] - (1LL << s)*coeffLeft[a] - bigM + bigM*shiftIsSLeft[a][s] <= 0);
             sol << ((1LL << s)*coeffLeft[a] - bigM + bigM*shiftIsSLeft[a][s] - coeffShiftedLeft[a] <= 0);
+            if(useTernaryAdder)
+            {
+              sol << (coeffShiftedMiddle[a] - (1LL << s)*coeffMiddle[a] - bigM + bigM*shiftIsSMiddle[a][s] <= 0);
+              sol << ((1LL << s)*coeffMiddle[a] - bigM + bigM*shiftIsSMiddle[a][s] - coeffShiftedMiddle[a] <= 0);
+            }
 /*
             sol << (coeffShiftedRight[a] - (1LL << s)*coeffRight[a] - bigM + bigM*shiftIsSRight[a][s] <= 0);
             sol << ((1LL << s)*coeffRight[a] - bigM + bigM*shiftIsSRight[a][s] - coeffShiftedRight[a] <= 0);
 */
           }
+          //constraint C4c/d:
           if(s > 0)
             sol << (shiftIsSRight[a][s] == 0 ); //shift at right input is zero for all positive shifts
           else
             sol << (shiftIsSRight[a][s] == 1 ); //right shift at right input is currently disabled
         }
         sol << (coeffShiftedRight[a] - coeffRight[a] == 0 ); //right shift is currently disabled
-        //constraints C7:
-        ScaLP::Term c7l(0),c7r(0);
+
+        //constraints C4b:
+        ScaLP::Term c7l(0),c7m(0),c7r(0);
         for(int s=0; s < shiftMax; s++)
         {
           c7l += shiftIsSLeft[a][s];
           c7r += shiftIsSRight[a][s];
+          if(useTernaryAdder)
+            c7m += shiftIsSMiddle[a][s];
         }
         sol << (c7l == 1);
         sol << (c7r == 1);
+        if(useTernaryAdder)
+          sol << (c7m == 1);
 
-        //constraint C8:
+        //constraint C5a/b:
         if(useIndicatorConstraints)
         {
           //sign is +:
@@ -474,24 +551,51 @@ int main(int argc, char *args[])
           sol << (signRight[a] == 1 then coeffShiftedSignRight[a] + coeffShiftedRight[a] == 0 );
           //sign is -:
           sol << (signRight[a] == 0 then coeffShiftedSignRight[a] - coeffShiftedRight[a] == 0 );
+          if(useTernaryAdder)
+          {
+            //sign is +:
+            sol << (signMiddle[a] == 1 then coeffShiftedSignMiddle[a] + coeffShiftedMiddle[a] == 0 );
+            //sign is -:
+            sol << (signMiddle[a] == 0 then coeffShiftedSignMiddle[a] - coeffShiftedMiddle[a] == 0 );
+          }
         }
         else
         {
           //sign is +:
           sol << (coeffShiftedSignLeft[a] - coeffShiftedLeft[a] - bigM*signLeft[a] <= 0);
           sol << (coeffShiftedLeft[a] - bigM*signLeft[a] - coeffShiftedSignLeft[a]<= 0);
-          sol << (coeffShiftedSignRight[a] - coeffShiftedRight[a] - bigM*signRight[a] <= 0);
-          sol << (coeffShiftedRight[a] - bigM*signRight[a] - coeffShiftedSignRight[a]<= 0);
-
           //sign is -:
           sol << (coeffShiftedSignLeft[a] + coeffShiftedLeft[a] - bigM + bigM*signLeft[a] <= 0);
           sol << (-coeffShiftedLeft[a] - bigM + bigM*signLeft[a] - coeffShiftedSignLeft[a] <= 0);
+
+          //sign is +:
+          sol << (coeffShiftedSignRight[a] - coeffShiftedRight[a] - bigM*signRight[a] <= 0);
+          sol << (coeffShiftedRight[a] - bigM*signRight[a] - coeffShiftedSignRight[a]<= 0);
+          //sign is -:
           sol << (coeffShiftedSignRight[a] + coeffShiftedRight[a] - bigM + bigM*signRight[a] <= 0);
           sol << (-coeffShiftedRight[a] - bigM + bigM*signRight[a] - coeffShiftedSignRight[a] <= 0);
+
+          if(useTernaryAdder)
+          {
+            //sign is +:
+            sol << (coeffShiftedSignMiddle[a] - coeffShiftedMiddle[a] - bigM*signMiddle[a] <= 0);
+            sol << (coeffShiftedMiddle[a] - bigM*signMiddle[a] - coeffShiftedSignMiddle[a]<= 0);
+            //sign is -:
+            sol << (coeffShiftedSignMiddle[a] + coeffShiftedMiddle[a] - bigM + bigM*signMiddle[a] <= 0);
+            sol << (-coeffShiftedMiddle[a] - bigM + bigM*signMiddle[a] - coeffShiftedSignMiddle[a] <= 0);
+          }
+
         }
 
-        //constraint C9:
-        sol << (signLeft[a] + signRight[a] <= 1);
+        //constraint C5c:
+        if(useTernaryAdder)
+        {
+          sol << (signLeft[a] + signMiddle[a] + signRight[a] <= 2);
+        }
+        else
+        {
+          sol << (signLeft[a] + signRight[a] <= 1);
+        }
       }
 
       //    y==0 then x1+x2+x3==0
@@ -499,10 +603,10 @@ int main(int argc, char *args[])
       //optional GPC constraints:
       if(objective == "minGPC")
       {
-        //constraint C10a:
+        //constraint C7a:
         sol << (gpc[0] == 0);
 
-        //constraint C10b:
+        //constraint C7b:
         for(unsigned int a=1; a <= noOfAdders; a++)
         {
           for(unsigned int k=0; k <= a-1; k++)
@@ -511,18 +615,28 @@ int main(int argc, char *args[])
             {
               sol << (coeffIskLeft[a][k]==1 then gpcLeft[a] - gpc[k] == 0);
               sol << (coeffIskRight[a][k]==1 then gpcRight[a] - gpc[k] == 0);
+              if(useTernaryAdder)
+                sol << (coeffIskMiddle[a][k]==1 then gpcMiddle[a] - gpc[k] == 0);
             }
             else
             {
-              sol << (gpc[k] - bigM + bigM*coeffIskLeft[a][k] - gpcLeft[a] <= 0);
-              sol << (gpcLeft[a] - gpc[k] - bigM + bigM*coeffIskLeft[a][k] <= 0);
-              sol << (gpc[k] - bigM + bigM*coeffIskRight[a][k] - gpcRight[a] <= 0);
-              sol << (gpcRight[a] - gpc[k] - bigM + bigM*coeffIskRight[a][k] <= 0);
+              sol << (gpc[k] - bigMGPC + bigMGPC*coeffIskLeft[a][k] - gpcLeft[a] <= 0);
+              sol << (gpcLeft[a] - gpc[k] - bigMGPC + bigMGPC*coeffIskLeft[a][k] <= 0);
+              sol << (gpc[k] - bigMGPC + bigMGPC*coeffIskRight[a][k] - gpcRight[a] <= 0);
+              sol << (gpcRight[a] - gpc[k] - bigMGPC + bigMGPC*coeffIskRight[a][k] <= 0);
+              if(useTernaryAdder)
+              {
+                sol << (gpc[k] - bigMGPC + bigMGPC*coeffIskMiddle[a][k] - gpcMiddle[a] <= 0);
+                sol << (gpcMiddle[a] - gpc[k] - bigMGPC + bigMGPC*coeffIskMiddle[a][k] <= 0);
+              }
             }
           }
 
-          //constraint C10c:
-          sol << (gpc[a] - gpcLeft[a] - gpcRight[a] == 1);
+          //constraint C7c:
+          if(useTernaryAdder)
+            sol << (gpc[a] - gpcLeft[a] - gpcMiddle[a] - gpcRight[a] == 1);
+          else
+            sol << (gpc[a] - gpcLeft[a] - gpcRight[a] == 1);
         }
       }
 
@@ -545,18 +659,31 @@ int main(int argc, char *args[])
           cout << coeff[a] << "=" << res.values[coeff[a]] << "=Aop(" << res.values[coeffLeft[a]] << "," << res.values[coeffRight[a]] << ")" << endl;
           for(int s=0; s < shiftMax; s++)
           {
-            if(round(res.values[shiftIsSRight[a][s]]) == 1)
-              cout << "   " << coeff[a] << " shift right is " << s << endl;
             if(round(res.values[shiftIsSLeft[a][s]]) == 1)
               cout << "   " << coeff[a] << " shift left is " << s << endl;
+            if(useTernaryAdder)
+            {
+              if(round(res.values[shiftIsSMiddle[a][s]]) == 1)
+                cout << "   " << coeff[a] << " shift middle is " << s << endl;
+            }
+            if(round(res.values[shiftIsSRight[a][s]]) == 1)
+              cout << "   " << coeff[a] << " shift right is " << s << endl;
           }
           cout << "   " << coeff[a] << " sign left is " << res.values[signLeft[a]] << endl;
-          cout << "   " << coeff[a] << " sign left is " << res.values[signRight[a]] << endl;
+          if(useTernaryAdder)
+            cout << "   " << coeff[a] << " sign middle is " << res.values[signMiddle[a]] << endl;
+          cout << "   " << coeff[a] << " sign right is " << res.values[signRight[a]] << endl;
 
           cout << "   " << coeffShiftedLeft[a] << "=" << res.values[coeffShiftedLeft[a]] << endl;
-          cout << "   " << coeffShiftedRight[a] << "=" << res.values[coeffShiftedRight[a]] << endl;
           cout << "   " << coeffShiftedSignLeft[a] << "=" << res.values[coeffShiftedSignLeft[a]] << endl;
+          if(useTernaryAdder)
+          {
+            cout << "   " << coeffShiftedMiddle[a] << "=" << res.values[coeffShiftedMiddle[a]] << endl;
+            cout << "   " << coeffShiftedSignMiddle[a] << "=" << res.values[coeffShiftedSignMiddle[a]] << endl;
+          }
+          cout << "   " << coeffShiftedRight[a] << "=" << res.values[coeffShiftedRight[a]] << endl;
           cout << "   " << coeffShiftedSignRight[a] << "=" << res.values[coeffShiftedSignRight[a]] << endl;
+
         }
 
         stringstream adderMatrix;
@@ -566,7 +693,7 @@ int main(int argc, char *args[])
         adderMatrix << "[";
         for(unsigned int a=1; a <= noOfAdders; a++)
         {
-          int sl,sr;
+          int sl,sm,sr;
           double c = res.values[coeff[a]];
           int cRounded = round(c);
           for(int s=0; s < shiftMax; s++)
@@ -575,16 +702,31 @@ int main(int argc, char *args[])
             {
               sl=s;
             }
+            if(useTernaryAdder)
+            {
+              if(round(res.values[shiftIsSMiddle[a][s]]) == 1)
+              {
+                sm=s;
+              }
+            }
             if(round(res.values[shiftIsSRight[a][s]]) == 1)
             {
               sr=s;
             }
           }
-          string signL,signR;
+          string signL,signM,signR;
           if(round(res.values[signLeft[a]]) == 1)
             signL = "-";
           else
             signL = "";
+
+          if(useTernaryAdder)
+          {
+            if(round(res.values[signMiddle[a]]) == 1)
+              signM = "-";
+            else
+              signM = "+";
+          }
 
           if(round(res.values[signRight[a]]) == 1)
             signR = "-";
@@ -593,23 +735,46 @@ int main(int argc, char *args[])
 
           double cl = res.values[coeffLeft[a]];
           double cr = res.values[coeffRight[a]];
+          double cm=0;
+          if(useTernaryAdder)
+            cm = res.values[coeffMiddle[a]];
+
           int clRounded = round(cl);
           int crRounded = round(cr);
+          int cmRounded = round(cm);
 
-          cout << coeff[a] << "=" << cRounded << "=" << signL << clRounded << "*2^" << sl << " " << signR << " " << crRounded << "*2^" << sr << endl;
+          cout << coeff[a] << "=" << cRounded << "=" << signL << clRounded << "*2^" << sl << " ";
+          if(useTernaryAdder)
+          {
+            cout << signM << " " << cmRounded << "*2^" << sm;
+          }
+          cout << signR << " " << crRounded << "*2^" << sr << endl;
 
-          std::setprecision(20);
-//          cout << std::setprecision(std::numeric_limits<double>::digits10+1)
-          cout << coeff[a] << "=" << cRounded << "=" << signL << cl << "*2^" << sl << " " << signR << " " << cr << "*2^" << sr << endl;
+//          std::setprecision(20);
 
           int cls = signL=="-" ? -clRounded : clRounded;
           int crs = signR=="-" ? -crRounded : crRounded;
-          if(cRounded != (((int) cls) << sl) + (((int) crs) << sr))
+          int cms = signM=="-" ? -cmRounded : cmRounded;
+          if(useTernaryAdder)
           {
-            cerr << "Error in result: " << cRounded << " != " << (((int) cls) << sl) + (((int) crs) << sr) << endl;
+            if(cRounded != (((int) cls) << sl) + (((int) cms) << sm) + (((int) crs) << sr))
+            {
+              cerr << "Error in result: " << cRounded << " != " << (((int) cls) << sl) + (((int) cms) << sm) + (((int) crs) << sr) << endl;
+            }
+          }
+          else
+          {
+            if(cRounded != (((int) cls) << sl) + (((int) crs) << sr))
+            {
+              cerr << "Error in result: " << cRounded << " != " << (((int) cls) << sl) + (((int) crs) << sr) << endl;
+            }
           }
 
-          adderMatrix << cRounded << " " << signL << clRounded << " " << sl << " " << signR << crRounded << " " << sr;
+          adderMatrix << cRounded << " " << signL << clRounded << " " << sl << " ";
+          if(useTernaryAdder)
+            adderMatrix << signM << cmRounded << " " << sm << " ";
+          adderMatrix << signR << crRounded << " " << sr;
+
           if(a != noOfAdders) adderMatrix << ";";
         }
         adderMatrix << "]";
