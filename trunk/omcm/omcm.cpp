@@ -52,9 +52,10 @@ void print_short_help()
     cout << "--threads=[int]                         Number of threads for the ILP solver" << endl;
     cout << "--max_shift=[int]                       Maximum bit shift which is considered in the adder graph" << endl;
     cout << "--max_coeff=[int]                       Maximum coefficient that is expected in an adder node" << endl;
-    cout << "--big_M=[int]                           Value of the big-M variable" << endl;
+    cout << "--big_M=[int]                           Value of the big-M variable (default: max. coeff + 1)" << endl;
+    cout << "--int_feas_tol=[float]                  Sets the integer feasible tolerance of the solver. Reduce this value for large constants if errors occur (default: min(1E-5,1/(2*big-M)))" << endl;
     cout << "--indicator_constraints                 When specified, indicator constraints are used instead of big-M constraints" << endl;
-    cout << "--use_relaxations                       When specified, relaxations to real variables are used where possible" << endl;
+    cout << "--relaxations                           When specified, relaxations to real variables are used where possible" << endl;
     cout << "--ternary_add                           When specified, ternary adders are considered instead of 2-input adders" << endl;
     cout << "--no_of_adders_min=[int]                Minimum number of adders for which a solution is searched (default is the number of unique odd coefficients as lower bound)" << endl;
     cout << "--no_of_adders_max=[int]                Maximum number of adders for which a solution is searched (default is infinity)" << endl;
@@ -79,6 +80,7 @@ int main(int argc, char *args[])
   string objective="none";
   bool useRelaxation=false;
   bool useTernaryAdder=false;
+  double intFeasTol=1E-5;
 
   set<long> targetCoeffs;
 
@@ -112,6 +114,10 @@ int main(int argc, char *args[])
     else if(getCmdParameter(args[i],"--no_of_adders_max=",value))
     {
       noOfAddersMax = atol(value);
+    }
+    else if(getCmdParameter(args[i],"--int_feas_tol=",value))
+    {
+      intFeasTol = atof(value);
     }
     else if(getCmdParameter(args[i],"--indicator_constraints",value))
     {
@@ -252,12 +258,13 @@ int main(int argc, char *args[])
         sol.timeout = timeout;
       }
 
-      sol.intFeasTol = 1E-5;
-//      sol.intFeasTol = 1E-9;
+      sol.intFeasTol = intFeasTol;
 
       double minTol = 1/((double) 2*bigM); //the minimum tolerance accepted by the model
       if(sol.intFeasTol > minTol)
         sol.intFeasTol = minTol;
+
+      cout << "Int feasibility tolerance set to " << sol.intFeasTol << endl;
 
       //define and initialize variables:
       vector<ScaLP::Variable> coeff(noOfAdders+1);
