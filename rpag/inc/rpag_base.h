@@ -1054,7 +1054,7 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
       output_stream << "pipeline_set_best{" << matlab_out_address_string << "}=" << pipeline_set_best <<"; " ;
       if(show_adder_graph)
       {
-          output_stream << "pipelined_adder_graph{" << matlab_out_address_string << "}=" << output_adder_graph(pipelined_adder_graph,file_output) << ";" << endl;
+          output_stream << "pipelined_adder_graph{" << matlab_out_address_string << "}=" << output_adder_graph(pipelined_adder_graph,true) << ";" << endl;
       }
       output_stream << "needed_time_in_s(" << matlab_out_address_string << ")=" << std::fixed << std::setprecision(3) << (timer.time_elapsed * 1E-6) <<"; " ;
 //      output_stream << "rpag_info{" << matlab_out_address_string << "}='" << rpag_info(start_arguments,false) <<"';" ;
@@ -1067,38 +1067,38 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
     int no_of_adders=0,no_of_registers=0,no_of_registered_ops=0;
     typename set<T>::iterator set_iter;
 
-    for(unsigned int s = 0; s < pipeline_set_best.size(); ++s)
+    for(unsigned int s = 1; s < pipeline_set_best.size(); ++s)
     {
-    for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
-    {
-      if(s == 0)
+      for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
       {
-        if(nonzeros(*set_iter) == 1)
-          no_of_registers++;
-        else
-          no_of_adders++;
-      }
-      else
-      {
-        //seach element in previous stage
-        if(pipeline_set_best[s-1].find(*set_iter) != pipeline_set_best[s-1].end())
+        if(s == 0)
         {
-          //element found -> count as register
-          no_of_registers++;
+          if(nonzeros(*set_iter) == 1)
+            no_of_registers++;
+          else
+            no_of_adders++;
         }
         else
         {
-          no_of_adders++;
+          //seach element in previous stage
+          if(pipeline_set_best[s-1].find(*set_iter) != pipeline_set_best[s-1].end())
+          {
+            //element found -> count as register
+            no_of_registers++;
+          }
+          else
+          {
+            no_of_adders++;
+          }
         }
       }
-    }
-    no_of_registered_ops += pipeline_set_best[s].size();
+      no_of_registered_ops += pipeline_set_best[s].size();
     }
 
     IF_VERBOSE(0) output_stream << "pipeline_set_best=" << pipeline_set_best << endl;
     if(show_adder_graph)
     {
-        pag << "pipelined_adder_graph=" << output_adder_graph(pipelined_adder_graph,file_output) << endl;
+        pag << "pipelined_adder_graph=" << output_adder_graph(pipelined_adder_graph,true) << endl;
         IF_VERBOSE(0) output_stream << pag.str();// the endl is inluded in the pag string
     }
       IF_VERBOSE(0) output_stream << "pag_cost=" << pag_cost_best << endl;

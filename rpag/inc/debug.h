@@ -43,7 +43,7 @@ ostream& operator<<(ostream &s, vector<T>& vec)
     s << *iter;
     ++iter;
     if(iter != vec.end())
-      s  << "*,";
+      s  << ",";
   }
   return s;
 }
