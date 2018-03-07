@@ -4,6 +4,7 @@ function write_cmm_pipelined_realization_graph_dot(filename, pipelined_realizati
 % open dot-file and write header:
 fid = fopen(filename, 'wt');
 fprintf(fid, 'digraph G {\n');
+shortnames=false;
 
 for k=1:2:size(varargin,2)
   switch(varargin{k})
@@ -15,6 +16,10 @@ for k=1:2:size(varargin,2)
       if varargin{k+1} > 0
         fprintf(fid, 'ranksep=%f;\n',varargin{k+1});
       end
+    case 'shortnames'
+      if varargin{k+1} == true
+        shortnames=true;
+      end
   end
 end
 
@@ -25,9 +30,15 @@ s_last=-1; %remembers the last pipeline stage
 for i=1:no_of_inputs
   input_vec = zeros(1,no_of_inputs);
   input_vec(i) = 1;
-  fprintf(fid, ['x_',vec2dot(input_vec,'_'),'_s0 [label="(',vec2dot(input_vec,','),')",shape="ellipse"];\n']);
+  if shortnames
+    label = num2str(i);
+  else
+    label = vec2dot(input_vec,',')
+  end
+  fprintf(fid, ['x_',vec2dot(input_vec,'_'),'_s0 [label="(',label,')",shape="ellipse"];\n']);
 end
 
+nodecnt = no_of_inputs+1; %for short labels
 %write nodes
 for l=1:size(pipelined_realization,2)
   pipelined_realization_element = pipelined_realization{l};
@@ -60,10 +71,22 @@ for l=1:size(pipelined_realization,2)
     end
     if pipelined_realization_element{2} == pipelined_realization_element{4}
       %no delay -> this is a node without register (output)
-      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1},'_'),' [label="(',vec2dot(pipelined_realization_element{1},','),')",shape="none",height=0.0];\n']);
+      if shortnames
+        label = num2str(nodecnt);
+        nodecnt = nodecnt + 1;
+      else
+        label = pipelined_realization_element{1};
+      end
+      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1},'_'),' [label="(',label,')",shape="none",height=0.0];\n']);
     else
       %this is a node without register:
-      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1}','_'),'_s',num2str(pipelined_realization_element{2}),' [label="',sign_str,'\\n(',vec2dot(pipelined_realization_element{1}',','),')",shape="box"];\n']);
+      if shortnames
+        label = num2str(nodecnt);
+        nodecnt = nodecnt + 1;
+      else
+        label = pipelined_realization_element{1};
+      end
+      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1}','_'),'_s',num2str(pipelined_realization_element{2}),' [label="',sign_str,'\\n(',label,')",shape="box"];\n']);
     end
 end
 fprintf(fid, '}\n');
@@ -84,15 +107,19 @@ for l=1:size(pipelined_realization,2)
   if node_is_register
     if pipelined_realization_element{2} == pipelined_realization_element{4}
       %no delay -> this is a node without register (output)
-      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),' [label="(',vec2dot(pipelined_realization_element{5},','),')",fontsize=12]\n']);
+      label = vec2dot(pipelined_realization_element{5},',');
+      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),' [label="(',label,')",fontsize=12]\n']);
     else
       %this is a register:
-      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',mat2str(pipelined_realization_element{5}),'",fontsize=12]\n']);
+      label = mat2str(pipelined_realization_element{5});
+      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',label,'",fontsize=12]\n']);
     end
   else
     %two input adders:
-    fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',num2str(pipelined_realization_element{5}),' ",fontsize=12]\n']);
-    fprintf(fid, ['x_',vec2dot(pipelined_realization_element{6},'_'),'_s',num2str(pipelined_realization_element{7}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',num2str(pipelined_realization_element{8}),' ",fontsize=12]\n']);
+    label = num2str(pipelined_realization_element{5});
+    fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',label,' ",fontsize=12]\n']);
+    label = num2str(pipelined_realization_element{8});
+    fprintf(fid, ['x_',vec2dot(pipelined_realization_element{6},'_'),'_s',num2str(pipelined_realization_element{7}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',label,' ",fontsize=12]\n']);
     
     
 %     %check no of adder inputs:

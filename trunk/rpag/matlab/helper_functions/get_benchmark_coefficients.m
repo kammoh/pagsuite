@@ -23,7 +23,8 @@ function coeff = get_benchmark_coefficients(benchmark_name)
     otherwise
       conv_matrix = benchmarkfilter2d(benchmark_name);
       if conv_matrix < 0
-        coeff = get_reconf_mirzaei_benchmark_coeffs(benchmark_name);
+%        coeff = get_reconf_mirzaei_benchmark_coeffs(benchmark_name);
+        coeff = filtersfromliterature(benchmark_name);
       else
         coeff = unique(fundamental(abs(unique(conv_matrix)')));
         coeff = setdiff(coeff,[0]);

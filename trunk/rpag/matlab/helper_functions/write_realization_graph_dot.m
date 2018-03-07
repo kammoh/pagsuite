@@ -8,13 +8,25 @@ fprintf(fid, 'digraph G {\n');
 %fprintf(fid, ['1 [label="1",shape="box"];\n']);
 fprintf(fid, ['1 [label="1",shape="ellipse"];\n']);
 
+if size(realization,2) == 7
+  ternary_adder=true;
+else
+  ternary_adder=false;
+end
+
 %write nodes
-realization_size = size(realization);
-for l=1:realization_size(1)
+for l=1:size(realization,1)
     if (sign(realization(l,2))*sign(realization(l,4))) < 0
       sign_str='-';
     else
       sign_str='+';
+    end      
+    if ternary_adder
+      if sign(realization(l,6)) < 0
+        sign_str=[sign_str,' -'];
+      else
+        sign_str=[sign_str,' +'];
+      end
     end
     %check end node without add or sub (only shift)
     if realization(l,4) == 0
@@ -35,7 +47,7 @@ for l=1:realization_size(1)
     end
 end
 
-for l=1:realization_size(1)
+for l=1:size(realization,1)
   %check end node without add or sub (only shift)
   if realization(l,4) == 0
 %    fprintf(fid, '%d -> %d [label="%d"]\n', abs(realization(l,2)), realization(l,1), realization(l,3));
@@ -48,6 +60,9 @@ for l=1:realization_size(1)
   else
     fprintf(fid, '%d -> %d [label="%d ",fontsize=12]\n', abs(realization(l,2)), realization(l,1), realization(l,3));
     fprintf(fid, '%d -> %d [label="%d ",fontsize=12]\n', abs(realization(l,4)), realization(l,1), realization(l,5));
+    if ternary_adder
+      fprintf(fid, '%d -> %d [label="%d ",fontsize=12]\n', abs(realization(l,6)), realization(l,1), realization(l,7));
+    end
   end
 end
 

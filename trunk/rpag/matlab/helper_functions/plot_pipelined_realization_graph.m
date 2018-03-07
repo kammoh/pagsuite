@@ -15,6 +15,7 @@ end
 file_name = 0;
 keeporder = false;
 ranksep = -1;
+shortnames=false;
 for k=1:2:size(varargin,2)
   switch(varargin{k})
     case 'name'
@@ -25,6 +26,10 @@ for k=1:2:size(varargin,2)
       end
     case 'ranksep'
       ranksep = varargin{k+1};
+    case 'shortnames'
+      if varargin{k+1} == true
+        shortnames=true;
+      end
   end
 end
 
@@ -68,7 +73,7 @@ if ~iscell(pipelined_realization)
   write_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep);
 else
   %cells are used to describe PCMM solutions (with 2-input adders):
-  write_cmm_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep);
+  write_cmm_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep,'shortnames',shortnames);
 end
 dot2pdf([pdf_path,'/',file_name]);
 %system([delete_cmd,' ',pdf_path,'/',file_name,'.dot']);
