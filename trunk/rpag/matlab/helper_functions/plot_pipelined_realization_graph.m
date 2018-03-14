@@ -55,7 +55,13 @@ if iscell(pipelined_realization)
     for i=1:length(pipelined_realization)
       switch pipelined_realization{i}{1}
         case 'A'
-          pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},pipelined_realization{i}{7},pipelined_realization{i}{8},pipelined_realization{i}{9}};
+          if length(pipelined_realization{i}) == 12
+            %ternary adder:
+            pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},pipelined_realization{i}{7},pipelined_realization{i}{8},pipelined_realization{i}{9},pipelined_realization{i}{10},pipelined_realization{i}{11},pipelined_realization{i}{12}};
+          else
+            %2-input adder:
+            pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},pipelined_realization{i}{7},pipelined_realization{i}{8},pipelined_realization{i}{9}};
+          end
         case 'R'
           pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},0,0,0,0};
         case 'O'

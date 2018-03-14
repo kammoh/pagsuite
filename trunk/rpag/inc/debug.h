@@ -132,7 +132,7 @@ ostream& operator<<(ostream &s, map<T, double>& int_double_map)
 template <typename T>
 ostream& operator<<(ostream &s, pair<T, T>& int_pair)
 {
-  s << "(" << int_pair.first << "," << int_pair.second << ")";
+  s << "(" << int_pair.first << "|" << int_pair.second << ")";
   return s;
 }
 

@@ -152,12 +152,16 @@ public:
   void compute_topology_c_predecessors_2_add(const set<T> *working_set, const set<T> *predecessor_set, map<T,double> *single_p_gain_map, int s_max, int ws_max, set<T> *p_set_c, map<pair<T,T>,double> *p_w_gain_map);
   void compute_topology_d_predecessors_2_add(T x, int nz_max, int ws_max, set<pair<T,T> > *predecessor_pair_set);
   void compute_topology_e_predecessors_2_add(T w1, T w2, int l_max, int nz_max, int ws_max, set<pair<T,T> > *predecessor_pair_set);
+  void compute_cse_predecessors_2_add(const vec_set_t *working_set, map<T, double> *single_p_gain_map, int max_adder_depth);
+
 
   void compute_topology_b_predecessors_3_add(const set<T> *working_set, map<pair<T,T>, double> *p_w_gain_map, int s_max, int ws_max, set<T> *p_set_b);
   void compute_topology_c_predecessors_3_add(const set<T> *working_set, const set<T> *predecessor_set, map<pair<T,T>, double> *p_w_gain_map, int s_max, int ws_max, set<T> *p_set_c);
   void compute_topology_d_predecessors_3_add(T x, int nz_max, int ws_max, set<triplet<T,T,T> > *predecessor_triplet_set);
   void permutation_for_predeccessor_pairs(vector<int_t> &nonzero_values, vector<int> &nonzero_shift_factor, vector<int> &nonzero_element, set<triplet<T,T,T> > *predecessor_triplet_set, int &ws_max,int nz_max, bool rekursion, vec_t p3, int &iteration_counter);
 
+protected:
+  void explore_cse(vector<vec_t> &working_vec, vec_t currentCSE, int baseIndex, int endIndex, int frequency, int cseSizeMin, int cseSizeMax, string indexCombinations, map<T, double> *single_p_gain_map);
 
 };
 
@@ -631,7 +635,7 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
   //############################################################################################################//
   for(s=no_of_pipeline_stages-1; s > 0; s--)
   {
-    IF_VERBOSE(3) cout << "****** realizing elements in pipeline stage " << s << " ******" << endl;
+    IF_VERBOSE(2) cout << "****** realizing elements in pipeline stage " << s << " ******" << endl;
 
     // set (or update) the current pipeline stage for the cost model
     cost->set_pipeline_state(s);
@@ -789,6 +793,7 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
         {
           IF_VERBOSE(3) cout << "no single predecessor found, searching for multiple predecessors" << endl;
 
+          best_multi_predecessor_set.clear();
           get_best_multi_predecessor(working_set, &best_multi_predecessor_set, s);
           predecessor_set.insert(best_multi_predecessor_set.begin(),best_multi_predecessor_set.end()); //insert the multi_predecessor into the predecessor set.
           if(first_decision_done==false)
@@ -798,8 +803,6 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
              *first_decision_predecessor_stage = (s-1);
 
              if(first_decision_break){return 1;} //just to get the next predecessor in a already computet case
-             //TODO REmove this line
-             //std::cout << "hallo false:" << s << "|" << (*first_decision_predecessor_stage) << "|" << (*first_decision_predecessor);
           }
 
         }
@@ -822,6 +825,16 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
 
         IF_VERBOSE(3) cout << "working_set=" << working_set << endl;
         IF_VERBOSE(3) cout << "predecessor_set=" << predecessor_set << endl;
+
+        IF_VERBOSE(2) cout << "working set size:" << working_set.size() << ", predecessor set size:" << predecessor_set.size();
+        if(best_single_predecessor != -1)
+        {
+          cout << ", added predecessor: " << best_single_predecessor << endl;
+        }
+        else
+        {
+          cout << ", added predecessors: " << best_multi_predecessor_set << endl;
+        }
       }
     }
     (*pipeline_set)[s-1].insert(predecessor_set.begin(),predecessor_set.end());
@@ -1069,6 +1082,8 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
 
     for(unsigned int s = 1; s < pipeline_set_best.size(); ++s)
     {
+//      cout << "!!!! pipeline_set_best[" << s << "]=" << pipeline_set_best[s] << endl;
+
       for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
       {
         if(s == 0)

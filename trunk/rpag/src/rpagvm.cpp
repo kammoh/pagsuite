@@ -31,10 +31,12 @@
     vec_set_t p_set_a,p_set_b,p_set_c,p_set_d;
     vec_double_map_t single_p_gain_map;
 
-    IF_VERBOSE(2) cout << "searching for best single predecessor ..." << endl;
-        compute_topology_a_predecessors_2_add(&working_set, &single_p_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1],NULL,NULL);
-        compute_topology_b_predecessors_2_add(&working_set, &single_p_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1],NULL,NULL);
-        compute_topology_c_predecessors_2_add(&working_set, &predecessor_set, &single_p_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1],NULL,NULL);
+    IF_VERBOSE(3) cout << "searching for best single predecessor ..." << endl;
+    compute_topology_a_predecessors_2_add(&working_set, &single_p_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1],NULL,NULL);
+    compute_topology_b_predecessors_2_add(&working_set, &single_p_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1],NULL,NULL);
+    compute_topology_c_predecessors_2_add(&working_set, &predecessor_set, &single_p_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1],NULL,NULL);
+
+    compute_cse_predecessors_2_add(&working_set, &single_p_gain_map,adder_depth_constraints[s-1]);
 
     //remove already chosen predecessors from gain map:
     for(set_iter = predecessor_set.begin(); set_iter != predecessor_set.end(); ++set_iter)
@@ -159,7 +161,7 @@
     //################################################################################################################################
     if(pair_gain_map.size()<=0)
     {
-      std::cout << "rpagvm.cpp line 168: !!!keine lösung gefunden!!!" << std::endl;
+      std::cout << "rpagvm.cpp line 164: !!!no solution found, this should never ever happen!!!" << std::endl;
       std::cout << "pair_gain_map.size()="<< pair_gain_map.size() << std::endl;
       exit(-1);
     }
@@ -225,6 +227,7 @@
             std::cout << "c_max:"<< c_max << std::endl;
             exit(-1);
           }
+
           for(set_iter = realized_target_set.begin(); set_iter != realized_target_set.end(); ++set_iter)
           {
             gain = pair_gain_map[predecessor_pair] + 1.0 / (cost->cost_add((*set_iter),predecessor_pair.first,predecessor_pair.second,2,c_max));

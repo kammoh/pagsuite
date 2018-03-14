@@ -312,6 +312,7 @@ void rpag_base<T>::compute_topology_d_predecessors_2_add(T x, int nz_max, int ws
 
           p1 = fundamental(norm(p1));
           p2 = fundamental(norm(p2));
+
           IF_VERBOSE(5) cout  << " fun pair: (" << p1 << "," << p2 << ")" << endl;
 
           if(p2 < p1) //swap elements such that p1 <= p2
@@ -358,7 +359,87 @@ void rpag_base<T>::compute_topology_d_predecessors_2_add(T x, int nz_max, int ws
 }
 
 
+template<typename T>
+void rpag_base<T>::explore_cse(vector<vec_t> &working_vec, vec_t currentCSE, int baseIndex, int endIndex, int frequency, int cseSizeMin, int cseSizeMax, string indexCombinations, map<T,double> *single_p_gain_map)
+{
+//  cout << "explore_cse with currentCSE=" << currentCSE << ", currentIndex=" << currentIndex << ", frequency=" << frequency << endl;
+  frequency++;
+  vec_t nextCSE(currentCSE.size());
+  for(int currentIndex=baseIndex+1; currentIndex <= endIndex; currentIndex++)
+  {
+    vec_t &w = working_vec[currentIndex];
+    int w_ns = nonzeros(w);
+    cseSizeMin=max(w_ns-cseSizeMax,cseSizeMin);
 
+    for(int sign=-1; sign <= 1; sign+=2)
+    {
+      bool allNegative=true; //flag that indicated if all the elements in a CSE vector are negative. This can not be realized and has to be filtered out
+      for(int i=0; i < currentCSE.size(); i++)
+      {
+        if((w[i] != 0) && (w[i] == sign * currentCSE[i]))
+        {
+          nextCSE[i] = w[i];
+          if(w[i] > 0) allNegative=false;
+        }
+        else
+        {
+          nextCSE[i] = 0;
+        }
+      }
+      nextCSE = fundamental(norm(nextCSE));
+      int cseSize = nonzeros(nextCSE);
+      if((cseSize >= cseSizeMin) && (cseSize <= cseSizeMax) && !allNegative) //!!!
+      {
+        IF_VERBOSE(4) cout << "found CSE pattern for working set elements " << indexCombinations << "," << (sign > 0 ? '+' : '-') << to_string(currentIndex) << " of size " << cseSize << " (" << cseSizeMin << "<=" << cseSize << "<=" << cseSizeMax << ") with frequency " << frequency << ": " << nextCSE << endl;
+
+        if(single_p_gain_map != NULL)
+        {
+          double gain = ((double) frequency) / (((double) frequency)+1.0); //we can realize f working set elements by implementing the CSE + f additional predecessors
+//          gain = gain*((double) cseSize)/((double) cseSizeMin); //the larger the pattern size the better, this changes the gain by a factor of 1 (when cseSize==cseMin) to 2 (when cseSize==2*cseMin)
+          (*single_p_gain_map)[nextCSE] = gain;
+        }
+
+        if(currentIndex < endIndex)
+        {
+          //start next recursion:
+          explore_cse(working_vec, nextCSE, currentIndex, endIndex, frequency,cseSizeMin,cseSizeMax,indexCombinations + ","  + (sign > 0 ? "+" : "-") + to_string(currentIndex),single_p_gain_map);
+        }
+      }
+    }
+  }
+}
+
+template<typename T>
+void rpag_base<T>::compute_cse_predecessors_2_add(const vec_set_t *working_set, map<T,double> *single_p_gain_map, int max_adder_depth)
+{
+  int cseSizeMax=1<<max_adder_depth;
+
+  IF_VERBOSE(3) cout << "searching for common subexpressions in working set " << *working_set << endl;
+  IF_VERBOSE(4) cout << "maximum CSE size is " << cseSizeMax << endl;
+
+  int no_of_working_set_elements = working_set->size();
+  vector<vec_t> working_vec(no_of_working_set_elements);
+
+  int i=0;
+  for(vec_t w : *working_set)
+  {
+    int w_ns = nonzeros(w);
+    IF_VERBOSE(4) cout << "working set element " << i << " is " << w << " and has " << w_ns << " non-zeros" << endl;
+    working_vec[i++] = w;
+  }
+
+  for(int i=0; i < no_of_working_set_elements; i++)
+  {
+    vec_t cse = working_vec[i]; //take each target coefficient as CSE seed with a frequency of 1
+    int cse_ns = nonzeros(cse);
+    int cseSizeMin=max(cse_ns-cseSizeMax,1);
+    explore_cse(working_vec, cse, i, no_of_working_set_elements-1, 1, cseSizeMin, cseSizeMax, "+" + to_string(i),single_p_gain_map);
+  }
+
+  IF_VERBOSE(3) cout << "gain_map for CSE=" << *single_p_gain_map << endl;
+
+//  exit(-1); //!!!
+}
 
 
 template<typename T>
