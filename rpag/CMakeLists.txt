@@ -1,6 +1,8 @@
 PROJECT( rpag CXX )
 cmake_minimum_required(VERSION 2.4)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. )
 
 include(${PAGSUITE_ROOT_DIR}/PagSuiteConfig.cmake)

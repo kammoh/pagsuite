@@ -54,7 +54,7 @@ vec_t rpagtvm::get_best_single_predecessor(const vec_set_t &working_set, const v
   vec_pair_double_map_t::iterator p_w_gain_map_iter;
 
 
-  IF_VERBOSE(2) cout << "searching for best single predecessor ..." << endl;
+  IF_VERBOSE(3) cout << "searching for best single predecessor ..." << endl;
 
 
   //compute 2-input adder topologies:
@@ -65,6 +65,8 @@ vec_t rpagtvm::get_best_single_predecessor(const vec_set_t &working_set, const v
   //compute 3-input adder topologies:
   compute_topology_b_predecessors_3_add(&working_set, &p_w_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1], NULL);
   compute_topology_c_predecessors_3_add(&working_set, &predecessor_set,&p_w_gain_map,adder_depth_constraints[s-1],wordsize_constraints[s-1],NULL);
+
+  compute_cse_predecessors_2_add(&working_set, &single_p_gain_map,adder_depth_constraints[s-1]);
 
   IF_VERBOSE(4) cout << "p_w_gain_map=" << p_w_gain_map << endl;
 

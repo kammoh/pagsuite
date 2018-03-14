@@ -26,14 +26,14 @@ end
 no_of_inputs = length(pipelined_realization{1}{1});
 s_last=-1; %remembers the last pipeline stage
 
-%write root node '1'
+%write root node(s) '1'
 for i=1:no_of_inputs
   input_vec = zeros(1,no_of_inputs);
   input_vec(i) = 1;
   if shortnames
     label = num2str(i);
   else
-    label = vec2dot(input_vec,',')
+    label = vec2dot(input_vec,',');
   end
   fprintf(fid, ['x_',vec2dot(input_vec,'_'),'_s0 [label="(',label,')",shape="ellipse"];\n']);
 end
@@ -75,7 +75,7 @@ for l=1:size(pipelined_realization,2)
         label = num2str(nodecnt);
         nodecnt = nodecnt + 1;
       else
-        label = pipelined_realization_element{1};
+        label = vec2dot(pipelined_realization_element{1},',');
       end
       fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1},'_'),' [label="(',label,')",shape="none",height=0.0];\n']);
     else
@@ -84,7 +84,7 @@ for l=1:size(pipelined_realization,2)
         label = num2str(nodecnt);
         nodecnt = nodecnt + 1;
       else
-        label = pipelined_realization_element{1};
+        label = vec2dot(pipelined_realization_element{1},',');
       end
       fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1}','_'),'_s',num2str(pipelined_realization_element{2}),' [label="',sign_str,'\\n(',label,')",shape="box"];\n']);
     end
@@ -120,25 +120,12 @@ for l=1:size(pipelined_realization,2)
     fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',label,' ",fontsize=12]\n']);
     label = num2str(pipelined_realization_element{8});
     fprintf(fid, ['x_',vec2dot(pipelined_realization_element{6},'_'),'_s',num2str(pipelined_realization_element{7}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',label,' ",fontsize=12]\n']);
-    
-    
-%     %check no of adder inputs:
-%     if size(pipelined_realization,2) == 8
-%       %two input adders:
-%       fprintf(fid, ['x_',num2str(abs(pipelined_realization(l,3))),'_s',num2str(pipelined_realization(l,4)),' -> x_',num2str(pipelined_realization(l,1)),'_s',num2str(pipelined_realization(l,2)),' [label="',num2str(pipelined_realization(l,5)),' ",fontsize=12]\n']);
-%       fprintf(fid, ['x_',num2str(abs(pipelined_realization(l,6))),'_s',num2str(pipelined_realization(l,7)),' -> x_',num2str(pipelined_realization(l,1)),'_s',num2str(pipelined_realization(l,2)),' [label="',num2str(pipelined_realization(l,8)),' ",fontsize=12]\n']);
-%     elseif nnz(pipelined_realization(l,9:11)) == 0
-%       %two input adders:
-%       fprintf(fid, ['x_',num2str(abs(pipelined_realization(l,3))),'_s',num2str(pipelined_realization(l,4)),' -> x_',num2str(pipelined_realization(l,1)),'_s',num2str(pipelined_realization(l,2)),' [label="',num2str(pipelined_realization(l,5)),' ",fontsize=12]\n']);
-%       fprintf(fid, ['x_',num2str(abs(pipelined_realization(l,6))),'_s',num2str(pipelined_realization(l,7)),' -> x_',num2str(pipelined_realization(l,1)),'_s',num2str(pipelined_realization(l,2)),' [label="',num2str(pipelined_realization(l,8)),' ",fontsize=12]\n']);
-%     else
-%       %three input adders:
-%       fprintf(fid, ['x_',num2str(abs(pipelined_realization(l,3))),'_s',num2str(pipelined_realization(l,4)),' -> x_',num2str(pipelined_realization(l,1)),'_s',num2str(pipelined_realization(l,2)),' [label="',num2str(pipelined_realization(l,5)),' ",fontsize=12]\n']);
-%       fprintf(fid, ['x_',num2str(abs(pipelined_realization(l,6))),'_s',num2str(pipelined_realization(l,7)),' -> x_',num2str(pipelined_realization(l,1)),'_s',num2str(pipelined_realization(l,2)),' [label="',num2str(pipelined_realization(l,8)),' ",fontsize=12]\n']);
-%       fprintf(fid, ['x_',num2str(abs(pipelined_realization(l,9))),'_s',num2str(pipelined_realization(l,10)),' -> x_',num2str(pipelined_realization(l,1)),'_s',num2str(pipelined_realization(l,2)),' [label="',num2str(pipelined_realization(l,11)),' ",fontsize=12]\n']);
-%     end
-    
-    
+    %check no of adder inputs:
+    if size(pipelined_realization_element,2) == 11
+      %three input adder:
+      label = num2str(pipelined_realization_element{11});
+      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{9},'_'),'_s',num2str(pipelined_realization_element{10}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),'_s',num2str(pipelined_realization_element{2}),' [label="',label,' ",fontsize=12]\n']);
+    end
   end
 end
 

@@ -54,7 +54,7 @@ int_t rpagt::get_best_single_predecessor(const int_set_t &working_set, const int
   int_pair_double_map_t::iterator p_w_gain_map_iter;
 
 
-  IF_VERBOSE(2) cout << "searching for best single predecessor ..." << endl;
+  IF_VERBOSE(3) cout << "searching for best single predecessor ..." << endl;
 
 
   //compute 2-input adder topologies:
