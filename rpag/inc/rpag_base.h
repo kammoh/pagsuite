@@ -6,6 +6,8 @@
   For more information please visit http://www.uni-kassel.de/go/pagsuite.
 */
 
+//#define KEEP_C_MAX_CONST_ONE
+
 #ifndef RPAG_BASE_H
 #define RPAG_BASE_H
 
@@ -45,8 +47,13 @@ protected:
   int optimize_single_run(const set<T> *target_fun_set, vector< set<T> > *pipeline_set, bool first_decision_break, int *first_decision_predecessor_stage, set<T> *first_decison_predecessor);
   int create_rpag_output(vector< set<T> > &pipeline_set_best, double pag_cost_best, set<T> *target_set);
 
+
   //internal parameters:
+#ifdef KEEP_C_MAX_CONST_ONE
+  const int_t c_max = 1;
+#else
   int_t c_max;
+#endif
 
   int stages_input_pag;
   int stages_output_pag;
@@ -330,7 +337,9 @@ int rpag_base<T>::initialize(const set<T>* target_set, set<T>* target_fun_set)
       target_fun_max = max_elem(*set_iter);
   }
 
+#ifndef KEEP_C_MAX_CONST_ONE
   c_max = this->compute_c_max(target_fun_max);
+#endif
 
   IF_VERBOSE(2) cout << "c_max=" << c_max << endl;
 
@@ -652,6 +661,7 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
     {
       successor_set.clear();
       realized_target_set.clear();
+
       compute_successor_set(&predecessor_set, c_max, &successor_set, false, is_this_a_two_input_system(), ternary_sign_filter);
       set_intersection(successor_set.begin(), successor_set.end(), working_set.begin(), working_set.end(), inserter(realized_target_set, realized_target_set.begin()));
 
