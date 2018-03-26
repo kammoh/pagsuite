@@ -45,10 +45,12 @@ public:
   bool ternary_adders;
   long msd_digit_permutation_limit;
   long msd_representation_limit;
+  bool use_cse; //use common subexpressions during search?
 
   bool ternary_sign_filter;
 
   bool file_output;
+  string filename;
 
   bool matlab_output;
   std::string matlab_out_address_string;

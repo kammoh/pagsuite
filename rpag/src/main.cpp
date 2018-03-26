@@ -52,8 +52,8 @@ int print_short_help()
   cout << "--no_of_extra_stages=int                       Per default, the pipeline depth is chosen to the minimum possible, more pipeline stages can be selected by choosing no_of_extra_stages>0, default:0" << endl;
   cout << "--without_adder_graph                          Disables the computation of the adder graph solution including shift values" << endl;
   cout << "--benchmark                                    Print a list of counted operation of the solution" << endl;
-//  cout << "--matlab_out_address=[string]                  Print a matlab compatible line with information about the solution" << endl;
-  cout << "--file_output                                  The RPAG output will be printed in a file (output_adder_graph.txt) too" << endl;
+//  cout << "--matlab_out_address=[string]                Print a matlab compatible line with information about the solution" << endl;
+  cout << "--file_output[=string]                         The RPAG output will be printed in a text file optionally specified as filename (default: output_adder_graph.txt)" << endl;
   cout << endl;
   cout << "-----------------------------------------------" << endl;
   cout << "Options for meta optimizations (where several RPAG runs are used to further optimize the result):" << endl;
@@ -325,6 +325,22 @@ int main(int argc, char *argv[])
           return -1;
         }
       }
+      else if(strstr(argv[i], "--use_cse="))
+      {
+        if(strstr(argv[i]+10, "true"))
+        {
+          rpagp->use_cse = true;
+        }
+        else if(strstr(argv[i]+10, "false"))
+        {
+          rpagp->use_cse=false;
+        }
+        else
+        {
+          cout << "Error: use_cse must be true or false" << endl;
+          return -1;
+        }
+      }
       else if(strstr(argv[i], "--rand_variance="))
       {
         rpagp->rand_variance = atof(argv[i]+16);
@@ -408,6 +424,10 @@ int main(int argc, char *argv[])
       else if(strstr(argv[i], "--file_output"))
       {
           rpagp->file_output=true;
+          if(*(argv[i]+13) == '=')
+          {
+            rpagp->filename = string(argv[i]+14);
+          }
       }
       else if(strstr(argv[i], "--info"))
       {
@@ -479,6 +499,7 @@ int main(int argc, char *argv[])
     cout << "    number of runs=" << rpagp->no_of_runs << endl;
     cout << "    search width limit=" << rpagp->search_limit << endl;
 
+    cout << "    use CSE=" << rpagp->use_cse << endl;
     cout << "    msd cutter iteration max. =" << rpagp->msd_digit_permutation_limit << endl;
     cout << "    max. no of mult=" << rpagp->max_no_of_mult << endl;
     cout << "    multiplier word size=" << rpagp->mult_wordsize << endl;
@@ -489,6 +510,7 @@ int main(int argc, char *argv[])
 
     cout << "    matlab output=" << rpagp->matlab_output << endl;
     cout << "    matlab out adress string=" << rpagp->matlab_out_address_string << endl;
+    cout << "    file output=" << (rpagp->file_output ? "yes, filename=" + rpagp->filename : "no") << endl;
   }
 
   //select cost model:
