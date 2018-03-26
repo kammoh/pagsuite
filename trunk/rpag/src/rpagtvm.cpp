@@ -66,7 +66,11 @@ vec_t rpagtvm::get_best_single_predecessor(const vec_set_t &working_set, const v
   compute_topology_b_predecessors_3_add(&working_set, &p_w_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1], NULL);
   compute_topology_c_predecessors_3_add(&working_set, &predecessor_set,&p_w_gain_map,adder_depth_constraints[s-1],wordsize_constraints[s-1],NULL);
 
-  compute_cse_predecessors_2_add(&working_set, &single_p_gain_map,adder_depth_constraints[s-1]);
+  if(use_cse)
+  {
+    compute_cse_predecessors_2_add(&working_set, &single_p_gain_map,adder_depth_constraints[s-1]);
+  }
+
 
   IF_VERBOSE(4) cout << "p_w_gain_map=" << p_w_gain_map << endl;
 

@@ -207,6 +207,7 @@ rpag_base<T>::rpag_base()
   target_vec.clear();
   show_adder_graph= true;
   ternary_adders = false;
+  use_cse = false;
 
   msd_digit_permutation_limit = -1;
   msd_representation_limit = -1;
@@ -215,7 +216,7 @@ rpag_base<T>::rpag_base()
   matlab_out_address_string = "";
 
   file_output = false;
-
+  filename = "adder_graph.txt";
   ternary_sign_filter = false;
 
   //the cost model will set correct default values
@@ -562,7 +563,8 @@ int rpag_base<T>::optimize()
   }
   timer.stop();
   create_rpag_output(pipeline_set_best, pag_cost_best, target_set);
-return 1;
+  delete target_set;
+  return 1;
 }
 
 template <class T>
@@ -836,14 +838,17 @@ int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<
         IF_VERBOSE(3) cout << "working_set=" << working_set << endl;
         IF_VERBOSE(3) cout << "predecessor_set=" << predecessor_set << endl;
 
-        IF_VERBOSE(2) cout << "working set size:" << working_set.size() << ", predecessor set size:" << predecessor_set.size();
-        if(best_single_predecessor != -1)
+        IF_VERBOSE(2)
         {
-          cout << ", added predecessor: " << best_single_predecessor << endl;
-        }
-        else
-        {
-          cout << ", added predecessors: " << best_multi_predecessor_set << endl;
+          cout << "working set size:" << working_set.size() << ", predecessor set size:" << predecessor_set.size();
+          if(best_single_predecessor != -1)
+          {
+            cout << ", added predecessor: " << best_single_predecessor << endl;
+          }
+          else
+          {
+            cout << ", added predecessors: " << best_multi_predecessor_set << endl;
+          }
         }
       }
     }
@@ -1143,7 +1148,7 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
     {
       // output has to be in a file to
       std::fstream file;
-      file.open("adder_graph.txt",ios::out);
+      file.open(filename.c_str(),ios::out);
       if(file.is_open())
       {
         file.clear();

@@ -36,7 +36,10 @@
     compute_topology_b_predecessors_2_add(&working_set, &single_p_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1],NULL,NULL);
     compute_topology_c_predecessors_2_add(&working_set, &predecessor_set, &single_p_gain_map, adder_depth_constraints[s-1], wordsize_constraints[s-1],NULL,NULL);
 
-    compute_cse_predecessors_2_add(&working_set, &single_p_gain_map,adder_depth_constraints[s-1]);
+    if(use_cse)
+    {
+      compute_cse_predecessors_2_add(&working_set, &single_p_gain_map,adder_depth_constraints[s-1]);
+    }
 
     //remove already chosen predecessors from gain map:
     for(set_iter = predecessor_set.begin(); set_iter != predecessor_set.end(); ++set_iter)
