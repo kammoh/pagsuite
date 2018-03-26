@@ -38,7 +38,7 @@ for stage=1:no_of_stages
         %node can be computed in current stage
         pipelined_realization_graph{k} = {'A',realization_graph(i,1),stage,realization_graph(i,2),stage-1,realization_graph(i,3),realization_graph(i,4),stage-1,realization_graph(i,5)};
         computed_nodes{stage+1} = [computed_nodes{stage+1}, realization_graph(i,1)];
-        realization_graph(i,:) = -ones(1,5); %remove row from matrix
+        realization_graph(i,:) = -ones(1,size(realization_graph(i,:),2)); %remove row from matrix
         k = k + 1;
       end
     end

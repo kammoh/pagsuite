@@ -2,8 +2,6 @@ clc;
 clear;
 
 addpath('helper_functions');
-addpath('../../../mcm_lut_mult_opt/matlab');
-addpath('../../../da_reconf_fir/matlab');
 
 %benchmark_set = {'MIRZAEI10_6','MIRZAEI10_10','MIRZAEI10_13','MIRZAEI10_20','MIRZAEI10_28','MIRZAEI10_41','MIRZAEI10_61','MIRZAEI10_119','MIRZAEI10_151'};
 %benchmark_set = {'MIRZAEI10_41','MIRZAEI10_41_alt1','MIRZAEI10_41_alt2','MIRZAEI10_41_alt3','MIRZAEI10_41_alt4','MIRZAEI10_41_alt5','MIRZAEI10_41_alt6','MIRZAEI10_41_alt7','MIRZAEI10_41_alt8','MIRZAEI10_41_alt9','MIRZAEI10_41_alt10'};
