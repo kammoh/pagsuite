@@ -823,6 +823,8 @@ void append_targets_to_adder_graph(vector< set<T> > &pipeline_set, list< realiza
   {
     T w = *t_iter;
 
+    if(w == 0) continue; //skip zero ouputs
+
     int shift;
     T t_fun;
     t_fun = fundamental_count(w, shift);
