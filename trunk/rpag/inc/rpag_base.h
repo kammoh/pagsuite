@@ -1125,24 +1125,24 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
       no_of_registered_ops += pipeline_set_best[s].size();
     }
 
-    IF_VERBOSE(0) output_stream << "pipeline_set_best=" << pipeline_set_best << endl;
+    output_stream << "pipeline_set_best=" << pipeline_set_best << endl;
     if(show_adder_graph)
     {
         pag << "pipelined_adder_graph=" << output_adder_graph(pipelined_adder_graph,true) << endl;
-        IF_VERBOSE(0) output_stream << pag.str();// the endl is inluded in the pag string
+        output_stream << pag.str();// the endl is inluded in the pag string
     }
-      IF_VERBOSE(0) output_stream << "pag_cost=" << pag_cost_best << endl;
-      IF_VERBOSE(1) output_stream << "no_of_pipeline_stages=" << pipeline_set_best.size()-1 << std::endl;
-      IF_VERBOSE(1) output_stream << "no_of_registered_ops=" << no_of_registered_ops << std::endl;
-      IF_VERBOSE(1) output_stream << "no_of_registers=" << no_of_registers << std::endl;
-      IF_VERBOSE(1) output_stream << "no_of_adders=" << no_of_adders << std::endl;
-      IF_VERBOSE(1) output_stream << "pag_cost=" << pag_cost_best << std::endl;
+      output_stream << "pag_cost=" << pag_cost_best << endl;
+      output_stream << "no_of_pipeline_stages=" << pipeline_set_best.size()-1 << std::endl;
+      output_stream << "no_of_registered_ops=" << no_of_registered_ops << std::endl;
+      output_stream << "no_of_registers=" << no_of_registers << std::endl;
+      output_stream << "no_of_adders=" << no_of_adders << std::endl;
+      output_stream << "pag_cost=" << pag_cost_best << std::endl;
 
     }
 
 //      IF_VERBOSE(0) output_stream << "best result: pag_cost=" << pag_cost_best << ", pipeline_set_best=" << pipeline_set_best << endl;
 
-    cout << output_stream.str();
+    IF_VERBOSE(0) cout << output_stream.str();
 
     if(file_output)
     {
