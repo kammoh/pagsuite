@@ -321,7 +321,7 @@ int rpag_base<T>::initialize(const set<T>* target_set, set<T>* target_fun_set)
   for(set_iter = target_set->begin(); set_iter != target_set->end(); ++set_iter)
   {
     fun = fundamental(norm(*set_iter));
-    if(fun != 0)
+    if((fun != 0))
       target_fun_set->insert(fun);
   }
   IF_VERBOSE(2) cout << "target fundamentals=" << *target_fun_set << endl;
