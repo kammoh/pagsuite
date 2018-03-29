@@ -387,6 +387,11 @@ int main(int argc, char *argv[])
       else if(strstr(argv[i], "--no_of_extra_stages="))
       {
         rpagp->no_of_extra_stages = atoi(argv[i]+21);
+        if(rpagp->no_of_extra_stages < 0)
+        {
+          cout << "Error: no_of_extra_stages must be zero or positive (got " << rpagp->no_of_extra_stages << ")" << endl;
+          exit(-1);
+        }
       }
       else if(strstr(argv[i], "--meta_greedy_search_depth=")) //deprecated parameter (now search_limit)
       {

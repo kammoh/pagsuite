@@ -58,12 +58,16 @@ for l=1:size(pipelined_realization,2)
       vec = pipelined_realization_element{3};
       vec1_nonzero = vec(vec~=0);
       vec = pipelined_realization_element{6};
-      if length(vec) > 0
+      if ~isempty(vec)
         vec2_nonzero = vec(vec~=0);
-        if (sign(vec1_nonzero(1))*sign(vec2_nonzero(1))) < 0
-          sign_str='-';
+        if ~isempty(vec2_nonzero) && ~isempty(vec1_nonzero)
+          if (sign(vec1_nonzero(1))*sign(vec2_nonzero(1))) < 0
+            sign_str='-';
+          else
+            sign_str='+';
+          end
         else
-          sign_str='+';
+          sign_str='';
         end
       else
         sign_str='';

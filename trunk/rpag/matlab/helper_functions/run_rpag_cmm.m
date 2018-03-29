@@ -27,7 +27,7 @@ id = round(rand()*1E9); %produce unique ID
 filename = ['rpag_result_',num2str(id)];
 
 rpag_cmd = [rpag_path,'/rpag --cmm --file_output=',filename,'.m ',arguments,' ',colstr];
-if verbose > 0
+if verbose > 1
   disp(['calling ',rpag_cmd]);
 end
 eval(['!',rpag_cmd]);

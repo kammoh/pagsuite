@@ -46,41 +46,45 @@ if file_name == 0
   end
 end
 
-if iscell(pipelined_realization)
-  if(isstr(pipelined_realization{1}{1}))
-    %cell array is the (most modern) cell format where the first element
-    %describes the operation
-    %lets convert it to the 'old' format:
-    pipelined_realization_old = cell(1,length(pipelined_realization));
-    for i=1:length(pipelined_realization)
-      switch pipelined_realization{i}{1}
-        case 'A'
-          if length(pipelined_realization{i}) == 12
-            %ternary adder:
-            pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},pipelined_realization{i}{7},pipelined_realization{i}{8},pipelined_realization{i}{9},pipelined_realization{i}{10},pipelined_realization{i}{11},pipelined_realization{i}{12}};
-          else
-            %2-input adder:
-            pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},pipelined_realization{i}{7},pipelined_realization{i}{8},pipelined_realization{i}{9}};
-          end
-        case 'R'
-          pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},0,0,0,0};
-        case 'O'
-          pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},0,0,0};
+%validate_cmm_realization(pipelined_realization);
+
+if ~isempty(pipelined_realization)
+  if iscell(pipelined_realization)
+    if(isstr(pipelined_realization{1}{1}))
+      %cell array is the (most modern) cell format where the first element
+      %describes the operation
+      %lets convert it to the 'old' format:
+      pipelined_realization_old = cell(1,length(pipelined_realization));
+      for i=1:length(pipelined_realization)
+        switch pipelined_realization{i}{1}
+          case 'A'
+            if length(pipelined_realization{i}) == 12
+              %ternary adder:
+              pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},pipelined_realization{i}{7},pipelined_realization{i}{8},pipelined_realization{i}{9},pipelined_realization{i}{10},pipelined_realization{i}{11},pipelined_realization{i}{12}};
+            else
+              %2-input adder:
+              pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},pipelined_realization{i}{7},pipelined_realization{i}{8},pipelined_realization{i}{9}};
+            end
+          case 'R'
+            pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},0,0,0,0};
+          case 'O'
+            pipelined_realization_old{i} = {pipelined_realization{i}{2},pipelined_realization{i}{3},pipelined_realization{i}{4},pipelined_realization{i}{5},pipelined_realization{i}{6},0,0,0};
+        end
       end
+      pipelined_realization = pipelined_realization_old;
     end
-    pipelined_realization = pipelined_realization_old;
   end
-end
 
 
-[pdf_path,'/',file_name,'.dot'];
-if ~iscell(pipelined_realization)
-  %matrices are used to describe PMCM solutions with 2-input adders or ternary adders:
-  write_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep);
-else
-  %cells are used to describe PCMM solutions (with 2-input adders):
-  write_cmm_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep,'shortnames',shortnames);
+  [pdf_path,'/',file_name,'.dot'];
+  if ~iscell(pipelined_realization)
+    %matrices are used to describe PMCM solutions with 2-input adders or ternary adders:
+    write_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep);
+  else
+    %cells are used to describe PCMM solutions (with 2-input adders):
+    write_cmm_pipelined_realization_graph_dot([pdf_path,'/',file_name,'.dot'], pipelined_realization, 'keeporder', keeporder,'ranksep',ranksep,'shortnames',shortnames);
+  end
+  dot2pdf([pdf_path,'/',file_name]);
+  %system([delete_cmd,' ',pdf_path,'/',file_name,'.dot']);
+  showpdf([pdf_path,'/',file_name,'.pdf'])
 end
-dot2pdf([pdf_path,'/',file_name]);
-%system([delete_cmd,' ',pdf_path,'/',file_name,'.dot']);
-showpdf([pdf_path,'/',file_name,'.pdf'])
