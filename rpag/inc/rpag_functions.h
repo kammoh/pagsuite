@@ -883,7 +883,6 @@ void remove_redundant_inputs_from_adder_graph(list< realization_row<T> > &pipeli
     T null_element;
     create_null_element(null_element);
 
-    cout << "base_set=" << base_set << endl;
     vector<set<T> > required_base_nodes;
     required_base_nodes.resize(pipeline_set_best.size());
 
