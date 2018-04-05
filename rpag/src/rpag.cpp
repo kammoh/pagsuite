@@ -21,6 +21,11 @@
 rpag::rpag()
 {}
 
+rpag::rpag(rpag_pointer *rpagp)
+{
+  copy_parameters(rpagp);
+}
+
 rpag::~rpag()
 {}
 

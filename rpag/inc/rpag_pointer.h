@@ -71,9 +71,10 @@ public:
   //function pointer to selected cost model (it is not possible to use the a cost_model_base pointer bcause of the Template parameter)
   cost_model_pointer *cost_pointer;
 
-  rpag_pointer* set_parameter_equal_to (rpag_pointer* rhs);
   void print_parameter(){}
 
+protected:
+  rpag_pointer* copy_parameters (rpag_pointer* rhs);
 };
 
 

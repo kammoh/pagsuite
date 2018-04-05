@@ -15,6 +15,8 @@ class rpagtvm : public rpagvm
 {
 public:
   rpagtvm();
+  rpagtvm(rpag_pointer *rpagp); //copy constructor
+
   ~rpagtvm();
   rpag_type get_rpag_type();
 

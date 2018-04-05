@@ -34,7 +34,7 @@ int rpag_pointer::set_cost_FA(float FA)
   }
 }
 
-rpag_pointer* rpag_pointer::set_parameter_equal_to (rpag_pointer* rhs)
+rpag_pointer* rpag_pointer::copy_parameters (rpag_pointer* rhs)
 {
     this->target_vec                  = rhs->target_vec;
 
@@ -65,6 +65,8 @@ rpag_pointer* rpag_pointer::set_parameter_equal_to (rpag_pointer* rhs)
     this->cost_FA                     = rhs->cost_FA;
 
     this->file_output                 = rhs->file_output;
+    this->filename                    = rhs->filename;
+
     this->start_arguments             = rhs->start_arguments;
 
     this->fix_decision_cnt            = rhs->fix_decision_cnt;

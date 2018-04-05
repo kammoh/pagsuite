@@ -23,6 +23,12 @@ using namespace::std;
 
 rpagtvm::rpagtvm()
 {}
+
+rpagtvm::rpagtvm(rpag_pointer *rpagp)
+{
+  copy_parameters(rpagp);
+}
+
 rpagtvm::~rpagtvm()
 {}
 

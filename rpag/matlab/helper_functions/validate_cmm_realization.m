@@ -1,4 +1,4 @@
-function validate_cmm_realization(pipelined_realization)
+function validate_cmm_realization(pipelined_realization,M)
 
 if ~iscell(pipelined_realization)
   error('Input argument ''pipelined_realization'' is not a cell array');
@@ -8,10 +8,17 @@ for l=1:length(pipelined_realization)
   pipelined_realization_element = pipelined_realization{l};
   
   if pipelined_realization_element{1}=='A'
-    if ~all(pipelined_realization_element{2} == pipelined_realization_element{4}*2^pipelined_realization_element{6}+pipelined_realization_element{7}*2^pipelined_realization_element{9})
-      error(['Element ',mat2str(pipelined_realization_element{2}),' can not be computed from ',mat2str(pipelined_realization_element{4}),'*2^',num2str(pipelined_realization_element{6}),' + ',mat2str(pipelined_realization_element{7}),'*2^',num2str(pipelined_realization_element{9})]);
+    if length(pipelined_realization_element) == 12
+      %ternary adder
+      if ~all(pipelined_realization_element{2} == pipelined_realization_element{4}*2^pipelined_realization_element{6}+pipelined_realization_element{7}*2^pipelined_realization_element{9}+pipelined_realization_element{10}*2^pipelined_realization_element{12})
+        error(['Element ',mat2str(pipelined_realization_element{2}),' can not be computed from ',mat2str(pipelined_realization_element{4}),'*2^',num2str(pipelined_realization_element{6}),' + ',mat2str(pipelined_realization_element{7}),'*2^',num2str(pipelined_realization_element{9}),' + ',mat2str(pipelined_realization_element{10}),'*2^',num2str(pipelined_realization_element{12})]);
+      end
+    else
+      %2-input adder
+      if ~all(pipelined_realization_element{2} == pipelined_realization_element{4}*2^pipelined_realization_element{6}+pipelined_realization_element{7}*2^pipelined_realization_element{9})
+        error(['Element ',mat2str(pipelined_realization_element{2}),' can not be computed from ',mat2str(pipelined_realization_element{4}),'*2^',num2str(pipelined_realization_element{6}),' + ',mat2str(pipelined_realization_element{7}),'*2^',num2str(pipelined_realization_element{9})]);
+      end
     end
-
     if pipelined_realization_element{5}>0 %input stage 0 is always present
       found_1st_arg = false;
       found_2nd_arg = false;
@@ -36,3 +43,23 @@ for l=1:length(pipelined_realization)
     end
   end
 end
+
+
+for r=1:size(M,1)
+  output_found=false;
+  row_vec = norm_vec(M(r,:));
+  for l=1:length(pipelined_realization)
+    pipelined_realization_element = pipelined_realization{l};
+    if pipelined_realization_element{1}=='O'
+      if norm_vec(pipelined_realization_element{2}) == row_vec
+        output_found=true;
+        break;
+      end
+    end
+  end
+  if ~output_found
+    error(['Output ',mat2str(row_vec),' not found as output in adder graph solution']);
+  end
+end
+
+

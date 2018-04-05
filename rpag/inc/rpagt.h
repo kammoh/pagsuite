@@ -15,6 +15,9 @@ class rpagt : public rpag
 {
 public:
   rpagt();
+
+  rpagt(rpag_pointer *rpagp); //copy constructor
+
   rpag_type get_rpag_type();
 
   bool is_this_a_two_input_system(void){return false;}

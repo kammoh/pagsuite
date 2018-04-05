@@ -25,6 +25,11 @@ rpagt::rpagt()
 {
 }
 
+rpagt::rpagt(rpag_pointer *rpagp)
+{
+  copy_parameters(rpagp);
+}
+
 rpag_type rpagt::get_rpag_type()
 {
     return typ_rpagt;
