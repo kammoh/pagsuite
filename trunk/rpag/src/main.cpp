@@ -445,13 +445,12 @@ int main(int argc, char *argv[])
 
         if( rpagp->get_rpag_type() == typ_rpagvm)
         {
-            rpagp = new rpagtvm();// use the functions for 3 input adder and vector matrix multiplication.
+            rpagp = new rpagtvm(rpag2p);// use the functions for 3 input adder and vector matrix multiplication.
         }
         else
         {
-            rpagp = new rpagt();// use the functions for 3 input adder.
+            rpagp = new rpagt(rpag2p);// use the functions for 3 input adder.
         }
-        rpagp->set_parameter_equal_to(rpag2p);
         rpagp->ternary_adders = true;
         delete rpag2p;
       }
@@ -461,14 +460,12 @@ int main(int argc, char *argv[])
         rpag_pointer *rpag2p = rpagp;
         if(rpagp->get_rpag_type() == typ_rpagt)
         {
-            rpagp = new rpagtvm();// use the functions for 3 input adder and vector matrix multiplication.
+            rpagp = new rpagtvm(rpag2p);// use the functions for 3 input adder and vector matrix multiplication.
         }
         else
         {
-            rpagp = new rpagvm();// use the functions for vector matrix multiplikation.
+            rpagp = new rpagvm(rpag2p);// use the functions for vector matrix multiplikation.
         }
-        rpagp->set_parameter_equal_to(rpag2p);
-
         delete rpag2p;
       }
       else if(strstr(argv[i], "--sign_correction"))

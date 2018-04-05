@@ -11,6 +11,12 @@
 
   rpagvm::rpagvm()
   {}
+
+  rpagvm::rpagvm(rpag_pointer *rpagp)
+  {
+    copy_parameters(rpagp);
+  }
+
   rpagvm::~rpagvm()
   {}
 

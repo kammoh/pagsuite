@@ -16,6 +16,8 @@ class rpagvm : public rpag_base<vec_t>
 {
 public:
   rpagvm();
+  rpagvm(rpag_pointer *rpagp); //copy constructor
+
   virtual ~rpagvm();
   virtual rpag_type get_rpag_type();
 

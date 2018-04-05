@@ -17,6 +17,8 @@ class rpag : public rpag_base<int_t>
 {
 public:
   rpag();
+  rpag(rpag_pointer *rpagp); //copy constructor
+
   virtual ~rpag();
   virtual rpag_type get_rpag_type();
 protected:
