@@ -4,6 +4,10 @@ if ~iscell(pipelined_realization)
   error('Input argument ''pipelined_realization'' is not a cell array');
 end
 
+if ~exist('M','var');
+  M=[];
+end
+
 for l=1:length(pipelined_realization)
   pipelined_realization_element = pipelined_realization{l};
   
