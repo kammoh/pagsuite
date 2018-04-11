@@ -5,7 +5,7 @@ global verbose;
 %cell2str(pipelined_realization)
 
 %remove elements which are computed more than once:
-pipelined_realization_out={};
+pipelined_realization_out=cell(1,length(pipelined_realization));
 k=1;
 for i=1:length(pipelined_realization)
   elem1 = pipelined_realization{i};
@@ -25,11 +25,7 @@ for i=1:length(pipelined_realization)
     k=k+1;
   end
 end
-pipelined_realization = pipelined_realization_out;
-
-%return
-
-%cell2str(pipelined_realization)
+pipelined_realization = pipelined_realization_out(~cellfun('isempty',pipelined_realization_out));
 
 elements_removed = true;
 while(elements_removed) %in case that a redundant element is removed, it may be the case that another element becomes redundant, so call again
@@ -79,6 +75,6 @@ while(elements_removed) %in case that a redundant element is removed, it may be 
       end    
     end
   end
-  pipelined_realization = pipelined_realization_out;
+  pipelined_realization = pipelined_realization_out(~cellfun('isempty',pipelined_realization_out));
 end
 
