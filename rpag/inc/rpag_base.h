@@ -238,7 +238,15 @@ rpag_base<T>::~rpag_base()
 template <class T>
 int_t rpag_base<T>::compute_c_max(int_t target_fun_max)
 {
-  return 1LL << (log2c_64(target_fun_max)+1);
+    if(target_fun_max == 1)
+    {
+        IF_VERBOSE(1) cout << "Detect Binary Matrix! => Use reduced search space resulting in lower c_max" << std::endl;
+        return 1LL << (log2c_64(target_fun_max)); //binary Matrix does not need any other digit as one...
+    }
+    else
+    {
+        return 1LL << (log2c_64(target_fun_max)+1);// standart case one bit more is used to prevent some Topologi problems
+    }
 }
 
 
