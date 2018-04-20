@@ -471,7 +471,14 @@ bool getExponents_for_sign_filter(T &a,T &b, T &w, int *eA, int *eB, int *signA,
 
 // nessesary for getExponents(3 adder) to support vec_t and int_t
 inline bool is_it_negative(int_t Z){return (Z < 0);}
-inline bool is_it_negative(vec_t Z){return (Z[0] < 0);}
+inline bool is_it_negative(vec_t Z)
+{
+    for(int_t i: Z)
+    {
+        if(i != 0){return (i < 0);}
+    }
+    return 0;
+}
 inline bool is_it_negative(int Z){return (Z < 0);}// nessesary for sign_filter option
 inline bool is_it_negative(bool Z){return Z;}// nessesary for sign_filter option // false = positive sign; true= negative sign
 
@@ -902,7 +909,7 @@ void remove_redundant_inputs_from_adder_graph(list< realization_row<T> > &pipeli
                 {
                     IF_VERBOSE(5) cout << "    input " << row.A << " is required in stage " << row.stageA << endl;
                     for(unsigned s=row.stageA; s > 0; s--)
-                        required_base_nodes[s].insert(row.A);
+                        required_base_nodes[s].insert(norm(row.A));
                 }
                 if(norm(row.B) != null_element)
                 {
@@ -919,7 +926,7 @@ void remove_redundant_inputs_from_adder_graph(list< realization_row<T> > &pipeli
                     {
                         IF_VERBOSE(5) cout << "    input " << row.C << " is required in stage " << row.stageC << endl;
                         for(unsigned s=row.stageC; s > 0; s--)
-                            required_base_nodes[s].insert(row.C);
+                            required_base_nodes[s].insert(norm(row.C));
                     }
                 }
             }
@@ -931,10 +938,10 @@ void remove_redundant_inputs_from_adder_graph(list< realization_row<T> > &pipeli
     {
         realization_row<T> & row = *it;
         IF_VERBOSE(6) cout << "processing row: " << row.to_ss_matlab() << endl;
-        if(base_set.find(row.W) != base_set.end())
+        if(base_set.find(norm(row.W)) != base_set.end())
         {
             IF_VERBOSE(5) cout << "  row is an input" << endl;
-            if(required_base_nodes[row.stageW].find(row.W) == required_base_nodes[row.stageW].end())
+            if(required_base_nodes[row.stageW].find(norm(row.W)) == required_base_nodes[row.stageW].end())
             {
                 IF_VERBOSE(4) cout << "  row " << row.to_ss_matlab() << " is not required and will be removed from adder graph" << endl;
                 typename set<T>::iterator it2 = pipeline_set_best[row.stageW].find(row.W);

@@ -8,7 +8,7 @@ elseif strcmp(computer,'PCWIN') || strcmp(computer,'PCWIN64')
   pdf_path = 'temporary path for pdfs';
   delete_cmd = 'del';
 elseif strcmp(computer,'GLNXA') || strcmp(computer,'GLNXA64')
-  pdf_path = '/work5/hardieck/tmp';
+  pdf_path = '/home/hardieck/Work/tmp';
   delete_cmd = 'rm';
 end
 
