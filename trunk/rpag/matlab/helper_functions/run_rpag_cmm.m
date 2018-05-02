@@ -1,6 +1,7 @@
 function [pipelined_adder_graph, pag_cost] = run_rpag_cmm(M,arguments)
 
-rpag_path = '~/research/develop/pagsuite/trunk/rpag/bin';
+%rpag_path = '~/research/develop/pagsuite/trunk/rpag/bin';% MK
+rpag_path = '~/Work/repositorien/pagsuite/pagsuite/trunk/rpag/bin'; % MH
 
 global verbose;
 

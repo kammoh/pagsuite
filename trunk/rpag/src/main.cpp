@@ -28,8 +28,12 @@ using namespace std;
 #include "fundamental.h"
 #include "cost_model.h"
 
+#include <mutex>
+#include <thread>
+#include <algorithm>
+
 int print_short_help()
-{
+{  
   cout << "usage: rpag [OPTIONS] coefficients" << endl;
   cout << endl;
   cout << "-----------------------------------------------" << endl;
@@ -123,14 +127,21 @@ int print_short_help()
   cout << "     --max_no_of_mult=1 11280171 13342037      As above, but explicitly set the constraints to result in a lower graph depth" << endl;
   cout << endl;
 #endif
-
   exit(0);
 }
 
 int print_exhaustive_help()
 {
+
+  mutex my_Mutex;
+  std::lock_guard<mutex> my_lockgard(my_Mutex);
+  UNUSED(my_lockgard); // the usage is in the destructor of the objekt... but with this line there is no warning
   cout << "exhaustive help is not implemented" << endl;
-  print_short_help();
+
+  std::thread my_thread1(print_short_help);
+  my_thread1.join();
+
+  //print_short_help();
   exit(0);
 }
 template<class T>
@@ -241,7 +252,7 @@ int main(int argc, char *argv[])
     string argument = argv[i];
     rpagp->start_arguments.push_back(argument);
 
-    if((argv[i][0] != '-') || (argv[i][1] != '-'))
+    if((argv[i][0] != '-') || (argv[i][1] != '-')) // just execute if the line not begin with "--"
       switch(number_sequence_mode)
       {
       case COEFF:
