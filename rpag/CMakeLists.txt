@@ -17,7 +17,7 @@ ADD_EXECUTABLE( rpag ${SOURCES} ${HEADERS})
 
 set_target_properties( rpag PROPERTIES LINKER_LANGUAGE CXX)
 IF( ${SYSTEM_PREFIX} STREQUAL "lin" )
-	TARGET_LINK_LIBRARIES( rpag rt )
+        TARGET_LINK_LIBRARIES( rpag rt pthread)
 ENDIF()
 
 INSTALL(TARGETS rpag

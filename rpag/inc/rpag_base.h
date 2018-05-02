@@ -33,6 +33,8 @@
 #include "tic_toc.h"
 #include "abstraction_time.h"
 
+#include <functional>
+
 template <class T>
 class rpag_base : public rpag_pointer
 {
@@ -42,8 +44,11 @@ public:
   virtual bool is_this_a_two_input_system(void)=0;
   int_t get_c_max();
 
-  int optimize();
+  int optimize();// clasic RPAG entry point. start the optimisation
+  int start(); // flow controll (rpag, Matrix transposition, matrix decomposition)
 protected:
+  vector<set<T> > do_matrix_decomposition(const vector<set<T> > *target_fun_set,unsigned int split_v_into=2,unsigned int split_h_into=2 );//
+
   int optimize_single_run(const set<T> *target_fun_set, vector< set<T> > *pipeline_set, bool first_decision_break, int *first_decision_predecessor_stage, set<T> *first_decison_predecessor);
   int create_rpag_output(vector< set<T> > &pipeline_set_best, double pag_cost_best, set<T> *target_set);
 
@@ -241,7 +246,7 @@ int_t rpag_base<T>::compute_c_max(int_t target_fun_max)
     if(target_fun_max == 1)
     {
         IF_VERBOSE(1) cout << "Detect Binary Matrix! => Use reduced search space resulting in lower c_max" << std::endl;
-        return 1LL << (log2c_64(target_fun_max)); //binary Matrix does not need any other digit as one...
+        return 1LL << 0; //binary Matrix does not need any other digit as one...
     }
     else
     {
@@ -574,6 +579,68 @@ int rpag_base<T>::optimize()
   delete target_set;
   return 1;
 }
+
+template <class T>
+int rpag_base<T>::start()
+{
+
+    return 0;
+}
+
+template <class T>
+vector<set<T> > rpag_base<T>::do_matrix_decomposition(const set<T> *list_of_target_sets,unsigned int split_v_into,unsigned int split_h_into)
+{
+    vector<vector<T>> target_set;
+    target_set.resize(1);
+    target_set[0].resize(list_of_target_sets->size());
+
+    unsigned int i=0;
+    for(T elem : *list_of_target_sets)
+    {
+        target_set[0][i++] = elem;
+    }
+
+    return do_matrix_decomposition(target_set, split_v_into, split_h_into);
+}
+
+template <class T>
+vector<vector<T> > rpag_base<T>::do_matrix_decomposition(const vector<vector<T>> *list_of_target_sets,unsigned int split_v_into,unsigned int split_h_into, unsigned int stage)
+{
+    vector<set<T> > new_target_sets;
+
+// std::function<int (int)> func = [](int i) { return i+4; };
+
+    for(vector<T> current_target_set: (*list_of_target_sets))
+    {
+
+        // if parts are big enough
+        //split set verticaly  into x parts
+            //generate the revuse nodes
+        //split set horisontly  into y parts
+            //generate the revise nodes
+        //save this inbetween results
+
+        //for inbetween results
+            //if parts are still big enough
+                //restart splitting recusifly...
+                // remove the inbetween result
+            //else
+                // add the result to final output
+
+
+
+        if(stage < adder_depth())
+        {
+
+
+        }
+
+
+    }
+
+    return list_of_target_sets;
+}
+
 
 template <class T>
 int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<T> > *pipeline_set, bool first_decision_break, int *first_decision_predecessor_stage, set<T> *first_decision_predecessor)
