@@ -586,7 +586,7 @@ int rpag_base<T>::start()
 
     return 0;
 }
-
+/*
 template <class T>
 vector<set<T> > rpag_base<T>::do_matrix_decomposition(const set<T> *list_of_target_sets,unsigned int split_v_into,unsigned int split_h_into)
 {
@@ -641,7 +641,7 @@ vector<vector<T> > rpag_base<T>::do_matrix_decomposition(const vector<vector<T>>
     return list_of_target_sets;
 }
 
-
+*/
 template <class T>
 int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<T> > *pipeline_set, bool first_decision_break, int *first_decision_predecessor_stage, set<T> *first_decision_predecessor)
 {
