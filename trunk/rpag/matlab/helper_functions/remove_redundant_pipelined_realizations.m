@@ -13,7 +13,7 @@ for i=1:length(pipelined_realization)
   for j=i+1:length(pipelined_realization)
     elem2 = pipelined_realization{j};
     if (elem1{1}~='O') && (elem2{1}~='O') && all(elem1{2} == elem2{2}) && (elem1{3} == elem2{3})
-      if verbose > 0
+      if verbose > 1
         disp(['removing one of redundant element(s) ',cell2str(elem1),' and ',cell2str(elem2)]);
       end
       elem1_found = true;
@@ -70,7 +70,7 @@ while(elements_removed) %in case that a redundant element is removed, it may be 
       k=k+1;
     else
       elements_removed = true;
-      if verbose > 0
+      if verbose > 1
         disp(['removing redundant element ',cell2str(elem1)]);
       end    
     end

@@ -78,5 +78,5 @@ if ~isempty(pipelined_realization)
     pipelined_realization = [pipelined_realization; output_coeff(i),s,output_coeff_fun(i),s,output_coeff_exp(i),0,s,0];
   end
 
-  pipelined_realization = remove_redundant_pipelined_realizations(pipelined_realization);
+%  pipelined_realization = remove_redundant_pipelined_realizations(pipelined_realization);
 end
