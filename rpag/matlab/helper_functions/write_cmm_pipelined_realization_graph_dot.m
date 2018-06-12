@@ -33,9 +33,9 @@ for i=1:no_of_inputs
   if shortnames
     label = num2str(i);
   else
-    label = vec2dot(input_vec,',');
+    label = vec2dotlab(input_vec,',');
   end
-  fprintf(fid, ['x_',vec2dot(input_vec,'_'),'_s0 [label="(',label,')",shape="ellipse"];\n']);
+  fprintf(fid, ['x_',vec2dot(input_vec,'_'),'_s0 [label="',label,'",shape="ellipse"];\n']);
 end
 
 nodecnt = no_of_inputs+1; %for short labels
@@ -79,18 +79,18 @@ for l=1:size(pipelined_realization,2)
         label = num2str(nodecnt);
         nodecnt = nodecnt + 1;
       else
-        label = vec2dot(pipelined_realization_element{1},',');
+        label = vec2dotlab(pipelined_realization_element{1},',');
       end
-      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1},'_'),' [label="(',label,')",shape="none",height=0.0];\n']);
+      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1},'_'),' [label="',label,'",shape="none",height=0.0];\n']);
     else
       %this is a node without register:
       if shortnames
         label = num2str(nodecnt);
         nodecnt = nodecnt + 1;
       else
-        label = vec2dot(pipelined_realization_element{1},',');
+        label = vec2dotlab(pipelined_realization_element{1},',');
       end
-      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1}','_'),'_s',num2str(pipelined_realization_element{2}),' [label="',sign_str,'\\n(',label,')",shape="box"];\n']);
+      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{1}','_'),'_s',num2str(pipelined_realization_element{2}),' [label="',sign_str,'\\n',label,'",shape="box"];\n']);
     end
 end
 fprintf(fid, '}\n');
@@ -111,8 +111,8 @@ for l=1:size(pipelined_realization,2)
   if node_is_register
     if pipelined_realization_element{2} == pipelined_realization_element{4}
       %no delay -> this is a node without register (output)
-      label = vec2dot(pipelined_realization_element{5},',');
-      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),' [label="(',label,')",fontsize=12]\n']);
+      label = vec2dotlab(pipelined_realization_element{5},',');
+      fprintf(fid, ['x_',vec2dot(pipelined_realization_element{3},'_'),'_s',num2str(pipelined_realization_element{4}),' -> x_',vec2dot(pipelined_realization_element{1},'_'),' [label="',label,'",fontsize=12]\n']);
     else
       %this is a register:
       label = mat2str(pipelined_realization_element{5});
@@ -139,7 +139,6 @@ fclose(fid);
 end
 
 function str = vec2dot(vec,delim)
-
   str='';
   vec_nonzero = vec(vec~=0);
   if length(vec_nonzero) > 0
@@ -165,3 +164,10 @@ function str = vec2dot(vec,delim)
   end
 end
 
+function str = vec2dotlab(vec,delim)
+  if length(vec) > 1
+    str = ['(',vec2dot(vec,delim),')'];
+  else
+    str = vec2dot(vec,delim);
+  end
+end
