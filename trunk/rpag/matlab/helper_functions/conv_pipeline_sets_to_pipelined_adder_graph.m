@@ -74,13 +74,19 @@ function pipelined_adder_graph = conv_pipeline_sets_to_pipelined_adder_graph(X,o
   if ~isempty(pipelined_adder_graph)
     for i=1:length(output_coeff)
       [output_coeff_fun,output_coeff_exp] = fundamental(output_coeff(i));
+      
+      coeff_found = false;
+      for j=1:length(pipelined_adder_graph)
+        if pipelined_adder_graph{j}{2} == output_coeff_fun
+          coeff_found = true;
+          break
+        end
+      end
+      assert(coeff_found,['Output coefficient ',output_coeff_fun,' was not found in the adder graph realization']);
+
       pipelined_adder_graph{node_index} = {'O',output_coeff(i),s_max,output_coeff_fun,s_max,output_coeff_exp,0,0,0};
       node_index = node_index + 1;
     end
-%    for i=1:length(output_coeff)
-%      assert(nnz(pipelined_realization(:,1)==output_coeff_fun(i))>0,['no realization for output coefficient ',num2str(output_coeff(i)),' possible']);
-%      pipelined_realization = [pipelined_realization; output_coeff(i),s,output_coeff_fun(i),s,output_coeff_exp(i),0,s,0];
-%    end
   end
 end
 
