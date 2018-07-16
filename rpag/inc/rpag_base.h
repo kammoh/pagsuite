@@ -250,7 +250,7 @@ int_t rpag_base<T>::compute_c_max(int_t target_fun_max)
     }
     else
     {
-        return 1LL << (log2c_64(target_fun_max)+1);// standart case one bit more is used to prevent some Topologi problems
+        return 1LL << (log2c_64(target_fun_max)+1);// standart case one bit more is used to prevent some Topology problems
     }
 }
 
