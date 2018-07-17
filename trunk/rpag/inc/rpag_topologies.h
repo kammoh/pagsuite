@@ -352,7 +352,7 @@ void rpag_base<T>::compute_topology_d_predecessors_2_add(T x, int nz_max, int ws
   }
   if(iteration_counter == msd_digit_permutation_limit)
   {
-    IF_VERBOSE(2) cout << "Attention: msd_cutter_iteration_max has stoped topology d" << endl;
+    IF_VERBOSE(3) cout << "Attention: msd_cutter_iteration_max has stoped topology d" << endl;
   }
   IF_VERBOSE(4) cout << "end by iteration=" << iteration_counter << endl;
   IF_VERBOSE(4) cout << "predecessor_pair_set=" << *predecessor_pair_set << endl;
