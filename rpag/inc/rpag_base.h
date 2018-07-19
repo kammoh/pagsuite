@@ -189,6 +189,7 @@ protected:
 template <class T>
 vector<set<T> > rpag_base<T>::get_best_pipeline_set()
 {
+    cout << "!!!best_pipeline_set_result=" << best_pipeline_set_result << endl;
     return best_pipeline_set_result;
 }
 
@@ -470,7 +471,8 @@ int rpag_base<T>::optimize()
         pipeline_set_best.push_back(target_fun_set);
 
         create_rpag_output(pipeline_set_best, 0, target_set);
-        return(0);
+        best_pipeline_set_result = pipeline_set_best;
+        return 0;
     }
   unsigned act_decision_no=0,act_decision_value=0;
   unsigned act_decision_value_best=0;
