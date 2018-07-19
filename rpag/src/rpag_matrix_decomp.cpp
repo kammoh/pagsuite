@@ -49,6 +49,8 @@ int rpag_matrix_decomp::make_all_solutions_same_depth(vector<vector<set<vec_t> >
       }
     }
 
+    cout << "!!!max_pipeline_stages=" << max_pipeline_stages << endl;
+
     // Make all solutens the same pipeline depth
     for(unsigned int j=0; j< solutions.size(); ++j)
     {
@@ -288,7 +290,8 @@ void rpag_matrix_decomp::decomposision_recursion(set<vec_t> *target_fun_set)
         problems = problems_next_step;
         problems_next_step.clear();
 
-        insert_problems_into_pipeline_set_rev(pipeline_set_rev, problems);
+        if(i < No_of_decompose_stages-1)
+            insert_problems_into_pipeline_set_rev(pipeline_set_rev, problems);
     }
 
     for(pair<set<vec_t>, vector<bool> > p: problems)
