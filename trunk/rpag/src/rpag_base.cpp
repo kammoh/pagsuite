@@ -7,4 +7,3 @@
 */
 
 #include "rpag_base.h"
-

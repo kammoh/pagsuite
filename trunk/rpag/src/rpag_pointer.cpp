@@ -72,5 +72,8 @@ rpag_pointer* rpag_pointer::copy_parameters (rpag_pointer* rhs)
     this->fix_decision_cnt            = rhs->fix_decision_cnt;
 
     this->ternary_sign_filter         = rhs->ternary_sign_filter;
+
+    this->cost_model                  = rhs->cost_model;
+
     return this;
 }
