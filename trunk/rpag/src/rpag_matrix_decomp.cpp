@@ -347,10 +347,10 @@ void rpag_matrix_decomp::decomposision_recursion(set<vec_t> *target_fun_set)
 
     IF_VERBOSE(3)
     {
-        std::cout << std::endl << "################  Solutions after same size  ####################" << std::endl;
+        std::cout << std::endl << "################  Solutions after same depth  ####################" << std::endl;
         for(vector<set<vec_t> >s : solutions)
         {
-             std::cout << "RPAG result: " << s <<std::endl<<std::endl<<std::endl;
+             std::cout << "RPAG result (depth corrected): " << s <<std::endl<<std::endl<<std::endl;
         }
     }
 
