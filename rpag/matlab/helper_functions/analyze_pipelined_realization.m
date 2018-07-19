@@ -41,4 +41,5 @@ for s=1:no_of_stages
     disp(['registers in stage ',num2str(s),':',num2str(register_count_per_stage(s))]);
   end
 end
+
   

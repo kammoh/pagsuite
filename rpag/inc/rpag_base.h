@@ -263,12 +263,12 @@ int_t rpag_base<T>::compute_c_max(int_t target_fun_max)
 {
     if(target_fun_max == 1)
     {
-        IF_VERBOSE(1) cout << "Detect Binary Matrix! => Use reduced search space resulting in lower c_max" << std::endl;
+        IF_VERBOSE(1) cout << "detected a binary or ternary matrix! => use a reduced search space resulting in lower c_max" << std::endl;
         return 1LL << 0; //binary Matrix does not need any other digit as one...
     }
     else
     {
-        return 1LL << (log2c_64(target_fun_max)+1);// standart case one bit more is used to prevent some Topology problems
+        return 1LL << (log2c_64(target_fun_max)+1);// standard case, one bit more is used
     }
 }
 
@@ -1066,14 +1066,16 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
   //compute adder graph:
   stringstream pag;
   list< realization_row<T> > pipelined_adder_graph;
-  pipeline_set_to_adder_graph(pipeline_set_best, pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);
-  append_targets_to_adder_graph(pipeline_set_best, pipelined_adder_graph, *target_set);
-
-
-  //for non-pipelined cost models, remove unused input nodes:
-  if((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC))
+  if(show_adder_graph)
   {
-      remove_redundant_inputs_from_adder_graph(pipelined_adder_graph, pipeline_set_best);
+      pipeline_set_to_adder_graph(pipeline_set_best, pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);
+      append_targets_to_adder_graph(pipeline_set_best, pipelined_adder_graph, *target_set);
+
+      //for non-pipelined cost models, remove unused input nodes:
+      if((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC))
+      {
+          remove_redundant_inputs_from_adder_graph(pipelined_adder_graph, pipeline_set_best);
+      }
   }
 
   if(benchmark || matlab_output)
