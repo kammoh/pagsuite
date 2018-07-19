@@ -189,7 +189,6 @@ protected:
 template <class T>
 vector<set<T> > rpag_base<T>::get_best_pipeline_set()
 {
-    cout << "!!!best_pipeline_set_result=" << best_pipeline_set_result << endl;
     return best_pipeline_set_result;
 }
 
@@ -1070,6 +1069,7 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
   list< realization_row<T> > pipelined_adder_graph;
   if(show_adder_graph)
   {
+      IF_VERBOSE(1) cout << "computing adder graph..." << endl;
       pipeline_set_to_adder_graph(pipeline_set_best, pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);
       append_targets_to_adder_graph(pipeline_set_best, pipelined_adder_graph, *target_set);
 
@@ -1143,8 +1143,6 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
 
     for(unsigned int s = 1; s < pipeline_set_best.size(); ++s)
     {
-//      cout << "!!!! pipeline_set_best[" << s << "]=" << pipeline_set_best[s] << endl;
-
       for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
       {
         if(s == 0)

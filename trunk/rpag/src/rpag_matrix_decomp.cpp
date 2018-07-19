@@ -49,8 +49,6 @@ int rpag_matrix_decomp::make_all_solutions_same_depth(vector<vector<set<vec_t> >
       }
     }
 
-    cout << "!!!max_pipeline_stages=" << max_pipeline_stages << endl;
-
     // Make all solutens the same pipeline depth
     for(unsigned int j=0; j< solutions.size(); ++j)
     {
