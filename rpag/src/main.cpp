@@ -21,6 +21,8 @@ using namespace std;
 #include "rpagt.h"  // three input adder
 #include "rpagvm.h" // vector matrix
 #include "rpagtvm.h" // vector matrix with three input adder
+#include "rpag_matrix_decomp.h"
+
 #include "cost_model.h"
 #include "tic_toc.h"
 #include "configurable.h"
@@ -86,7 +88,9 @@ int print_short_help()
   cout << "-----------------------------------------------" << endl;
   cout << "Options for the constan matrix multiplication (CMM) problem:" << endl;
   cout << "Option                                         Meaning" << endl;
+  cout << "--matrix_decomp=int                            split the input matrix inteo smaler problems and solve the seperatly. The parameter defines times of splitting (has to be the last parameter...)" << endl;
   cout << "--cmm                                          constant matrix multiplication: Treats every coefficient as vector of input weights separated by commas (see examples below)" << endl;
+
 
 #ifdef EMBEDDED_MULT_FIX_ME
   cout << endl;
@@ -479,6 +483,15 @@ int main(int argc, char *argv[])
         }
         delete rpag2p;
       }
+      else if(strstr(argv[i], "--matrix_decomp="))
+      {
+        int stages_to_decompose = atoi(argv[i]+16);
+        vector_input = true;
+        rpag_pointer *rpag2p = rpagp;
+        rpagp = new rpag_matrix_decomp(rpag2p, stages_to_decompose, rpagp->get_rpag_type());// use the functions for 3 input adder and vector matrix multiplication.
+        delete rpag2p;
+      }
+
       else if(strstr(argv[i], "--sign_correction"))
       {
         rpagp->ternary_sign_filter=true;

@@ -44,14 +44,17 @@ public:
   virtual bool is_this_a_two_input_system(void)=0;
   int_t get_c_max();
 
-  int optimize();// clasic RPAG entry point. start the optimisation
-  int start(); // flow controll (rpag, Matrix transposition, matrix decomposition)
+  virtual int optimize();// clasic RPAG entry point. start the optimisation
+
+  vector<set<T>> get_best_pipeline_set();
 protected:
   vector<set<T> > do_matrix_decomposition(const vector<set<T> > *target_fun_set,unsigned int split_v_into=2,unsigned int split_h_into=2 );//
 
+  void parse_target_set();
   int optimize_single_run(const set<T> *target_fun_set, vector< set<T> > *pipeline_set, bool first_decision_break, int *first_decision_predecessor_stage, set<T> *first_decison_predecessor);
   int create_rpag_output(vector< set<T> > &pipeline_set_best, double pag_cost_best, set<T> *target_set);
 
+  vector<set<T> > best_pipeline_set_result;
 
   //internal parameters:
 #ifdef KEEP_C_MAX_CONST_ONE
@@ -69,6 +72,11 @@ protected:
   int get_local_decision(int min_decision);
 
 public:
+  void set_target_set(set<T> target_set_)
+  {
+    (*target_set) = target_set_;
+  }
+
     T _target;
   template<typename T2>
   void load_target_set(T2 target_set)
@@ -84,6 +92,7 @@ public:
 
 protected:
 
+   set<T> *target_set;
   inline void evaluate_usefull_predecessor_pair(T w1, T w2, set<pair<T,T> > *predecessor_pair_set, int nz_max, int_t l11, int_t l12, int_t l21, int_t l22, int_t r1, int_t r2, int_t s12, int_t s22)
   {
     T p1,p2;
@@ -129,7 +138,7 @@ protected:
     }
   }
 
-private:
+protected:
   //###################################################################
 
   virtual T get_best_single_predecessor(const set<T> &working_set, const set<T> &predecessor_set, int s)
@@ -176,6 +185,12 @@ protected:
   void explore_cse(vector<vec_t> &working_vec, vec_t currentCSE, int baseIndex, int endIndex, int frequency, int cseSizeMin, int cseSizeMax, string indexCombinations, map<T, double> *single_p_gain_map);
 
 };
+
+template <class T>
+vector<set<T> > rpag_base<T>::get_best_pipeline_set()
+{
+    return best_pipeline_set_result;
+}
 
 template <class T>
 std::string generate_matlab_line(T r, int stage_r, T r1, int stage_r1, int k_r1, bool sg_r1, T r2, int stage_r2, int k_r2, bool sg_r2)
@@ -229,11 +244,14 @@ rpag_base<T>::rpag_base()
   cost_FA = -1; // the -1 is a marker that this is not set yet;
   cost = NULL;
 
+  target_set = new set<T>;
 }
 
 template <class T>
 rpag_base<T>::~rpag_base()
 {
+
+  delete target_set;
   if(cost != NULL)
   {
     delete cost;
@@ -393,12 +411,8 @@ int rpag_base<T>::initialize(const set<T>* target_set, set<T>* target_fun_set)
 }
 
 template <class T>
-int rpag_base<T>::optimize()
+void rpag_base<T>::parse_target_set()
 {
-  timer.start();
-  fix_decision_cnt = 0;
-  set<T> *target_set= new set<T>;
-  {
     int target_size = -1; // for testing all targets to have the same size!
     vector<char*>::iterator it;
     T to=0;
@@ -425,7 +439,22 @@ int rpag_base<T>::optimize()
       test_target_size(target.c_str(),target_size);//to test the size of the target
       target_set->insert( my_atoll(to,target.c_str()) );
     }
+
+}
+
+template <class T>
+int rpag_base<T>::optimize()
+{
+  timer.start();
+  fix_decision_cnt = 0;
+
+
+
+  if((target_set != NULL) && (target_set->size() == 0))
+  {
+    parse_target_set();
   }
+  std::cout << "used target set:" << *target_set << std::endl;
 
   // to get access to all functions of the cost_model
   cost = ( cost_model_base<T>* )this->cost_pointer;
@@ -441,7 +470,7 @@ int rpag_base<T>::optimize()
         pipeline_set_best.push_back(target_fun_set);
 
         create_rpag_output(pipeline_set_best, 0, target_set);
-        exit(0);
+        return(0);
     }
   unsigned act_decision_no=0,act_decision_value=0;
   unsigned act_decision_value_best=0;
@@ -575,73 +604,11 @@ int rpag_base<T>::optimize()
     }
   }
   timer.stop();
+  best_pipeline_set_result = pipeline_set_best;
   create_rpag_output(pipeline_set_best, pag_cost_best, target_set);
-  delete target_set;
   return 1;
 }
 
-template <class T>
-int rpag_base<T>::start()
-{
-
-    return 0;
-}
-/*
-template <class T>
-vector<set<T> > rpag_base<T>::do_matrix_decomposition(const set<T> *list_of_target_sets,unsigned int split_v_into,unsigned int split_h_into)
-{
-    vector<vector<T>> target_set;
-    target_set.resize(1);
-    target_set[0].resize(list_of_target_sets->size());
-
-    unsigned int i=0;
-    for(T elem : *list_of_target_sets)
-    {
-        target_set[0][i++] = elem;
-    }
-
-    return do_matrix_decomposition(target_set, split_v_into, split_h_into);
-}
-
-template <class T>
-vector<vector<T> > rpag_base<T>::do_matrix_decomposition(const vector<vector<T>> *list_of_target_sets,unsigned int split_v_into,unsigned int split_h_into, unsigned int stage)
-{
-    vector<set<T> > new_target_sets;
-
-// std::function<int (int)> func = [](int i) { return i+4; };
-
-    for(vector<T> current_target_set: (*list_of_target_sets))
-    {
-
-        // if parts are big enough
-        //split set verticaly  into x parts
-            //generate the revuse nodes
-        //split set horisontly  into y parts
-            //generate the revise nodes
-        //save this inbetween results
-
-        //for inbetween results
-            //if parts are still big enough
-                //restart splitting recusifly...
-                // remove the inbetween result
-            //else
-                // add the result to final output
-
-
-
-        if(stage < adder_depth())
-        {
-
-
-        }
-
-
-    }
-
-    return list_of_target_sets;
-}
-
-*/
 template <class T>
 int rpag_base<T>::optimize_single_run(const set<T> *target_fun_set, vector< set<T> > *pipeline_set, bool first_decision_break, int *first_decision_predecessor_stage, set<T> *first_decision_predecessor)
 {
