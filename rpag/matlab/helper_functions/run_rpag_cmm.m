@@ -31,7 +31,7 @@ rpag_cmd = [rpag_path,'/rpag --cmm --file_output=',filename,'.m ',arguments,' ',
 if verbose > 1
   disp(['calling ',rpag_cmd]);
 end
-eval(['!',rpag_cmd]);
+%eval(['!',rpag_cmd]);
 evalc(filename);
 eval(['!rm ',filename,'.m']);
 

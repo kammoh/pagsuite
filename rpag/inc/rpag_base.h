@@ -456,7 +456,7 @@ int rpag_base<T>::optimize()
   {
     parse_target_set();
   }
-  std::cout << "used target set:" << *target_set << std::endl;
+  IF_VERBOSE(0) std::cout << "used target set:" << *target_set << std::endl;
 
   // to get access to all functions of the cost_model
   cost = ( cost_model_base<T>* )this->cost_pointer;
@@ -1066,54 +1066,61 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
   }
   stringstream output_stream; // to be able to stream the output in file and display
 
-  //compute adder graph:
-  stringstream pag;
-  list< realization_row<T> > pipelined_adder_graph;
-  if(enable_addergraph_computation_and_final_optimisation)
+  //compute ressource usage:
+  int no_of_adders=0,no_of_registers=0,no_of_registered_ops=0;
+  typename set<T>::iterator set_iter;
+  for(unsigned int s = 0; s < pipeline_set_best.size(); ++s)
   {
-      IF_VERBOSE(1) cout << "computing adder graph..." << endl;
-      pipeline_set_to_adder_graph(pipeline_set_best, pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);
-      append_targets_to_adder_graph(pipeline_set_best, pipelined_adder_graph, *target_set);
-
-      //for non-pipelined cost models, remove unused input nodes:
-      if((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC))
+    for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
+    {
+      if(s == 0)
       {
-          remove_redundant_inputs_from_adder_graph(pipelined_adder_graph, pipeline_set_best);
+        if(nonzeros(*set_iter) == 1)
+          no_of_registers++;
+        else
+          no_of_adders++;
       }
+      else
+      {
+        //seach element in previous stage
+        if(pipeline_set_best[s-1].find(*set_iter) != pipeline_set_best[s-1].end())
+        {
+          //element found -> count as register
+          no_of_registers++;
+        }
+        else
+        {
+          no_of_adders++;
+        }
+      }
+    }
+    no_of_registered_ops += pipeline_set_best[s].size();
+  }
+
+  IF_VERBOSE(1) cout << "pag_cost=" << pag_cost_best << endl;
+  IF_VERBOSE(1) cout << "no_of_pipeline_stages=" << pipeline_set_best.size()-1 << std::endl;
+  IF_VERBOSE(1) cout << "no_of_registered_ops=" << no_of_registered_ops << std::endl;
+  IF_VERBOSE(1) cout << "no_of_registers=" << no_of_registers << std::endl;
+  IF_VERBOSE(1) cout << "no_of_adders=" << no_of_adders << std::endl;
+  IF_VERBOSE(1) cout << "pag_cost=" << pag_cost_best << std::endl;
+
+  //compute adder graph:
+  list< realization_row<T> > pipelined_adder_graph;
+  if((((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC)) && enable_addergraph_computation_and_final_optimisation) || show_adder_graph)
+  {
+    IF_VERBOSE(1) cout << "computing adder graph..." << endl;
+    pipeline_set_to_adder_graph(pipeline_set_best, pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);
+    append_targets_to_adder_graph(pipeline_set_best, pipelined_adder_graph, *target_set);
+
+    //for non-pipelined cost models, remove unused input nodes:
+    if((cost_model == HL_MIN_AD) || (cost_model == MIN_GPC))
+    {
+      remove_redundant_inputs_from_adder_graph(pipelined_adder_graph, pipeline_set_best);
+    }
   }
 
   if(benchmark || matlab_output)
   {
-    int no_of_adders=0,no_of_registers=0,no_of_registered_ops=0;
-    typename set<T>::iterator set_iter;
-    for(unsigned int s = 0; s < pipeline_set_best.size(); ++s)
-    {
-      for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
-      {
-        if(s == 0)
-        {
-          if(nonzeros(*set_iter) == 1)
-            no_of_registers++;
-          else
-            no_of_adders++;
-        }
-        else
-        {
-          //seach element in previous stage
-          if(pipeline_set_best[s-1].find(*set_iter) != pipeline_set_best[s-1].end())
-          {
-            //element found -> count as register
-            no_of_registers++;
-          }
-          else
-          {
-            no_of_adders++;
-          }
-        }
-      }
-      no_of_registered_ops += pipeline_set_best[s].size();
-    }
-
     if(benchmark)
     {
       output_stream << "no_of_pipeline_stages=\t" << pipeline_set_best.size()-1 << std::endl;
@@ -1122,6 +1129,7 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
       output_stream << "no_of_adders=\t\t" << no_of_adders << std::endl;
       output_stream << "pag_cost=\t\t" << pag_cost_best << std::endl;
     }
+
     if(matlab_output)
     {
       output_stream << "no_of_adders{" << matlab_out_address_string << "}=" << no_of_adders <<"; ";
@@ -1174,17 +1182,17 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
 
     if(show_adder_graph)
     {
-        pag << "pipelined_adder_graph=" << output_adder_graph(pipelined_adder_graph,true) << endl;
-        output_stream << pag.str();// the endl is inluded in the pag string
+      stringstream pag;
+      pag << "pipelined_adder_graph=" << output_adder_graph(pipelined_adder_graph,true) << endl;
+      output_stream << pag.str();// the endl is inluded in the pag string
     }
-      output_stream << "pag_cost=" << pag_cost_best << endl;
-      output_stream << "no_of_pipeline_stages=" << pipeline_set_best.size()-1 << std::endl;
-      output_stream << "no_of_registered_ops=" << no_of_registered_ops << std::endl;
-      output_stream << "no_of_registers=" << no_of_registers << std::endl;
-      output_stream << "no_of_adders=" << no_of_adders << std::endl;
-      output_stream << "pag_cost=" << pag_cost_best << std::endl;
-
-    }
+    output_stream << "pag_cost=" << pag_cost_best << endl;
+    output_stream << "no_of_pipeline_stages=" << pipeline_set_best.size()-1 << std::endl;
+    output_stream << "no_of_registered_ops=" << no_of_registered_ops << std::endl;
+    output_stream << "no_of_registers=" << no_of_registers << std::endl;
+    output_stream << "no_of_adders=" << no_of_adders << std::endl;
+    output_stream << "pag_cost=" << pag_cost_best << std::endl;
+  }
 
 //      IF_VERBOSE(0) output_stream << "best result: pag_cost=" << pag_cost_best << ", pipeline_set_best=" << pipeline_set_best << endl;
 
