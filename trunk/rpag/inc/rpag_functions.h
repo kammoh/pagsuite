@@ -741,7 +741,10 @@ void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realizati
               if(exponentsFound) break;
             }
           }
-          IF_VERBOSE(4) if(!exponentsFound){std::cout << "Speculative skipping failed, computing again..." << std::endl;}
+          if(!exponentsFound)
+          {
+            IF_VERBOSE(3) std::cout << "Speculative skipping failed, computing again..." << std::endl;
+          }
           dont_skip = true;
         }
       }

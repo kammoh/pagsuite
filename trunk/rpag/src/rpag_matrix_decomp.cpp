@@ -6,13 +6,13 @@
 
 int rpag_matrix_decomp::optimize()
 {
-
-    std:: cout << " rpag_matrix_decomp::optimize " << std::endl;
-    if(operation_type == typ_rpagtvm)
-        std:: cout << "opperation type: typ_rpagtvm" << std::endl;
-    if(operation_type == typ_rpagvm)
-        std:: cout << "opperation type: typ_rpagvm" << std::endl;
-
+    IF_VERBOSE(3)
+    {
+        if (operation_type == typ_rpagtvm)
+            std::cout << "opperation type: typ_rpagtvm" << std::endl;
+        if (operation_type == typ_rpagvm)
+            std::cout << "opperation type: typ_rpagvm" << std::endl;
+    }
     parse_target_set();
 
     set<vec_t> target_fun_set;
@@ -20,7 +20,7 @@ int rpag_matrix_decomp::optimize()
 
     int no_of_pipeline_stages = initialize(target_set,&target_fun_set);
 
-    decomposision_recursion(&target_fun_set);
+    perform_decomposition(&target_fun_set);
 
     return 0;
 }
@@ -244,7 +244,7 @@ int rpag_matrix_decomp::adder_depth(vec_t x)
   }
 }
 
-void rpag_matrix_decomp::decomposision_recursion(set<vec_t> *target_fun_set)
+void rpag_matrix_decomp::perform_decomposition(set<vec_t> *target_fun_set)
 {
     //init the partionion_helper for target_fun_set each "true" in the vector corresponds to an element in each target, which belongs to the problem.
     //this is necessary to know after spliting which elemts are still part of the probelm
@@ -265,12 +265,12 @@ void rpag_matrix_decomp::decomposision_recursion(set<vec_t> *target_fun_set)
 
     problems.push_back(init);
 
-    pipeline_set_rev.reserve(No_of_decompose_stages);
+    pipeline_set_rev.reserve(no_of_decomposition_stages);
 
     // set the output of the Pipeline set
     insert_problems_into_pipeline_set_rev(pipeline_set_rev, problems);
 
-    for(int i=0; i < No_of_decompose_stages; ++i)
+    for(int i=0; i < no_of_decomposition_stages; ++i)
     {    
         for(pair<set<vec_t>, vector<bool> > t_and_p: problems)
         {
@@ -288,10 +288,11 @@ void rpag_matrix_decomp::decomposision_recursion(set<vec_t> *target_fun_set)
         problems = problems_next_step;
         problems_next_step.clear();
 
-        if(i < No_of_decompose_stages-1)
+        if(i < no_of_decomposition_stages-1)
             insert_problems_into_pipeline_set_rev(pipeline_set_rev, problems);
     }
 
+    int i=1;
     for(pair<set<vec_t>, vector<bool> > p: problems)
     {
 
@@ -307,12 +308,9 @@ void rpag_matrix_decomp::decomposision_recursion(set<vec_t> *target_fun_set)
             }
         }
 
-        IF_VERBOSE(1)
-        {
-            std::cout << "************************************************************************************" << std::endl;
-            std::cout << "start RPAG instance:" << std::endl;
-            std::cout << "************************************************************************************" << std::endl;
-        }
+
+        IF_VERBOSE(2) std::cout << "************************************************************************************" << std::endl;
+        IF_VERBOSE(1) std::cout << "starting RPAG instance " << i << " out of " << problems.size() << std::endl;
         rpag_base<vec_t> *rpagp;
         if(is_this_a_two_input_system())
         {
@@ -330,9 +328,11 @@ void rpag_matrix_decomp::decomposision_recursion(set<vec_t> *target_fun_set)
         rpagp->target_vec.clear();
         rpagp->set_target_set(p.first);
         rpagp->cost_pointer =  this->cost_pointer;
+        global_verbose-=2; //reduce the verbosity
         rpagp->optimize();
+        global_verbose+=2; //increase verbosity again
         solutions.push_back(rpagp->get_best_pipeline_set());
-        IF_VERBOSE(1) std::cout << "************************************************************************************" << std::endl;
+        i++;
     }
 
 
