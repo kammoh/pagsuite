@@ -56,7 +56,7 @@ int print_short_help()
   //  cout << "                                               ll_asic: currently not supported" << endl;
   //  cout << "--exhaustive=true|false                        Enables the exhaustive mode, where allways successor pairs are evaluated, default:false" << endl;
   cout << "--no_of_extra_stages=int                       Per default, the pipeline depth is chosen to the minimum possible, more pipeline stages can be selected by choosing no_of_extra_stages>0, default:0" << endl;
-  cout << "--without_adder_graph                          Disables the computation of the adder graph solution including shift values" << endl;
+  cout << "--without_adder_graph                          Disables the computation of the adder graph solution including shift values()" << endl;
   cout << "--benchmark                                    Print a list of counted operation of the solution" << endl;
 //  cout << "--matlab_out_address=[string]                Print a matlab compatible line with information about the solution" << endl;
   cout << "--file_output[=string]                         The RPAG output will be printed in a text file optionally specified as filename (default: output_adder_graph.txt)" << endl;

@@ -73,6 +73,7 @@ public:
 
   void print_parameter(){}
 
+  bool enable_addergraph_computation_and_final_optimisation;
 protected:
   rpag_pointer* copy_parameters (rpag_pointer* rhs);
 };

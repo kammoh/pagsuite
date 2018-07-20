@@ -245,6 +245,8 @@ rpag_base<T>::rpag_base()
   cost = NULL;
 
   target_set = new set<T>;
+
+  enable_addergraph_computation_and_final_optimisation=true;
 }
 
 template <class T>
@@ -605,8 +607,8 @@ int rpag_base<T>::optimize()
     }
   }
   timer.stop();
-  best_pipeline_set_result = pipeline_set_best;
   create_rpag_output(pipeline_set_best, pag_cost_best, target_set);
+  best_pipeline_set_result = pipeline_set_best;
   return 1;
 }
 
@@ -1067,7 +1069,7 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
   //compute adder graph:
   stringstream pag;
   list< realization_row<T> > pipelined_adder_graph;
-  if(show_adder_graph)
+  if(enable_addergraph_computation_and_final_optimisation)
   {
       IF_VERBOSE(1) cout << "computing adder graph..." << endl;
       pipeline_set_to_adder_graph(pipeline_set_best, pipelined_adder_graph,is_this_a_two_input_system(),c_max, ternary_sign_filter);

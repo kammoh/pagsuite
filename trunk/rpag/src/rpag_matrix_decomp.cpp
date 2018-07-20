@@ -322,7 +322,9 @@ void rpag_matrix_decomp::decomposision_recursion(set<vec_t> *target_fun_set)
         {
             rpagp = new rpagtvm(this);
         }
+
         rpagp->show_adder_graph = false;
+        rpagp->enable_addergraph_computation_and_final_optimisation=false;
         rpagp->adder_depth_constraints.clear();
         rpagp->wordsize_constraints.clear();
         rpagp->target_vec.clear();
