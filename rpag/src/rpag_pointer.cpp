@@ -75,5 +75,7 @@ rpag_pointer* rpag_pointer::copy_parameters (rpag_pointer* rhs)
 
     this->cost_model                  = rhs->cost_model;
 
+    this->enable_addergraph_computation_and_final_optimisation = rhs->enable_addergraph_computation_and_final_optimisation;
+
     return this;
 }
