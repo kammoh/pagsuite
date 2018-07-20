@@ -743,6 +743,11 @@ void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realizati
           }
           if(!exponentsFound)
           {
+            if(dont_skip == true)
+            {
+                cout << "Error: No solution could be found to realize " << w << endl;
+                exit(-1);
+            }
             IF_VERBOSE(3) std::cout << "Speculative skipping failed, computing again..." << std::endl;
           }
           dont_skip = true;
