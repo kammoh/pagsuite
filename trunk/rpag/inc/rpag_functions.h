@@ -234,6 +234,11 @@ void create_unit_element(int_t &var, unsigned int i);
 void create_null_element(vec_t &var);
 void create_null_element(int_t &var);
 
+bool skip_predecessor(const vec_t &w,const vec_t &p,const bool &dont_skip);
+bool skip_predecessor(const int_t &w,const int_t &p,const bool &dont_skip);
+
+
+
 
 template <class T>
 bool getExponents(T &a,T &b, T &w, int *eA, int *eB, int *signA, int *signB)
@@ -648,6 +653,7 @@ template <class T>
 void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realization_row<T> > &pipelined_adder_graph, bool is_this_a_two_input_system, int_t c_max, bool ternarry_sign_filter=false)
 {
   bool ternary_adders = !is_this_a_two_input_system; //the funktion ask for a two input system. And this funktion works with a ternary adder flag... so it has to be inverted
+  bool dont_skip=false;
 
   IF_VERBOSE(8) cout << "pipeline_set=" << pipeline_set << endl;
   typename set<T>::const_iterator working_set_iter,predecessor_set_iter1,predecessor_set_iter2, predecessor_set_iter3;
@@ -687,16 +693,23 @@ void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realizati
             break;
           }
         }
-
-        if(!exponentsFound)
+        /* check for adders, for the CMM case, we will do this first by skipping all predecessors which are unlikely (obtained by skip_predecessor())
+         * In case of the (seldom) failure, it has to be computed again.
+         * In total a large net acceleration is expected.
+        */
+        dont_skip = false;
+        while(!exponentsFound)
         { 
           //it is possible that there is a two adder solution for three adders so the two adders have to be tested.
           signC = 0; c=0; eC=0;
+
           for(predecessor_set_iter1 = (pipeline_set)[s-1].begin(); predecessor_set_iter1 != (pipeline_set)[s-1].end(); ++predecessor_set_iter1)
           {
+            if(skip_predecessor(w,(*predecessor_set_iter1), dont_skip)){continue;}
+            a=*predecessor_set_iter1;
             for(predecessor_set_iter2 = predecessor_set_iter1; predecessor_set_iter2 != (pipeline_set)[s-1].end(); ++predecessor_set_iter2)
             {
-              a=*predecessor_set_iter1;
+              if(skip_predecessor(w,(*predecessor_set_iter2), dont_skip)){continue;}
               b=*predecessor_set_iter2;
               exponentsFound = getExponents(a,b,w, &eA, &eB, &signA, &signB);
               if(exponentsFound) break;
@@ -709,10 +722,13 @@ void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realizati
             //new loop for the third elemnt and getExponent(3 adder)
             for(predecessor_set_iter1 = (pipeline_set)[s-1].begin(); predecessor_set_iter1 != (pipeline_set)[s-1].end(); ++predecessor_set_iter1)
             {
+              if(skip_predecessor(w,(*predecessor_set_iter1), dont_skip)){continue;}
               for(predecessor_set_iter2 = predecessor_set_iter1; predecessor_set_iter2 != (pipeline_set)[s-1].end(); ++predecessor_set_iter2)
               {
+                if(skip_predecessor(w,(*predecessor_set_iter2), dont_skip)){continue;}
                 for(predecessor_set_iter3 = predecessor_set_iter2; predecessor_set_iter3 != (pipeline_set)[s-1].end(); ++predecessor_set_iter3)
                 {
+                  if(skip_predecessor(w,(*predecessor_set_iter3), dont_skip)){continue;}
                   a = *predecessor_set_iter1;
                   b = *predecessor_set_iter2;
                   c = *predecessor_set_iter3;
@@ -725,6 +741,8 @@ void pipeline_set_to_adder_graph(vector< set<T> > &pipeline_set, list< realizati
               if(exponentsFound) break;
             }
           }
+          IF_VERBOSE(4) if(!exponentsFound){std::cout << "Speculative skipping failed, computing again..." << std::endl;}
+          dont_skip = true;
         }
       }
 

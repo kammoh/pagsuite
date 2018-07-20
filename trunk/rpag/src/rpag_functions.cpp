@@ -311,3 +311,42 @@ bool just_one_negative_sign(vec_t &a, vec_t &b, vec_t &c)
 }
 
 
+bool skip_predecessor(const vec_t &w,const vec_t &p,const bool &dont_skip)
+{
+    //                                     _
+    // for example:  (  not(o) is equal to o  )
+    //w={0, 1, 0,13, 0, 0}
+    //   _     _     _  _
+    //=> o  o  o  o  o  o
+    //
+    //skip if at leest one not(o) is not zero or if all o are zero (in p)
+    if(dont_skip){return false;}
+
+    vec_t::const_iterator p_it=p.begin();
+    for(vec_t::const_iterator w_it = w.begin(); w_it!=w.end();++w_it)//go thrue all elemnts of w and the corresponding eleemnts of p
+    {
+        if(*w_it) // if the element of w is not zero (o)
+        {
+            if(*p_it){return 0;}
+        }
+        else // if the elemt of w is zero => not(o)
+        {
+            if((*p_it)){return 1;}
+        }
+
+        ++p_it;//w will be increased also ...
+    }
+    return 1;
+}
+
+//do the sciping just in case of vectors
+bool skip_predecessor(const int_t &w,const  int_t &p,const bool &dont_skip)
+{
+    UNUSED(w);
+    UNUSED(p);
+    UNUSED(dont_skip);
+    return 0;
+}
+
+
+
