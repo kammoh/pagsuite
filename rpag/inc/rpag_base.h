@@ -1147,14 +1147,6 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
     {
       for(set_iter = pipeline_set_best[s].begin(); set_iter != pipeline_set_best[s].end(); ++set_iter)
       {
-        if(s == 0)
-        {
-          if(nonzeros(*set_iter) == 1)
-            no_of_registers++;
-          else
-            no_of_adders++;
-        }
-        else
         {
           //seach element in previous stage
           if(pipeline_set_best[s-1].find(*set_iter) != pipeline_set_best[s-1].end())
@@ -1171,7 +1163,15 @@ int rpag_base<T>::create_rpag_output(vector< set<T> > &pipeline_set_best, double
       no_of_registered_ops += pipeline_set_best[s].size();
     }
 
-    output_stream << "pipeline_set_best=" << pipeline_set_best << endl;
+
+
+    {
+        //Do not Plot the base vectors in the pipeline_set_best
+        vector<set<T> >pipeline_set_best_for_output = pipeline_set_best;// make a copy
+        pipeline_set_best_for_output.erase(pipeline_set_best_for_output.begin());
+        output_stream << "pipeline_set_best=" << pipeline_set_best_for_output << endl;
+    }
+
     if(show_adder_graph)
     {
         pag << "pipelined_adder_graph=" << output_adder_graph(pipelined_adder_graph,true) << endl;
