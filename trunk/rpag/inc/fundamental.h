@@ -24,6 +24,25 @@ inline int_t fundamental(int_t x)//inline and template doesn't work together
     return x;
   }
 }
+
+//returns the fundamental of x
+inline int_t fundamental(int_t x, int *e)
+{
+  int e_tmp=0;
+  if(x == 0)
+    return x;
+  else
+  {
+    while((x & 0x01) == 0)
+    {
+      x >>= 1;
+      e_tmp++;
+    }
+    *e = e_tmp;
+    return x;
+  }
+}
+
 inline vec_t fundamental(vec_t x)//inline and template doesn't work together
 {
   if(x == 0)
@@ -61,6 +80,18 @@ T fundamental_count(T x, int &c)
   }
 }
 
+
+inline int_t fundamental_count(int_t x, int &c)
+{
+  c = 0;
+  if(x == 0)
+    return x; // if x is 0 we can return x as 0. (for correct dimensions in vector case...)
+  else
+  {
+    while((x % 2) == 0){ x /= 2; ++c;}
+    return x;
+  }
+}
 
 //returns the fundamental of x without checking x!=0 !
 inline int_t fundamental_unsave(int_t x)
@@ -117,5 +148,6 @@ inline int_t fundamental_unsave(int_t x)
 
 void fundamental(int_set_t *set);
 void fundamental(vec_set_t *set);
+
 
 #endif //FUNDAMENTAL_H
