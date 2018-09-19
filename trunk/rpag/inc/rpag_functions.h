@@ -80,7 +80,7 @@ template<class T>
 char realization_row<T>::type()
 {
   //if((stageW == stageA) && (W == A)) //with this line, shifts at the output crashes!
-  if(stageW == stageA)
+  if((stageW == stageA) && (B == 0) && (C == 0))
   {
     return 'O';
   }

@@ -362,7 +362,7 @@ void rpag_base<T>::compute_topology_d_predecessors_2_add(T x, int nz_max, int ws
 template<typename T>
 void rpag_base<T>::explore_cse(vector<vec_t> &working_vec, vec_t currentCSE, int baseIndex, int endIndex, int frequency, int cseSizeMin, int cseSizeMax, string indexCombinations, map<T,double> *single_p_gain_map)
 {
-//  cout << "explore_cse with currentCSE=" << currentCSE << ", currentIndex=" << currentIndex << ", frequency=" << frequency << endl;
+  cout << "explore_cse with currentCSE=" << currentCSE << ", baseIndex=" << baseIndex << ", frequency=" << frequency << endl;
   frequency++;
   vec_t nextCSE(currentCSE.size());
   for(int currentIndex=baseIndex+1; currentIndex <= endIndex; currentIndex++)
@@ -396,6 +396,7 @@ void rpag_base<T>::explore_cse(vector<vec_t> &working_vec, vec_t currentCSE, int
         {
           double gain = ((double) frequency) / (((double) frequency)+1.0); //we can realize f working set elements by implementing the CSE + f additional predecessors
 //          gain = gain*((double) cseSize)/((double) cseSizeMin); //the larger the pattern size the better, this changes the gain by a factor of 1 (when cseSize==cseMin) to 2 (when cseSize==2*cseMin)
+          (*single_p_gain_map).at()
           (*single_p_gain_map)[nextCSE] = gain;
         }
 
