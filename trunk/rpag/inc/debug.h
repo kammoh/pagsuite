@@ -19,7 +19,7 @@
 #include <iostream>
 #include <sstream>
 
-#define DEBUG
+#define HEAVY_DEBUG_OUTPUT
 
 using namespace std;
 

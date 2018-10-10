@@ -29,11 +29,11 @@ void compute_successor_set(int_t r1, int_t r2, int_t c_max, int_set_t *successor
 
     //for k=0, the fundamental() method hast to be called
     s=fundamental(r1 + r2);
-#ifdef DEBUG
+#ifdef HEAVY_DEBUG_OUTPUT
     IF_VERBOSE(7) cout << s << "=" << r1 << "+" << r2 << endl;
 #endif
     if(s <= c_max) (*successor_set).insert(s);
-#ifdef DEBUG
+#ifdef HEAVY_DEBUG_OUTPUT
     if(s <= c_max) IF_VERBOSE(8) cout << s << "=|" << r1 << "+" << r2 << "|" << endl;
 #endif
     if(s <= c_max) (*successor_set).insert(fundamental(abs(r1 - r2)));
@@ -47,29 +47,29 @@ void compute_successor_set(int_t r1, int_t r2, int_t c_max, int_set_t *successor
     int k_max = compute_k_max(r1,r2,c_max);
     if(k_max < 0) return;
 
-#ifdef DEBUG
+#ifdef HEAVY_DEBUG_OUTPUT
     IF_VERBOSE(7) cout << "r1=" << r1 << ", r2=" << r2 << ", k_max=" << k_max << ", c_max=" << c_max << endl;
 #endif
 
     for(int k=1; k <= k_max; k++)
     {
         s=(r1 << k) + r2;
-#ifdef DEBUG
+#ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << "2^" << k << "*" << r1 << "+" << r2 << endl;
 #endif
         if((s > 0) && (s <= c_max)) (*successor_set).insert(s); //as k_max can be too large such that s overflows, detect such an overflow
         s=r1 + (r2 << k);
-#ifdef DEBUG
+#ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << r1 << "+" << "2^" << k << "*" << r2 << endl;
 #endif
         if((s > 0) && (s <= c_max)) (*successor_set).insert(s); //as k_max can be too large such that s overflows, detect such an overflow
         s=abs((r1 << k) - r2);
-#ifdef DEBUG
+#ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=|" << "2^" << k << "*" << r1 << "-" << r2 << "|" << endl;
 #endif
         if((s > 0) && (s <= c_max)) (*successor_set).insert(s); //as k_max can be too large such that s overflows, detect such an overflow
         s=abs(r1 - (r2 << k));
-#ifdef DEBUG
+#ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=|" << r1 << "-" << "2^" << k << "*" << r2 << "|" << endl;
 #endif
         if((s > 0) && (s <= c_max)) (*successor_set).insert(s); //as k_max can be too large such that s overflows, detect such an overflow
@@ -507,7 +507,7 @@ void compute_successor_set(int_t r1, int_t r2, int_t r3, int_t c_max, int_set_t 
   */
 
 
-#ifdef DEBUG
+#ifdef HEAVY_DEBUG_OUTPUT
   IF_VERBOSE(7) cout << "r1=" << r1 << ", r2=" << r2 << ", r3=" << r3 << ", k_max=" << k_max << ", c_max=" << c_max << endl;
 #endif
 
@@ -528,27 +528,27 @@ void compute_successor_set(int_t r1, int_t r2, int_t r3, int_t c_max, int_set_t 
         //((!ternary_sign_filter) || (!sign_switched)) is to filter sign cominations with more then 1 negative sign.
         if((s > 0) && (s <= c_max) && ((!ternary_sign_filter) || just_one_negative_sign((false^r1_sign^sign_switched),(false^r2_sign^sign_switched),(false^r3_sign^sign_switched)))) (*successor_set).insert(fundamental(s));
 
-        #ifdef DEBUG
+        #ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << "2^" << a << " * " << r1 << " + " << "2^" << b << " * " << r2 << " + " << "2^" << c << " * " << r3 << std::endl;
         #endif
 
         s = norm((r1<<a) + (r2<<b) - (r3<<c),&sign_switched);
         //((!ternary_sign_filter) || (!sign_switched)) is to filter sign cominations with more then 1 negative sign.
         if((s > 0) && (s <= c_max) && ((!ternary_sign_filter) || (just_one_negative_sign((false^r1_sign^sign_switched),(false^r2_sign^sign_switched),(true^r3_sign^sign_switched))))) (*successor_set).insert(fundamental(s));
-        #ifdef DEBUG
+        #ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << "2^" << a << " * " << r1 << " + " << "2^" << b << " * " << r2 << " - " << "2^" << c << " * " << r3 << std::endl;
         #endif
 
         s = norm((r1<<a) - (r2<<b) + (r3<<c),&sign_switched);
         //((!ternary_sign_filter) || (!sign_switched)) is to filter sign cominations with more then 1 negative sign.
         if((s > 0) && (s <= c_max) && ((!ternary_sign_filter) || (just_one_negative_sign((false^r1_sign^sign_switched),(true^r2_sign^sign_switched),(false^r3_sign^sign_switched))))) (*successor_set).insert(fundamental(s));
-        #ifdef DEBUG
+        #ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << "2^" << a << " * " << r1 << " - " << "2^" << b << " * " << r2 << " + " << "2^" << c << " * " << r3 << std::endl;
         #endif
 
         s = norm((r1<<a) - (r2<<b) - (r3<<c),&sign_switched);
         if((s > 0) && (s <= c_max) && ((!ternary_sign_filter) || (just_one_negative_sign((false^r1_sign^sign_switched),(true^r2_sign^sign_switched),(true^r3_sign^sign_switched))))) (*successor_set).insert(fundamental(s));
-        #ifdef DEBUG
+        #ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << "2^" << a << " * " << r1 << " - " << "2^" << b << " * " << r2 << " - " << "2^" << c << " * " << r3 << std::endl << std::endl;
         #endif
       }
@@ -618,7 +618,7 @@ void compute_successor_set(vec_t r1, vec_t r2, vec_t r3, int_t c_max, vec_set_t 
 
   int k_max = compute_k_max(r1,r2,r3,c_max);
 
-#ifdef DEBUG
+#ifdef HEAVY_DEBUG_OUTPUT
   IF_VERBOSE(7) cout << "r1=" << r1 << ", r2=" << r2 << ", r3=" << r3 << ", k_max=" << k_max << ", c_max=" << c_max << endl;
 #endif
 
@@ -636,28 +636,28 @@ void compute_successor_set(vec_t r1, vec_t r2, vec_t r3, int_t c_max, vec_set_t 
         s = norm((r1<<a) + (r2<<b) + (r3<<c),&sign_switched);
         //((!ternary_sign_filter) || (!sign_switched)) is to filter sign cominations with more then 1 negative sign.
         if((s != 0) && (abs(s) <= c_max) && ((!ternary_sign_filter) || just_one_negative_sign((false^r1_sign^sign_switched),(false^r2_sign^sign_switched),(false^r3_sign^sign_switched)))) (*successor_set).insert(fundamental(s));
-        #ifdef DEBUG
+        #ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << "2^" << a << " * " << r1 << " + " << "2^" << b << " * " << r2 << " + " << "2^" << c << " * " << r3 << std::endl;
         #endif
 
         s = norm((r1<<a) + (r2<<b) - (r3<<c),&sign_switched);
         //((!ternary_sign_filter) || (!sign_switched)) is to filter sign cominations with more then 1 negative sign.
         if((s != 0) && (abs(s) <= c_max) && ((!ternary_sign_filter) || just_one_negative_sign((false^r1_sign^sign_switched),(false^r2_sign^sign_switched),(true^r3_sign^sign_switched)))) (*successor_set).insert(fundamental(s));
-        #ifdef DEBUG
+        #ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << "2^" << a << " * " << r1 << " + " << "2^" << b << " * " << r2 << " - " << "2^" << c << " * " << r3 << std::endl;
         #endif
 
         s = norm((r1<<a) - (r2<<b) + (r3<<c),&sign_switched);
         //((!ternary_sign_filter) || (!sign_switched)) is to filter sign cominations with more then 1 negative sign.
         if((s != 0) && (abs(s) <= c_max) && ((!ternary_sign_filter) || just_one_negative_sign((false^r1_sign^sign_switched),(true^r2_sign^sign_switched),(false^r3_sign^sign_switched)))) (*successor_set).insert(fundamental(s));
-        #ifdef DEBUG
+        #ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << "2^" << a << " * " << r1 << " - " << "2^" << b << " * " << r2 << " + " << "2^" << c << " * " << r3 << std::endl;
         #endif
 
         s = norm((r1<<a) - (r2<<b) - (r3<<c),&sign_switched);
         //((!ternary_sign_filter) || (!sign_switched)) is to filter sign cominations with more then 1 negative sign.
         if((s != 0) && (abs(s) <= c_max) && ((!ternary_sign_filter) || just_one_negative_sign((false^r1_sign^sign_switched),(true^r2_sign^sign_switched),(true^r3_sign^sign_switched)))) (*successor_set).insert(fundamental(s));
-        #ifdef DEBUG
+        #ifdef HEAVY_DEBUG_OUTPUT
         IF_VERBOSE(8) cout << s << "=" << "2^" << a << " * " << r1 << " - " << "2^" << b << " * " << r2 << " - " << "2^" << c << " * " << r3 << std::endl << std::endl;
         #endif
       }
