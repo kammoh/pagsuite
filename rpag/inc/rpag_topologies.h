@@ -396,7 +396,7 @@ void rpag_base<T>::explore_cse(vector<vec_t> &working_vec, vec_t currentCSE, int
         {
           double gain = ((double) frequency) / (((double) frequency)+1.0); //we can realize f working set elements by implementing the CSE + f additional predecessors
 //          gain = gain*((double) cseSize)/((double) cseSizeMin); //the larger the pattern size the better, this changes the gain by a factor of 1 (when cseSize==cseMin) to 2 (when cseSize==2*cseMin)
-          (*single_p_gain_map).at()
+//          (*single_p_gain_map).at() //??
           (*single_p_gain_map)[nextCSE] = gain;
         }
 
