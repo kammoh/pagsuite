@@ -1,9 +1,9 @@
 #ifndef SCM_SOLUTIONS_HPP
 #define SCM_SOLUTIONS_HPP
 
-//#define MAX_CONST 524287
-#define MAX_CONST 1048575
-//#define MAX_CONST 317361 //limitation in Hcub solutions file
+//#define MAX_SCM_CONST 524287
+//#define MAX_SCM_CONST 1048575
+//#define MAX_SCM_CONST 317361 //limitation in Hcub solutions file
 
 
 typedef enum {ADD,MUL,LF2,LF3} graph_type_t;

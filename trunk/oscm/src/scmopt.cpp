@@ -1,6 +1,6 @@
 #include <string>
 
-#define MAX_CONST 524287
+#define MAX_SCM_CONST 524287
 
 using namespace std;
 
@@ -13,7 +13,7 @@ using namespace std;
 #include "fundamental.h"
 #include "debug.h"
 
-SCMOpt::SCMOpt(int coeff)
+SCMOpt::SCMOpt(int coeff, bool useOldAdderGraph) : useOldAdderGraph(useOldAdderGraph)
 {
     adder_cost=0;
 
@@ -21,13 +21,13 @@ SCMOpt::SCMOpt(int coeff)
     this->coeff = coeff;
 
     IF_VERBOSE(3) cout << "odd fundamental is " << coeff << endl;
-    if(this->coeff <= MAX_CONST)
+    if(this->coeff <= MAX_SCM_CONST)
     {
         buildAdderGraph(coeff);
     }
     else
     {
-      cerr << "Error: (Odd) value of constant must be less than or equal to " << MAX_CONST << " (is " << coeff << ")" << endl;
+      cerr << "Error: (Odd) value of constant must be less than or equal to " << MAX_SCM_CONST << " (is " << coeff << ")" << endl;
       exit(-1);
     }
 }
@@ -56,8 +56,10 @@ void SCMOpt::generateAOp(int a, int b, int c, int eA, int eB, int signA, int sig
     int coeffOdd = fundamental(coeff);
     if((coeffOdd == preFactor*c) && (coeff == coeffOdd)) coeffStage=2; //All (even) output coefficients are defined to be in stage 2 (workaround until node type 'O' is supported)
 
-//    adderGraph << "{'" << optype << "'," << preFactor*c << "," << coeffStage << "," << signAStr << preFactor*a << "," << (preFactor*a == 1?0:1) << "," << eA << "," << signBStr << preFactor*b << "," << (preFactor*b == 1?0:1) << "," << eB << "},";
-    adderGraph << "[" << preFactor*c << "," << signAStr << preFactor*a << "," << eA << "," << signBStr << preFactor*b << "," << eB << "];";
+    if(useOldAdderGraph)
+      adderGraph << "[" << preFactor*c << "," << signAStr << preFactor*a << "," << eA << "," << signBStr << preFactor*b << "," << eB << "];";
+    else
+      adderGraph << "{'" << optype << "'," << preFactor*c << "," << coeffStage << "," << signAStr << preFactor*a << "," << (preFactor*a == 1?0:1) << "," << eA << "," << signBStr << preFactor*b << "," << (preFactor*b == 1?0:1) << "," << eB << "},";
     adder_cost++;
 }
 
@@ -156,7 +158,10 @@ void SCMOpt::buildAdderGraph(int c, int preFactor)
 
 string SCMOpt::getAdderGraph()
 {
+  if(useOldAdderGraph)
     return string("[") + adderGraph.str().substr(0,adderGraph.str().length()-1) + string("]");
+  else
+    return string("{") + adderGraph.str().substr(0,adderGraph.str().length()-1) + string("}");
 }
 
 int SCMOpt::getAdderCost()

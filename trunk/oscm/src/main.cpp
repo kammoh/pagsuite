@@ -9,6 +9,7 @@ using namespace std;
 
 int main(int argc, char* argv[] )
 {
+    bool useOldAdderGraph = false;
     if (argc < 2)
     {
         cout << "Usage: " << argv[0] << " coefficient" << endl;
@@ -19,7 +20,7 @@ int main(int argc, char* argv[] )
 
     global_verbose = 0;
 
-    SCMOpt scmo(coeff);
+    SCMOpt scmo(coeff, useOldAdderGraph);
 
     cout << "adder_graph=" << scmo.getAdderGraph() << ";" << endl;
     cout << "adder_cost=" << scmo.getAdderCost() << ";" << endl;
