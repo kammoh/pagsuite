@@ -8,7 +8,7 @@ using namespace std;
 class SCMOpt
 {
 public:
-    SCMOpt(int coeff);
+    SCMOpt(int coeff, bool useOldAdderGraph=false);
 
     string getAdderGraph();
     int getAdderCost();
@@ -20,6 +20,7 @@ private:
     void generateAOp(int a, int b, int c, int eA, int eB, int signA, int signB, int preFactor=1);
     void buildAdderGraph(int c, int preFactor=1);
 
+    bool useOldAdderGraph;
     stringstream adderGraph;
 
     int adder_cost;

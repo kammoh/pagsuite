@@ -4,7 +4,6 @@
 #include <cmath>
 #include <sstream>
 
-#include "fundamental_extended.hpp"
 #include "log2_64.h"
 #include "compute_successor_set.h"
 #include "rpag_functions.h"
@@ -227,7 +226,7 @@ bool getExponents(int_t &a, int_t &b, int_t &c, int_t &w, int *eA, int *eB, int 
 }
 
 
-bool computeAdderGraphTernary(set<int> &nof_set, set<int> &coefficient_set, string& adderGraphString)
+void computeAdderGraphTernary(set<int> &nof_set, set<int> &coefficient_set, string& adderGraphString)
 {
     int eA, eB, eC;
     int signA, signB, signC;
@@ -284,7 +283,7 @@ bool computeAdderGraphTernary(set<int> &nof_set, set<int> &coefficient_set, stri
 				string signCchar = signC>0 ? "" : "-";
 
 				int coeffStage=1;
-				if((coefficient_set.find(coeffOdd) != coefficient_set.end()) && (coeffOdd == coeffOdd)) coeffStage=2; //All (even) output coefficients are defined to be in stage 2 (workaround until node type 'O' is supported)
+				if(coefficient_set.find(coeffOdd) != coefficient_set.end()) coeffStage=2; //All (even) output coefficients are defined to be in stage 2 (workaround until node type 'O' is supported)
 
 
 				if(coeffOdd != signA*(a<<eA) + signB*(b<<eB) + signC*(c<<eC))
