@@ -150,7 +150,10 @@ private:
     string convert_old_syntax(string commandLine); //ASCII-Convert old syntax graph
 
     std::vector<std::vector<int64_t> > normalize(std::vector<std::vector<int64_t> > &factor);
-    adder_graph_base_node_t* get_node_from_output_factor(std::vector<std::vector<int64_t> > &output_factor);
+    adder_graph_base_node_t* get_node_from_output_factor_in_stage(std::vector<std::vector<int64_t> > &output_factor, int stage);
+
+    string matrix_to_string(const std::vector<std::vector<int64_t> > &matrix);
+    string node_to_string(const adder_graph_base_node_t *node);
 
     int noOfInputs;
     int noOfConfigurations;

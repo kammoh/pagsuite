@@ -284,12 +284,62 @@ std::vector<std::vector<int64_t> > adder_graph_t::normalize(std::vector<std::vec
   return factor_norm;
 }
 
-adder_graph_base_node_t* adder_graph_t::get_node_from_output_factor(std::vector<std::vector<int64_t> > &output_factor)
+string adder_graph_t::matrix_to_string(const std::vector<std::vector<int64_t> > &matrix)
+{
+  std::stringstream stream;
+
+  for(int r=0; r < matrix.size(); r++)
+  {
+    for(int c=0; c < matrix[r].size(); c++)
+    {
+      if(matrix[r][c] < 0) stream << "m";
+
+      stream << abs(matrix[r][c]);
+      if(c < matrix[r].size()-1) stream << "_";
+    }
+    if(r < matrix.size()-1) stream << "__";
+  }
+  return stream.str();
+}
+
+string adder_graph_t::node_to_string(const adder_graph_base_node_t *node)
+{
+  std::stringstream stream;
+
+  if(is_a<input_node_t>(*node))
+  {
+    stream << "I";
+  }
+  else if((is_a<adder_subtractor_node_t>(*node)) || (is_a<conf_adder_subtractor_node_t>(*node)))
+  {
+    stream << "A";
+  }
+  else if (is_a<register_node_t>(*node))
+  {
+    stream << "R";
+  }
+  else if (is_a<output_node_t>(*node))
+  {
+    stream << "O";
+  }
+  else if (is_a<mux_node_t>(*node))
+  {
+    stream << "M";
+  }
+  else
+  {
+    throw runtime_error("node_to_string: unknown node of type " + string(typeid(*node).name()));
+  }
+  stream << matrix_to_string(node->output_factor);
+  return stream.str();
+}
+
+adder_graph_base_node_t* adder_graph_t::get_node_from_output_factor_in_stage(std::vector<std::vector<int64_t> > &output_factor, int stage)
 {
 //  for (std::list<adder_graph_base_node_t *>::iterator it = nodes_list.begin(), it_end = nodes_list.end(); it != it_end; ++it)
   for(adder_graph_base_node_t* node : nodes_list)
   {
-    if(node->output_factor == output_factor)
+    if((node->output_factor == output_factor) && (node->stage == stage))
       return node;
   }
   return nullptr;
@@ -315,7 +365,9 @@ void adder_graph_t::drawdot(string filename, bool quiet)
   for (std::list<adder_graph_base_node_t *>::iterator it = mygraph.nodes_list.begin(), it_end = mygraph.nodes_list.end(); it != it_end; ++it)
   {
     stringstream node_string;
-    node_string << "node" << (*it) << "[label=\"";
+    node_string << node_to_string((*it)) << "[label=\"";
+    node_string << (*it)->output_factor;
+/*
     for (int i = 0, i_end = (int) (*it)->output_factor.size(); i < i_end; ++i)
     {
       for (int j = 0, j_end = (int) (*it)->output_factor[i].size(); j < j_end; ++j)
@@ -348,6 +400,7 @@ void adder_graph_t::drawdot(string filename, bool quiet)
       if (i != (int) (*it)->output_factor.size() - 1)
         node_string << "\\" << "n";
     }
+*/
     double height = 0.3 * (*it)->output_factor.size();
     node_string << "\",fontsize=12,shape=";
     if (is_a<input_node_t>(*(*it)))
@@ -356,12 +409,12 @@ void adder_graph_t::drawdot(string filename, bool quiet)
     }
     else if (is_a<adder_subtractor_node_t>(*(*it)))
     {
-      node_string << "box,height = " << height << ",width=.4];\n";
+//      node_string << "box,height = " << height << ",width=.4];\n";
+      node_string << "box];\n";
     }
     else if (is_a<mux_node_t>(*(*it)))
     {
-      node_string << "polygon,sides=4,distortion=.7,fixedsize=\"true\",height = " << height - 0.3 * height
-                  << ",width=1.2];\n";
+      node_string << "polygon,sides=4,distortion=.7,fixedsize=\"true\",height = " << height - 0.3 * height << ",width=1.2];\n";
     }
     else if (is_a<conf_adder_subtractor_node_t>(*(*it)))
     {
@@ -390,7 +443,7 @@ void adder_graph_t::drawdot(string filename, bool quiet)
       for (int i = 0, i_end = (int) ((adder_subtractor_node_t *) (*it))->inputs.size(); i < i_end; ++i)
       {
         stringstream edge_string;
-        edge_string << "node" << ((adder_subtractor_node_t *) (*it))->inputs[i] << " -> node" << *it;
+        edge_string << node_to_string(((adder_subtractor_node_t *) (*it))->inputs[i]) << " -> " << node_to_string((*it));
         edge_string << " [label=\"";
         if (((adder_subtractor_node_t *) (*it))->input_shifts[i] != 0)
           edge_string << ((adder_subtractor_node_t *) (*it))->input_shifts[i];
@@ -410,7 +463,7 @@ void adder_graph_t::drawdot(string filename, bool quiet)
       {
         stringstream edge_string;
         if (((mux_node_t *) (*it))->inputs[i] != 0)
-          edge_string << "node" << ((mux_node_t *) (*it))->inputs[i] << " -> node" << *it;
+          edge_string << node_to_string(((mux_node_t *) (*it))->inputs[i]) << " -> " << node_to_string(*it);
 
         if (((mux_node_t *) (*it))->input_shifts[i] != 0 && ((mux_node_t *) (*it))->input_shifts[i] != DONT_CARE)
         {
@@ -432,7 +485,7 @@ void adder_graph_t::drawdot(string filename, bool quiet)
       for (int i = 0, i_end = (int) ((conf_adder_subtractor_node_t *) (*it))->inputs.size(); i < i_end; ++i)
       {
         stringstream edge_string;
-        edge_string << "node" << ((conf_adder_subtractor_node_t *) (*it))->inputs[i] << " -> node" << *it;
+        edge_string << node_to_string(((conf_adder_subtractor_node_t *) (*it))->inputs[i]) << " -> " << node_to_string((*it));
         edge_string << " [label=\"";
         if (((conf_adder_subtractor_node_t *) (*it))->input_shifts[i] != 0)
           edge_string << ((conf_adder_subtractor_node_t *) (*it))->input_shifts[i] << "\\n";
@@ -454,7 +507,7 @@ void adder_graph_t::drawdot(string filename, bool quiet)
     else if (is_a<register_node_t>(*(*it)) || is_a<output_node_t>(*(*it)))
     {
       stringstream edge_string;
-      edge_string << "node" << ((register_node_t *) (*it))->input << " -> node" << *it;
+      edge_string << node_to_string(((register_node_t *) (*it))->input) << " -> " << node_to_string(*it);
       if (((register_node_t *) (*it))->input_shift > 0)
       {
         edge_string << "[label=\"" << ((register_node_t *) (*it))->input_shift << "\",fontsize=12]";
@@ -465,6 +518,14 @@ void adder_graph_t::drawdot(string filename, bool quiet)
         realized_edges[edge_string.str().c_str()] = 1;
         fprintf(graphfilepointer, "%s", edge_string.str().c_str());
       }
+    }
+    else if(is_a<input_node_t>(*(*it)))
+    {
+      //do nothing
+    }
+    else
+    {
+      throw runtime_error("node type not supported");
     }
 
   }
@@ -792,6 +853,7 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
   bool complete = false;
 
   adder_graph_base_node_t *node;
+  adder_graph_base_node_t *node_tmp;
   try
   {
     do
@@ -826,6 +888,69 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
           node = parse_node(nodeStr);
           cout << "got node " << node << endl;
 
+          node_tmp = get_node_from_output_factor_in_stage(node->output_factor, node->stage);
+
+          if(node_tmp != nullptr)
+          {
+            if (is_a<adder_graph_base_node_t>(*node_tmp))
+            {
+              //temporary node found, remove that node and replace by new node:
+              cout << "found identical output factor, replace node " << node_tmp << " by new node " << node << endl;
+              nodes_list.remove(node_tmp);
+              for(adder_graph_base_node_t *n : nodes_list)
+              {
+                if (is_a<adder_subtractor_node_t>(*n))
+                {
+                  for (int i = 0; i < ((adder_subtractor_node_t *) n)->inputs.size(); i++)
+                  {
+                    if (((adder_subtractor_node_t *) n)->inputs[i] == node_tmp)
+                    {
+                      ((adder_subtractor_node_t *) n)->inputs[i] = node; //replace node
+                      cout << "replacing input " << i << " of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
+                    }
+                  }
+                }
+                else if (is_a<mux_node_t>(*n))
+                {
+                  for (int i = 0; i < ((mux_node_t *) n)->inputs.size(); i++)
+                  {
+                    if (((mux_node_t *) n)->inputs[i] == node_tmp)
+                    {
+                      ((mux_node_t *) n)->inputs[i] = node; //replace node
+                      cout << "replacing input " << i << " of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
+                    }
+                  }
+                }
+                else if (is_a<mux_node_t>(*n))
+                {
+                  for (int i = 0; i < ((mux_node_t *) n)->inputs.size(); i++)
+                  {
+                    if (((mux_node_t *) n)->inputs[i] == node_tmp)
+                    {
+                      ((mux_node_t *) n)->inputs[i] = node; //replace node
+                      cout << "replacing input " << i << " of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
+                    }
+                  }
+                }
+                else if ((is_a<register_node_t>(*n)) || (is_a<output_node_t>(*n)))
+                {
+                  if (((register_node_t *) n)->input == node_tmp)
+                  {
+                    cout << "replacing input of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
+                    ((register_node_t *) n)->input = node;
+                  }
+                }
+                else if ((is_a<adder_graph_base_node_t>(*n)) || (is_a<input_node_t>(*n)))
+                {
+                  //ignore temporary nodes, those don't have an assigned input
+                }
+                else
+                {
+                  throw runtime_error("unsupported node type!");
+                }
+              }
+            }
+          }
           nodes_list.push_back(node);
 
           pos += nodeEndPos - pos - 1;
@@ -876,7 +1001,8 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
   cout << "writing dot" << endl;
   drawdot("test.dot", false);
 
-  exit(0);//!!!
+//  exit(0);//!!!
+/*
   clear();
 
   input_node_t *input_node = new input_node_t();
@@ -924,7 +1050,7 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
 
   cout << "writing dot" << endl;
   this->drawdot("test.dot", false);
-
+*/
   return true;
 #if 0
   if( commandLine.find_first_of("AMRO") == string::npos )
@@ -986,12 +1112,13 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
 
   try
   {
+    std::vector<std::vector<int64_t> > factor_norm;
+    std::vector<std::vector<int64_t> > factor;
+
     do
     {
       int nodeEndPos;
       adder_graph_base_node_t* input_node;
-      std::vector<std::vector<int64_t> > factor;
-      std::vector<std::vector<int64_t> > factor_norm;
 
       switch (state)
       {
@@ -1095,30 +1222,6 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
           factor_norm = normalize(factor);
           cout << "factor_norm=" << factor_norm << endl;
 
-          input_node = get_node_from_output_factor(factor_norm);
-          if(input_node != nullptr)
-          {
-            cout << "adding input to node " << node << endl;
-            if (nodeId == 'A')
-            {
-              ((adder_subtractor_node_t*) node)->inputs.push_back(input_node);
-              ((adder_subtractor_node_t*) node)->input_is_negative.push_back(!(factor_norm == factor));
-            }
-            else if (nodeId == 'M')
-            {
-              ((mux_node_t*) node)->inputs.push_back(input_node);
-            }
-            else if((nodeId == 'R') || (nodeId == 'O'))
-            {
-              ((register_node_t*) node)->input = input_node;
-            }
-
-          }
-          else
-          {
-            throw runtime_error("no node with output factor found");
-          }
-
           pos += elemEndPos - elemBeginPos;
           state = NODE_ELEMENT_DELIMITER;
           stateNext = NODE_ARG_STAGE;
@@ -1131,11 +1234,38 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
           stage = stoi(elemStr);
 
           cout << "arg " << argNo << " stage=" << stage << endl;
+
+          input_node = get_node_from_output_factor_in_stage(factor_norm, stage);
+
+          if(input_node == nullptr)
+          {
+            //create temporary node:
+            input_node = new adder_graph_base_node_t();
+            input_node->output_factor = factor_norm;
+            cout << "adding temporary node " << input_node << " with factor " << input_node->output_factor << endl;
+            nodes_list.push_back(input_node);
+          }
+          cout << "adding input to node " << node << endl;
+          if (nodeId == 'A')
+          {
+            ((adder_subtractor_node_t*) node)->inputs.push_back(input_node);
+            ((adder_subtractor_node_t*) node)->input_is_negative.push_back(!(factor_norm == factor));
+          }
+          else if (nodeId == 'M')
+          {
+            ((mux_node_t*) node)->inputs.push_back(input_node);
+          }
+          else if((nodeId == 'R') || (nodeId == 'O'))
+          {
+            ((register_node_t*) node)->input = input_node;
+          }
+          cout << "hier!" << endl;
+
           pos += elemEndPos - pos - 1;
           state = NODE_ELEMENT_DELIMITER;
           stateNext = NODE_ARG_SHIFT;
 
-          if (nodeId == 'R')
+          if(nodeId == 'R')
             complete = true; //for registers, we are done
 
           break;
@@ -1154,14 +1284,22 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
             std::vector<std::vector<int64_t> > f;
             parse_factor(elemStr, &f);
             cout << "f.size() = " << f.size() << endl;
+            cout << "f = " << f << endl;
             assert(f.size() > 0);
-            ((mux_node_t *) node)->input_shifts = f[0];
+            for(int i=0; i < f[0].size(); i++)
+              ((mux_node_t *) node)->input_shifts.push_back(f[0][i]);
           }
           else if (nodeId == 'A')
           {
             shift = stoi(elemStr);
             cout << "arg " << argNo << " shift=" << shift << endl;
             ((adder_subtractor_node_t*) node)->input_shifts.push_back(shift);
+          }
+          else if((nodeId == 'R') || (nodeId == 'O'))
+          {
+            shift = stoi(elemStr);
+            cout << "arg " << argNo << " shift=" << shift << endl;
+            ((register_node_t*) node)->input_shift = shift;
           }
           else
           {
@@ -1376,8 +1514,8 @@ void adder_graph_t::print_graph()
   for (std::list<adder_graph_base_node_t *>::iterator it = mygraph.nodes_list.begin(), it_end = mygraph.nodes_list.end(); it != it_end; ++it)
   {
     adder_graph_base_node_t *p = *it;
-    std::cout << "\nNode type of node " << (*it) << " in stage " << (*it)->stage << " is: " << typeid(*p).name()
-              << std::endl;
+    std::cout << "\nNode type of node " << (*it) << " in stage " << (*it)->stage << " is: " << typeid(*p).name() << std::endl;
+    std::cout << "The factor is " << (*it)->output_factor << endl;
     std::cout << "The outputs are: ";
     //std::cout << "Size:"<< (*it)->output_factor.size();
     for (unsigned int k = 0, k_end = (*it)->output_factor.size(); k < k_end; ++k)
@@ -1392,12 +1530,11 @@ void adder_graph_t::print_graph()
     }
     std::cout << std::endl;
 
-    if (is_a<input_node_t>(*(*it)))
+    if(is_a<input_node_t>(*(*it)))
     {
       std::cout << "No input" << std::endl;
-
     }
-    else if (is_a<adder_subtractor_node_t>(*(*it)))
+    else if(is_a<adder_subtractor_node_t>(*(*it)))
     {
       adder_subtractor_node_t *t = (adder_subtractor_node_t*) (*it);
 
@@ -1408,12 +1545,18 @@ void adder_graph_t::print_graph()
     else if (is_a<mux_node_t>(*(*it)))
     {
       mux_node_t *t = (mux_node_t *) (*it);
-      for (int k = 0, k_end = (int) t->inputs.size(); k < k_end; ++k)
+      for(int k = 0, k_end = (int) t->inputs.size(); k < k_end; ++k)
         if (t->inputs[k] != NULL)
-          std::cout << "Input: " << t->inputs[k] << ", shift: " << t->input_shifts[k] << ", in stage "
-                    << t->inputs[k]->stage << std::endl;
+        {
+          std::cout << "Input: " << t->inputs[k] << ", shift: ";
+          if(t->input_shifts[k] != DONT_CARE)
+            std::cout << t->input_shifts[k];
+          else
+            std::cout << "NaN";
+          std::cout << ", in stage " << t->inputs[k]->stage << std::endl;
+        }
     }
-    else if (is_a<conf_adder_subtractor_node_t>(*(*it)))
+    else if(is_a<conf_adder_subtractor_node_t>(*(*it)))
     {
       conf_adder_subtractor_node_t *t = (conf_adder_subtractor_node_t *) (*it);
       for (int k = 0, k_end = (int) t->inputs.size(); k < k_end; ++k)
@@ -1425,7 +1568,7 @@ void adder_graph_t::print_graph()
         std::cout << std::endl;
       }
     }
-    else if (is_a<register_node_t>(*(*it)))
+    else if((is_a<register_node_t>(*(*it))) || (is_a<output_node_t>(*(*it))))
     {
       register_node_t *t = (register_node_t *) (*it);
       std::cout << "Input: " << t->input << ", shift: " << t->input_shift << ", in stage " << t->input->stage
@@ -1636,7 +1779,10 @@ void adder_graph_t::check_and_correct(string graphstring)
               if ((t->inputs[cfg]->output_factor[cfg][v] << t->input_shifts[cfg]) != t->output_factor[cfg][v] &&
                   t->output_factor[cfg][v] != DONT_CARE)
               {
-                errorList.push_back("OUTPUTFACTOR MISSMATCH: " + node_name.str());
+
+                stringstream tmp;
+                tmp << "\t(" << t->inputs[cfg]->output_factor[cfg][v] << " != " << t->input_shifts[cfg] << ")";
+                errorList.push_back("OUTPUTFACTOR MISSMATCH: " + node_name.str() + " cfg " + to_string(cfg) + " input " + to_string(v)  + tmp.str());
               }
             }
           }
