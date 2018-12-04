@@ -10,6 +10,13 @@
 #include <cmath>
 
 
+
+adder_graph_t::adder_graph_t()
+{
+  quiet=false;
+}
+
+
 adder_graph_t::~adder_graph_t()
 {
 
@@ -346,7 +353,7 @@ adder_graph_base_node_t* adder_graph_t::get_node_from_output_factor_in_stage(std
 }
 
 /* plot the adder graph to dot KONRAD*/
-void adder_graph_t::drawdot(string filename, bool quiet)
+void adder_graph_t::drawdot(string filename)
 {
   adder_graph_t mygraph = *this;
   //string filename = "./k_adder_graph.dot";
@@ -538,15 +545,15 @@ void adder_graph_t::drawdot(string filename, bool quiet)
 
 /* write the graph down in mat syntax KONRAD*/
 
-void adder_graph_t::writesyn(string filename, bool quiet)
+void adder_graph_t::writesyn(string filename)
 { //, string filename
   ofstream graphfilestream;
   graphfilestream.open(filename.c_str(), ofstream::out | ofstream::trunc);
-  writesyn(graphfilestream, quiet);
+  writesyn(graphfilestream);
   graphfilestream.close();
 }
 
-void adder_graph_t::writesyn(ostream &graphoutstream, bool quiet)
+void adder_graph_t::writesyn(ostream &graphoutstream)
 { //, string filename
   adder_graph_t mygraph = *this;
 
@@ -838,7 +845,7 @@ void adder_graph_t::writesyn(ostream &graphoutstream, bool quiet)
 
 bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
 {
-  cout << "parsing string: " << commandLine << endl;
+  if (!quiet) cout << "parsing string: " << commandLine << endl;
 
   typedef enum
   {
@@ -882,11 +889,9 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
 
           break;
         case PARSING_NODE:
-//            cout << "PARSING_NODE: " << commandLine.substr(pos, commandLine.length()-pos) << endl;
           nodeEndPos = commandLine.find('}', pos);
           nodeStr = commandLine.substr(pos, nodeEndPos - pos);
           node = parse_node(nodeStr);
-          cout << "got node " << node << endl;
 
           node_tmp = get_node_from_output_factor_in_stage(node->output_factor, node->stage);
 
@@ -895,7 +900,7 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
             if (is_a<adder_graph_base_node_t>(*node_tmp))
             {
               //temporary node found, remove that node and replace by new node:
-              cout << "found identical output factor, replace node " << node_tmp << " by new node " << node << endl;
+              if (!quiet) cout << "found identical output factor, replace node " << node_tmp << " by new node " << node << endl;
               nodes_list.remove(node_tmp);
               for(adder_graph_base_node_t *n : nodes_list)
               {
@@ -906,7 +911,7 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
                     if (((adder_subtractor_node_t *) n)->inputs[i] == node_tmp)
                     {
                       ((adder_subtractor_node_t *) n)->inputs[i] = node; //replace node
-                      cout << "replacing input " << i << " of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
+                      if (!quiet) cout << "replacing input " << i << " of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
                     }
                   }
                 }
@@ -917,7 +922,7 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
                     if (((mux_node_t *) n)->inputs[i] == node_tmp)
                     {
                       ((mux_node_t *) n)->inputs[i] = node; //replace node
-                      cout << "replacing input " << i << " of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
+                      if (!quiet) cout << "replacing input " << i << " of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
                     }
                   }
                 }
@@ -928,7 +933,7 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
                     if (((mux_node_t *) n)->inputs[i] == node_tmp)
                     {
                       ((mux_node_t *) n)->inputs[i] = node; //replace node
-                      cout << "replacing input " << i << " of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
+                      if (!quiet) cout << "replacing input " << i << " of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
                     }
                   }
                 }
@@ -936,7 +941,7 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
                 {
                   if (((register_node_t *) n)->input == node_tmp)
                   {
-                    cout << "replacing input of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
+                    if (!quiet) cout << "replacing input of node " << n << ": node " << node_tmp << " is replaced by " << node << endl;
                     ((register_node_t *) n)->input = node;
                   }
                 }
@@ -993,97 +998,14 @@ bool adder_graph_t::parse_to_graph(string commandLine, bool ignore_outnodes)
     exit(-1);//!!!
   }
 
-  cout << "parsing successful!" << endl;
-
-  cout << "printing graph" << endl;
-  print_graph();
-
-  cout << "writing dot" << endl;
-  drawdot("test.dot", false);
-
-//  exit(0);//!!!
-/*
-  clear();
-
-  input_node_t *input_node = new input_node_t();
-  input_node->output_factor.resize(1);
-  input_node->output_factor[0] = std::vector<int64_t>(1);
-  input_node->output_factor[0][0] = 1;
-  nodes_list.push_back(input_node);
-
-  adder_subtractor_node_t *adder_node = new adder_subtractor_node_t();
-
-  adder_node->inputs.resize(2);
-  adder_node->inputs[0] = input_node;
-  adder_node->inputs[1] = input_node;
-
-  adder_node->input_shifts.resize(2);
-  adder_node->input_shifts[0] = 0;
-  adder_node->input_shifts[1] = 2;
-
-  adder_node->input_is_negative.resize(2);
-  adder_node->input_is_negative[0] = false;
-  adder_node->input_is_negative[1] = false;
-
-  adder_node->output_factor.resize(1);
-  adder_node->output_factor[0] = std::vector<int64_t>(1);
-  adder_node->output_factor[0][0] = 5;
-
-  adder_node->stage = 1;
-  nodes_list.push_back(adder_node);
-
-  output_node_t *output_node = new output_node_t();
-  output_node->input = adder_node;
-  output_node->input_shift = 0;
-  output_node->stage = 1;
-  output_node->output_factor.resize(1);
-  output_node->output_factor[0] = std::vector<int64_t>(1);
-  output_node->output_factor[0][0] = 5;
-  nodes_list.push_back(output_node);
-
-  cout << "input_node:" << input_node << endl;
-  cout << "adder_node:" << adder_node << endl;
-  cout << "output_node:" << output_node << endl;
-
-  cout << "printing graph" << endl;
-  this->print_graph();
-
-  cout << "writing dot" << endl;
-  this->drawdot("test.dot", false);
-*/
+  if (!quiet) cout << "parsing successful!" << endl;
   return true;
-#if 0
-  if( commandLine.find_first_of("AMRO") == string::npos )
-        commandLine = convert_old_syntax(commandLine);
-
-  adder_graph_t* parsed_graph = Paglib_copa::parse(commandLine);
-  if(parsed_graph != NULL)
-  {
-      nodes_list.clear();
-      nodes_list = parsed_graph->nodes_list;
-      if( ignore_outnodes ){
-            std::list<adder_graph_base_node_t*>::iterator it = nodes_list.begin();
-            while(it!=nodes_list.end()){
-                if ( is_a<output_node_t>(*(*it)) ){
-                    it = nodes_list.erase(it);
-                }else{
-                    ++it;
-                }
-            }
-      }
-
-      delete parsed_graph;
-      return true;
-  }
-  else
-      return false;
-#endif
 }
 
 
 adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
 {
-  cout << "parsing node {" << nodeStr << "}" << endl;
+  if (!quiet) cout << "parsing node {" << nodeStr << "}" << endl;
 
   typedef enum
   {
@@ -1117,7 +1039,6 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
 
     do
     {
-      int nodeEndPos;
       adder_graph_base_node_t* input_node;
 
       switch (state)
@@ -1133,7 +1054,7 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
           break;
         case NODE_ID:
           nodeId = nodeStr.at(pos);
-          cout << "found node of type " << nodeId << endl;
+          if (!quiet) cout << "found node of type " << nodeId << endl;
           switch (nodeId)
           {
             case 'A':
@@ -1151,7 +1072,6 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
             default:
               throw runtime_error("node with identifier '" + nodeStr.substr(pos, 1) + "' unknown or not supported");
           }
-          cout << "created node " << node << endl;
           state = NODE_ID_DELIMITER2;
 
           break;
@@ -1198,7 +1118,6 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
 
           node->stage = stoi(elemStr);
 
-          cout << "node->stage=" << node->stage << endl;
           pos += elemEndPos - pos - 1;
           state = NODE_ELEMENT_DELIMITER;
           stateNext = NODE_ARG_VALUE;
@@ -1218,9 +1137,7 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
           elemStr = nodeStr.substr(elemBeginPos, elemEndPos - elemBeginPos + 1);
           parse_factor(elemStr, &factor);
 
-          cout << "factor=" << factor << endl;
           factor_norm = normalize(factor);
-          cout << "factor_norm=" << factor_norm << endl;
 
           pos += elemEndPos - elemBeginPos;
           state = NODE_ELEMENT_DELIMITER;
@@ -1233,8 +1150,6 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
 
           stage = stoi(elemStr);
 
-          cout << "arg " << argNo << " stage=" << stage << endl;
-
           input_node = get_node_from_output_factor_in_stage(factor_norm, stage);
 
           if(input_node == nullptr)
@@ -1242,10 +1157,10 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
             //create temporary node:
             input_node = new adder_graph_base_node_t();
             input_node->output_factor = factor_norm;
-            cout << "adding temporary node " << input_node << " with factor " << input_node->output_factor << endl;
+            if (!quiet) cout << "adding temporary node " << input_node << " with factor " << input_node->output_factor << endl;
             nodes_list.push_back(input_node);
           }
-          cout << "adding input to node " << node << endl;
+          if (!quiet) cout << "adding input to node " << node << endl;
           if (nodeId == 'A')
           {
             ((adder_subtractor_node_t*) node)->inputs.push_back(input_node);
@@ -1259,7 +1174,6 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
           {
             ((register_node_t*) node)->input = input_node;
           }
-          cout << "hier!" << endl;
 
           pos += elemEndPos - pos - 1;
           state = NODE_ELEMENT_DELIMITER;
@@ -1283,8 +1197,6 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
           {
             std::vector<std::vector<int64_t> > f;
             parse_factor(elemStr, &f);
-            cout << "f.size() = " << f.size() << endl;
-            cout << "f = " << f << endl;
             assert(f.size() > 0);
             for(int i=0; i < f[0].size(); i++)
               ((mux_node_t *) node)->input_shifts.push_back(f[0][i]);
@@ -1292,13 +1204,11 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
           else if (nodeId == 'A')
           {
             shift = stoi(elemStr);
-            cout << "arg " << argNo << " shift=" << shift << endl;
             ((adder_subtractor_node_t*) node)->input_shifts.push_back(shift);
           }
           else if((nodeId == 'R') || (nodeId == 'O'))
           {
             shift = stoi(elemStr);
-            cout << "arg " << argNo << " shift=" << shift << endl;
             ((register_node_t*) node)->input_shift = shift;
           }
           else
@@ -1331,24 +1241,20 @@ adder_graph_base_node_t *adder_graph_t::parse_node(string nodeStr)
     cout << "^" << endl;
     exit(-1);
   }
-  cout << "node is " << node << endl;
   return node;
 }
 
 bool adder_graph_t::parse_factor(string factorStr, std::vector<std::vector<int64_t> > *factor)
 {
-  cout << "parsing factor " << factorStr << endl;
+  if (!quiet) cout << "parsing factor " << factorStr << endl;
 
   factorStr = factorStr.substr(1, factorStr.length() - 2); //remove closing brackets
-
-  cout << "factor " << factorStr << endl;
 
   typedef enum
   {
       FACTOR_DELIMITER, FACTOR_VALUE
   } state_t;
   state_t state = FACTOR_VALUE;
-  state_t stateNext;
 
   int row = 0; //row of factor matrix
   int col = 0; //column of factor matrix
@@ -1391,13 +1297,11 @@ bool adder_graph_t::parse_factor(string factorStr, std::vector<std::vector<int64
 
           elemStr = factorStr.substr(pos, minPos - pos);
 
-          cout << "elemStr=" << elemStr << endl;
           flush(cout);
           if (elemStr == "NaN")
             value = DONT_CARE;
           else
             value = stoi(elemStr);
-          cout << "value=" << value << endl;
 
           //resize matrix if necessary:
           if ((*factor).size() <= row)
@@ -1408,13 +1312,11 @@ bool adder_graph_t::parse_factor(string factorStr, std::vector<std::vector<int64
 
           (*factor)[row][col] = value;
 
-          cout << "(*factor)[" << row << "][" << col << "] = " << value << endl;
           pos = minPos - 1;
 
           state = FACTOR_DELIMITER;
           break;
         case FACTOR_DELIMITER:
-          cout << "found delimiter " << factorStr[pos] << endl;
 
           if (pos == factorStr.length())
           {
@@ -1477,20 +1379,7 @@ bool adder_graph_t::parse_factor(string factorStr, std::vector<std::vector<int64
     assert(noOfConfigurations == (*factor).size());
     assert(noOfInputs == (*factor)[0].size());
   }
-  cout << "factor is a " << (*factor).size() << " x " << (*factor)[0].size() << " matrix: ";
-  for (int r = 0; r < (*factor).size(); r++)
-  {
-    for (int c = 0; c < (*factor)[r].size(); c++)
-    {
-      if ((*factor)[r][c] == DONT_CARE)
-        cout << "NaN";
-      else
-        cout << (*factor)[r][c];
-      if (c < (*factor)[r].size() - 1) cout << ",";
-    }
-    if (r < (*factor).size() - 1) cout << ";";
-  }
-  cout << endl;
+  if (!quiet) cout << "factor is a " << (*factor).size() << " x " << (*factor)[0].size() << " matrix: " << (*factor) << endl;
   return complete;
 
 }
@@ -1511,6 +1400,7 @@ void adder_graph_t::print_graph()
       }
     }
   }
+
   for (std::list<adder_graph_base_node_t *>::iterator it = mygraph.nodes_list.begin(), it_end = mygraph.nodes_list.end(); it != it_end; ++it)
   {
     adder_graph_base_node_t *p = *it;
