@@ -3,6 +3,7 @@ project(paglib)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -fPIC")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wall -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/src )
 
