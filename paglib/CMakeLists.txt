@@ -1,0 +1,39 @@
+cmake_minimum_required(VERSION 2.8)
+project(paglib)
+
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -fPIC")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wall -fPIC")
+
+INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_SOURCE_DIR}/src )
+
+SET(SRC_FILES 
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/adder_graph.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/vector_util.cpp
+)
+
+SET(HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/adder_graph.h
+)
+
+ADD_LIBRARY(pag_lib SHARED ${SRC_FILES} ${HEADERS})
+
+set_target_properties(pag_lib PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(pag_lib PROPERTIES OUTPUT_NAME "pag")
+
+SET_TARGET_PROPERTIES(
+pag_lib
+PROPERTIES
+	SOVERSION 0
+	VERSION 2.1.0
+)
+
+INSTALL(FILES ${HEADERS}
+    DESTINATION include/paglib
+)
+
+INSTALL(TARGETS pag_lib
+  RUNTIME DESTINATION lib
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
+

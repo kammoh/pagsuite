@@ -6,11 +6,6 @@ FIND_LIBRARY(SCALP_LIB
 	HINTS "${SCALP_PREFIX_PATH}/lib"
 	DOC "Directory of the ScaLP library")
 
-#FIND_LIBRARY(SCALP_DYNAMIC_LIB
-#        NAMES libScaLP-Dynamic.so libScaLP-Dynamic.dylib
-#        HINTS "${SCALP_PREFIX_PATH}/lib"
-#        DOC "Directory of the ScaLP dynamic library")
-
 FIND_PATH(SCALP_H
           ScaLP/Solver.h
 	  HINTS "${SCALP_PREFIX_PATH}/include"
