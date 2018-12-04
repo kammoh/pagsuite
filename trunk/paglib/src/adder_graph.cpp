@@ -1647,7 +1647,7 @@ void adder_graph_t::check_and_correct(string graphstring)
     {
       vector<string> newvec;
       newvec.push_back(node_name.str());
-      configurationCountMap.insert(make_pair<int, vector<string> >((*it)->output_factor.size(), newvec));
+      configurationCountMap.insert(make_pair((*it)->output_factor.size(), newvec));
     }
 
     map<int, vector<string> >::iterator pr2 = inputCountMap.find((*it)->output_factor[0].size());
@@ -1659,7 +1659,7 @@ void adder_graph_t::check_and_correct(string graphstring)
     {
       vector<string> newvec;
       newvec.push_back(node_name.str());
-      inputCountMap.insert(make_pair<int, vector<string> >((*it)->output_factor[0].size(), newvec));
+      inputCountMap.insert(make_pair((*it)->output_factor[0].size(), newvec));
     }
 
     if (is_a<input_node_t>(*(*it)))
