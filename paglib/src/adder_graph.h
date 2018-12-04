@@ -121,17 +121,20 @@ public:
 class adder_graph_t
 {
 public:
+    adder_graph_t();
     ~adder_graph_t();
 
     //The adder graph itself is just a linked list of (internally) connected nodes:
     std::list<adder_graph_base_node_t *> nodes_list;
     std::map<std::string, std::string> specific_parameters;
 
-    void pipeline_graph(); //pipeline adder_graph
-    void drawdot(string filename = "./pag_adder_graph.dot", bool quiet = false); //plot the adder graph to dot
-    void writesyn(ostream &graphoutstream, bool quiet = false);
+    bool quiet;
 
-    void writesyn(string filename = "./pag_adder_graph.txt", bool quiet = false); // write the graph down in mat syntax
+    void pipeline_graph(); //pipeline adder_graph
+    void drawdot(string filename = "./pag_adder_graph.dot"); //plot the adder graph to dot
+    void writesyn(ostream &graphoutstream);
+
+    void writesyn(string filename = "./pag_adder_graph.txt"); // write the graph down in mat syntax
     void print_graph();
 
     bool parse_to_graph(string commandLine, bool ignore_outnodes = true);
