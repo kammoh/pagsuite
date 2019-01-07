@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cmath>
-
+#include <assert.h>
 
 
 adder_graph_t::adder_graph_t()
