@@ -9,16 +9,29 @@ configure()
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/inc ${PAGSUITE_ROOT_DIR}/rpag/inc )
 
 FILE( GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp ${PAGSUITE_ROOT_DIR}/rpag/src/compute_successor_set.cpp ${PAGSUITE_ROOT_DIR}/rpag/src/rpag_functions.cpp ${PAGSUITE_ROOT_DIR}/rpag/src/norm.cpp ${PAGSUITE_ROOT_DIR}/rpag/src/log2_64.cpp ${PAGSUITE_ROOT_DIR}/rpag/src/debug.cpp)
-FILE( GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/inc/*.h)
-
-ADD_EXECUTABLE( oscm ${SOURCES} ${HEADERS})
+FILE( GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/inc/pagsuite/*.hpp)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set_target_properties( oscm PROPERTIES LINKER_LANGUAGE CXX)
-IF( ${SYSTEM_PREFIX} STREQUAL "lin" )
-	TARGET_LINK_LIBRARIES( rpag rt )
-ENDIF()
+ADD_LIBRARY( oscmlib SHARED ${SOURCES} ${HEADERS})
+set_target_properties(oscmlib PROPERTIES OUTPUT_NAME "oscm")
+
+ADD_EXECUTABLE( oscm ${SOURCES} ${HEADERS})
+
+#set_target_properties( oscm PROPERTIES LINKER_LANGUAGE CXX)
+#IF( ${SYSTEM_PREFIX} STREQUAL "lin" )
+#	TARGET_LINK_LIBRARIES( rpag rt )
+#ENDIF()
+
+INSTALL(FILES ${HEADERS}
+  DESTINATION include/pagsuite
+)
+
+INSTALL(TARGETS oscmlib
+		RUNTIME DESTINATION lib
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
+		)
 
 INSTALL(TARGETS oscm
   RUNTIME DESTINATION bin
