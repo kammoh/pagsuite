@@ -10,15 +10,23 @@
 #define CONFIGURABLE_H
 #include "rpag_vec.h"
 
-template<typename T, typename Alloc = std::allocator<T> >
-class conf_predecessor : public rpag_vec<T, Alloc>
+namespace PAGSuite
 {
-public:
-  conf_predecessor(){};
-  virtual ~conf_predecessor(){};
-  vector<int> schift;
-  vector<bool> dontcare;
-  set<int> conf;
-};
+
+  template<typename T, typename Alloc = std::allocator<T> >
+  class conf_predecessor : public rpag_vec<T, Alloc>
+  {
+  public:
+    conf_predecessor()
+    {};
+
+    virtual ~conf_predecessor()
+    {};
+    vector<int> schift;
+    vector<bool> dontcare;
+    set<int> conf;
+  };
+
+}
 
 #endif //CONFIGURABLE_H

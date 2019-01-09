@@ -12,10 +12,17 @@
 #include <inttypes.h>
 //#include <sys/types.h>
 
-int log2f_64(uint64_t n);
-int log2c_64(uint64_t n);
+namespace PAGSuite
+{
 
-int log3f_64(uint64_t n);
-int log3c_64(uint64_t n);
+  int log2f_64(uint64_t n);
+
+  int log2c_64(uint64_t n);
+
+  int log3f_64(uint64_t n);
+
+  int log3c_64(uint64_t n);
+
+}
 
 #endif // LOG2_64_H

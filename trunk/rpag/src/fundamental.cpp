@@ -6,36 +6,41 @@
   For more information please visit http://www.uni-kassel.de/go/pagsuite.
 */
 
-#include "fundamental.h"
+#include "pagsuite/fundamental.h"
 
-void fundamental(int_set_t *set)
+namespace PAGSuite
 {
-  int_set_t::iterator seti;
-  int_t fun;
 
-  for(seti = set->begin(); seti != set->end(); ++seti)
+  void fundamental(int_set_t *set)
   {
-    fun = fundamental(*seti);
-    if(fun != *seti)
+    int_set_t::iterator seti;
+    int_t fun;
+
+    for (seti = set->begin(); seti != set->end(); ++seti)
     {
-      set->erase(*seti);
-      set->insert(fun);
+      fun = fundamental(*seti);
+      if (fun != *seti)
+      {
+        set->erase(*seti);
+        set->insert(fun);
+      }
     }
   }
-}
 
-void fundamental(vec_set_t *set)
-{
-  vec_set_t::iterator seti;
-  vec_t fun;
-
-  for(seti = set->begin(); seti != set->end(); ++seti)
+  void fundamental(vec_set_t *set)
   {
-    fun = fundamental(*seti);
-    if(fun != *seti)
+    vec_set_t::iterator seti;
+    vec_t fun;
+
+    for (seti = set->begin(); seti != set->end(); ++seti)
     {
-      set->erase(*seti);
-      set->insert(fun);
+      fun = fundamental(*seti);
+      if (fun != *seti)
+      {
+        set->erase(*seti);
+        set->insert(fun);
+      }
     }
   }
+
 }

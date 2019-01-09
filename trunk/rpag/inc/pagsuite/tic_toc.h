@@ -20,28 +20,30 @@ using namespace std;
 
 #ifdef USE_TIME
 
-extern struct timespec global_tic_toc_ts_start;
-extern struct timespec global_ts_end;
+namespace PAGSuite
+{
+  extern struct timespec global_tic_toc_ts_start;
+  extern struct timespec global_ts_end;
 
-typedef enum {
-  CLOCK_REALTIME,
-  CLOCK_MONOTONIC,
-  CLOCK_PROCESS_CPUTIME_ID,
-  CLOCK_THREAD_CPUTIME_ID
-} clockid_t;
+  typedef enum {
+    CLOCK_REALTIME,
+    CLOCK_MONOTONIC,
+    CLOCK_PROCESS_CPUTIME_ID,
+    CLOCK_THREAD_CPUTIME_ID
+  } clockid_t;
 
-int clock_gettime_wrap(clockid_t clk_id, struct timespec *tp);
+  int clock_gettime_wrap(clockid_t clk_id, struct timespec *tp);
 
-//tic starts the measurment
-timespec tic();
+  //tic starts the measurment
+  timespec tic();
 
-//toc displays the runtime in seconds
-void toc(timespec ts_start);
-void toc();
+  //toc displays the runtime in seconds
+  void toc(timespec ts_start);
+  void toc();
 
-//toc 'silent' returns the runtime in seconds
-double toc_s(timespec ts_start);
-double toc_s();
+  //toc 'silent' returns the runtime in seconds
+  double toc_s(timespec ts_start);
+  double toc_s();
 
 //toc for debug purposes (adds filname and line number)
 #define tocdbg() \
@@ -50,8 +52,10 @@ double toc_s();
     tic();
 
 //    cout << "timstamp: " << __FILE__ << " line " << __LINE__ << ": " << (global_ts_end.tv_sec - global_tic_toc_ts_start.tv_sec) * 1000 + (global_ts_end.tv_nsec - global_tic_toc_ts_start.tv_nsec) * 10.0E-6 << " ms" << endl;
+}
 
 #endif
+
 
 #endif //TIC_TOC
 

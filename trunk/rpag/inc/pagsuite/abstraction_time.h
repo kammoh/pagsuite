@@ -16,29 +16,35 @@
 
 using namespace std;
 
+namespace PAGSuite
+{
+
 #ifdef OS_WIN
-    #include <windows.h>
+#include <windows.h>
 #endif
 #ifdef OS_LINUX
-    #include <unistd.h>
-    #include <pthread.h>
-    #include <sys/time.h>
+#include <unistd.h>
+#include <pthread.h>
+#include <sys/time.h>
 #endif
 #ifdef OS_MAC
-    #include <mach/mach_time.h>
-    #include <mach/clock.h>
-    #include <mach/mach.h>
+
+#include <mach/mach_time.h>
+        #include <mach/clock.h>
+        #include <mach/mach.h>
+
 #endif
 
-class time_measure{
-private:
+  class time_measure
+  {
+  private:
     unsigned long long time_start;
     unsigned long long time_stop;
     unsigned long long time_frequency;
 
     double time_scale;
 
-public:
+  public:
     double time_elapsed; // difftime in us
 
     time_measure()
@@ -86,30 +92,30 @@ public:
         time_stop = mach_absolute_time();
         mach_timebase_info_data_t sTbase;
         mach_timebase_info(&sTbase);
-        time_elapsed = ((double)(time_stop - time_start) * (double)sTbase.numer) / ((double)sTbase.denom * 1000.0);
+        time_elapsed = ((double) (time_stop - time_start) * (double) sTbase.numer) / ((double) sTbase.denom * 1000.0);
 #endif
     }
 
     string print_time()
     {
         unsigned long long t_diff = time_elapsed;
-        long long us=0,ms=0,s=0,m=0,h=0;
-        if( t_diff > 3600000000LL )
+        long long us = 0, ms = 0, s = 0, m = 0, h = 0;
+        if (t_diff > 3600000000LL)
         {
             h = t_diff / 3600000000LL;
             t_diff = t_diff % 3600000000LL;
         }
-        if( t_diff > 60000000LL)
+        if (t_diff > 60000000LL)
         {
             m = t_diff / 60000000LL;
             t_diff = t_diff % 60000000LL;
         }
-        if( t_diff > 1000000LL)
+        if (t_diff > 1000000LL)
         {
             s = t_diff / 1000000LL;
             t_diff = t_diff % 1000000LL;
         }
-        if( t_diff > 1000LL)
+        if (t_diff > 1000LL)
         {
             ms = t_diff / 1000LL;
             t_diff = t_diff % 1000LL;
@@ -118,17 +124,17 @@ public:
 
         stringstream time_string;
 
-        if(h>0) time_string << h << "h : ";
-        if(m>0) time_string << m << "m : ";
-        if(s>0) time_string << s << "s : ";
-        if(ms>0) time_string << ms << "ms : ";
+        if (h > 0) time_string << h << "h : ";
+        if (m > 0) time_string << m << "m : ";
+        if (s > 0) time_string << s << "s : ";
+        if (ms > 0) time_string << ms << "ms : ";
         time_string << us << "us";
         return time_string.str();
     }
 
 
-};
+  };
 
-
+}
 
 #endif // TIME_MESSURE_ABSTRACT_H

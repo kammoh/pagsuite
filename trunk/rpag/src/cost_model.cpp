@@ -6,5 +6,5 @@
   For more information please visit http://www.uni-kassel.de/go/pagsuite.
 */
 
-#include "cost_model.h"
+#include "pagsuite/cost_model.h"
 
