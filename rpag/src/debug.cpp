@@ -7,39 +7,43 @@
 */
 
 #include <iostream>
+#include "pagsuite/types.h"
+#include "pagsuite/debug.h"
 
 using namespace std;
 
-#include "types.h"
-#include "debug.h"
-
-int global_verbose=0;
-
-ostream& operator<<(ostream &s, sd_t& sd)
+namespace PAGSuite
 {
-  sd_t::iterator iter;
-  for(iter = sd.begin(); iter != sd.end(); )
+
+
+  int global_verbose = 0;
+
+  ostream &operator<<(ostream &s, sd_t &sd)
   {
-    if(*iter >= 0)
-      s << " " << *iter;
-    else
-      s << *iter;
+    sd_t::iterator iter;
+    for (iter = sd.begin(); iter != sd.end();)
+    {
+      if (*iter >= 0)
+        s << " " << *iter;
+      else
+        s << *iter;
 
-    ++iter;
-    if(iter != sd.end())
-      s  << " ";
+      ++iter;
+      if (iter != sd.end())
+        s << " ";
+    }
+    return s;
   }
-  return s;
-}
 
-ostream& operator<<(ostream &s, sd_set_t& msd_set)
-{
-  sd_set_t::iterator iter;
-  for(iter = msd_set.begin(); iter != msd_set.end(); ++iter)
+  ostream &operator<<(ostream &s, sd_set_t &msd_set)
   {
-    sd_t sd = *iter;
-    s << "(" << sd << ")" << endl;
+    sd_set_t::iterator iter;
+    for (iter = msd_set.begin(); iter != msd_set.end(); ++iter)
+    {
+      sd_t sd = *iter;
+      s << "(" << sd << ")" << endl;
+    }
+    return s;
   }
-  return s;
-}
 
+}

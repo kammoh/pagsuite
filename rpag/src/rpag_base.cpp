@@ -6,4 +6,4 @@
   For more information please visit http://www.uni-kassel.de/go/pagsuite.
 */
 
-#include "rpag_base.h"
+#include "pagsuite/rpag_base.h"

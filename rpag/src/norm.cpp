@@ -6,47 +6,53 @@
   For more information please visit http://www.uni-kassel.de/go/pagsuite.
 */
 
-#include "norm.h"
+#include "pagsuite/norm.h"
 
 #include <algorithm>
 
-int_t norm(int_t in, bool *switched)
+namespace PAGSuite
 {
-	if(switched != NULL)
-	{
-	  if(in < 0)
-	  {
-	    in = -in;
-	    *switched = true;
-	  }
-	  else
-	  {
-	    *switched = false;
-	  }
-	  return in;
-	}
-	else
-	{
-	  return abs(in);
-	}
-}
 
-vec_t norm(vec_t in, bool *switched) // the first element witch is different  to zero have to be positiv!
-{
-	vec_t out = in;
-	vec_t::iterator it;
-	for(it = in.begin(); it != in.end(); ++it)
-	{
-		if(*it != 0)
-		{
-			if(*it < 0)
-			{
-				out = in* (-1);
-				if(switched != NULL){*switched = true;}
-			}
-			break;
-		}
-	}
-	if(switched != NULL){*switched = false;}
-	return out;
+  int_t norm(int_t in, bool *switched)
+  {
+    if (switched != NULL)
+    {
+      if (in < 0)
+      {
+        in = -in;
+        *switched = true;
+      }
+      else
+      {
+        *switched = false;
+      }
+      return in;
+    }
+    else
+    {
+      return abs(in);
+    }
+  }
+
+  vec_t norm(vec_t in, bool *switched) // the first element witch is different  to zero have to be positiv!
+  {
+    vec_t out = in;
+    vec_t::iterator it;
+    for (it = in.begin(); it != in.end(); ++it)
+    {
+      if (*it != 0)
+      {
+        if (*it < 0)
+        {
+          out = in * (-1);
+          if (switched != NULL)
+          { *switched = true; }
+        }
+        break;
+      }
+    }
+    if (switched != NULL)
+    { *switched = false; }
+    return out;
+  }
 }

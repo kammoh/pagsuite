@@ -6,29 +6,30 @@
   For more information please visit http://www.uni-kassel.de/go/pagsuite.
 */
 
-#include "compute_successor_set.h"
+#include "pagsuite/compute_successor_set.h"
 
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
 
 using namespace std;
+using namespace PAGSuite;
 
 #include "main.h"
-#include "csd.h"
-#include "rpag_base.h"
-#include "rpag.h"   // two input adder
-#include "rpagt.h"  // three input adder
-#include "rpagvm.h" // vector matrix
-#include "rpagtvm.h" // vector matrix with three input adder
-#include "rpag_matrix_decomp.h"
+#include "pagsuite/csd.h"
+#include "pagsuite/rpag_base.h"
+#include "pagsuite/rpag.h"   // two input adder
+#include "pagsuite/rpagt.h"  // three input adder
+#include "pagsuite/rpagvm.h" // vector matrix
+#include "pagsuite/rpagtvm.h" // vector matrix with three input adder
+#include "pagsuite/rpag_matrix_decomp.h"
 
-#include "cost_model.h"
-#include "tic_toc.h"
-#include "configurable.h"
+#include "pagsuite/cost_model.h"
+#include "pagsuite/tic_toc.h"
+#include "pagsuite/configurable.h"
 
-#include "fundamental.h"
-#include "cost_model.h"
+#include "pagsuite/fundamental.h"
+#include "pagsuite/cost_model.h"
 
 #include <mutex>
 #include <thread>

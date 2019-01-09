@@ -12,10 +12,14 @@
 #include "type_class.h"
 #include "debug.h"
 
-int_t norm(int_t in, bool *switched = NULL);
-vec_t norm(vec_t in, bool *switched = NULL);
+namespace PAGSuite
+{
 
+  int_t norm(int_t in, bool *switched = NULL);
 
+  vec_t norm(vec_t in, bool *switched = NULL);
+
+}
 
 
 #endif // NORM_H
