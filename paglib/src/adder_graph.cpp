@@ -348,8 +348,12 @@ namespace PAGSuite
 //  for (std::list<adder_graph_base_node_t *>::iterator it = nodes_list.begin(), it_end = nodes_list.end(); it != it_end; ++it)
       for (adder_graph_base_node_t *node : nodes_list)
       {
+        if(!quiet) cout << "  checking " << node->output_factor << " with stage=" << node->stage << endl;
         if ((node->output_factor == output_factor) && (node->stage == stage))
+        {
+          if(!quiet) cout << "found node " << node << endl;
           return node;
+        }
       }
       return nullptr;
     }
@@ -376,40 +380,6 @@ namespace PAGSuite
         stringstream node_string;
         node_string << node_to_string((*it)) << "[label=\"";
         node_string << (*it)->output_factor;
-/*
-    for (int i = 0, i_end = (int) (*it)->output_factor.size(); i < i_end; ++i)
-    {
-      for (int j = 0, j_end = (int) (*it)->output_factor[i].size(); j < j_end; ++j)
-      {
-        if (j == (int) (*it)->output_factor[i].size() - 1)
-        {
-          if ((*it)->output_factor[i][j] != DONT_CARE)
-          {
-            node_string << (*it)->output_factor[i][j];
-          }
-          else
-          {
-            node_string << "-";
-            break;
-          }
-        }
-        else
-        {
-          if ((*it)->output_factor[i][j] != DONT_CARE)
-          {
-            node_string << (*it)->output_factor[i][j] << ",";
-          }
-          else
-          {
-            node_string << "-";
-            break;
-          }
-        }
-      }
-      if (i != (int) (*it)->output_factor.size() - 1)
-        node_string << "\\" << "n";
-    }
-*/
         double height = 0.3 * (*it)->output_factor.size();
         node_string << "\",fontsize=12,shape=";
         if (is_a<input_node_t>(*(*it)))
@@ -957,6 +927,10 @@ namespace PAGSuite
                     }
                   }
                 }
+                else
+                {
+                  throw runtime_error("unsupported node type!");
+                }
               }
               nodes_list.push_back(node);
 
@@ -1120,6 +1094,8 @@ namespace PAGSuite
 
               node->stage = stoi(elemStr);
 
+              if (!quiet) cout << " stage of node is " << node->stage << endl;
+
               pos += elemEndPos - pos - 1;
               state = NODE_ELEMENT_DELIMITER;
               stateNext = NODE_ARG_VALUE;
@@ -1152,6 +1128,8 @@ namespace PAGSuite
 
               stage = stoi(elemStr);
 
+              if (!quiet) cout << " stage of arg is " << stage << endl;
+
               input_node = get_node_from_output_factor_in_stage(factor_norm, stage);
 
               if (input_node == nullptr)
@@ -1159,7 +1137,8 @@ namespace PAGSuite
                 //create temporary node:
                 input_node = new adder_graph_base_node_t();
                 input_node->output_factor = factor_norm;
-                if (!quiet) cout << "adding temporary node " << input_node << " with factor " << input_node->output_factor << endl;
+                input_node->stage = stage;
+                if (!quiet) cout << "adding temporary node " << input_node << " with factor " << input_node->output_factor << " at stage " << input_node->stage << endl;
                 nodes_list.push_back(input_node);
               }
               if (!quiet) cout << "adding input to node " << node << endl;
@@ -1424,7 +1403,7 @@ namespace PAGSuite
 
         if (is_a<input_node_t>(*(*it)))
         {
-          std::cout << "No input" << std::endl;
+          //std::cout << "No input" << std::endl;
         }
         else if (is_a<adder_subtractor_node_t>(*(*it)))
         {
