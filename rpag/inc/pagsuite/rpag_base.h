@@ -102,9 +102,9 @@ namespace PAGSuite
     int_vec_t decision_max_vec;
     unsigned decision_cnt;
 
-  protected:
-
     set<T> *target_set;
+
+  protected:
 
     inline void evaluate_usefull_predecessor_pair(T w1, T w2, set<pair<T, T> > *predecessor_pair_set, int nz_max, int_t l11, int_t l12, int_t l21, int_t l22, int_t r1, int_t r2, int_t s12, int_t s22)
     {
@@ -564,10 +564,14 @@ namespace PAGSuite
     fix_decision_cnt = 0;
 
 
-    if ((target_set != NULL) && (target_set->size() == 0))
+    if(target_set != NULL)
     {
-      parse_target_set();
+      if(target_set->size() == 0)
+      {
+        parse_target_set();
+      }
     }
+
     IF_VERBOSE(0) std::cout << "used target set:" << *target_set << std::endl;
 
     // to get access to all functions of the cost_model
@@ -814,14 +818,10 @@ namespace PAGSuite
       }
 
       // set (or update) the current pipeline stage for the cost model
-      cout << "hier 1" << endl; flush(cout);
       cost->set_pipeline_state(s);
-      cout << "hier 2" << endl; flush(cout);
 
       predecessor_set = (*pipeline_set)[s - 1];
       working_set = (*pipeline_set)[s];
-
-      cout << "hier 3" << endl; flush(cout);
 
       IF_VERBOSE(4) cout << "predecessor_set=" << predecessor_set << endl;
       IF_VERBOSE(4) cout << "working_set=" << working_set << endl;
