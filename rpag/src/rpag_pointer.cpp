@@ -7,6 +7,7 @@
 */
 
 #include "pagsuite/rpag_pointer.h"
+#include "pagsuite/cost_model.h"
 
 namespace PAGSuite
 {
