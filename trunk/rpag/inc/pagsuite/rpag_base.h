@@ -50,6 +50,8 @@ namespace PAGSuite
 
     int_t get_c_max();
 
+    void set_cost_model(cost_model_t cost_model);
+
     virtual int optimize();// clasic RPAG entry point. start the optimisation
 
     vector<set<T>> get_best_pipeline_set();
@@ -472,6 +474,90 @@ namespace PAGSuite
   }
 
   template<class T>
+  void rpag_base<T>::set_cost_model(cost_model_t cost_model)
+//  template<class T>
+//  void set_cost_model(cost_model_t cost_model, rpag_pointer *rpagp)
+  {
+    switch(cost_model)
+    {
+      case HL_FPGA:
+      IF_VERBOSE(2) cout << "using high level cost model for FPGA" << endl;
+        set_cost_FF(COST_FF_DEFAULT_FPGA);
+        set_cost_FA(COST_FA_DEFAULT_FPGA);
+        cost_pointer = new cost_model_HL<T, rpag_base<T> >( this );
+        break;
+
+      case LL_FPGA:
+      IF_VERBOSE(2) cout << "using low level cost model for FPGA" << endl;
+        set_cost_FF(COST_FF_DEFAULT_FPGA);
+        set_cost_FA(COST_FA_DEFAULT_FPGA);
+        cost_pointer= new cost_model_LL<T, rpag_base<T> >( this );
+        if(input_wordsize < 0)
+        {
+          cerr << "Error: input word size necessary for ll_fpga cost model (parameter: --input_wordsize)" << endl;
+          exit(-1);
+        }
+        break;
+
+      case LL_ASIC:
+        cerr << "Error: LL_ASIC cost model currently not supported!" << endl;
+        set_cost_FF(COST_FF_DEFAULT_ASIC);
+        set_cost_FA(COST_FA_DEFAULT_ASIC);
+        cost_pointer= new cost_model_LL<T, rpag_base<T> >( this );
+        exit(-1);
+        break;
+
+      case HL_ASIC:
+      IF_VERBOSE(2) cout << "using high level cost model for ASIC" << endl;
+        set_cost_FF(COST_FF_DEFAULT_ASIC);
+        set_cost_FA(COST_FA_DEFAULT_ASIC);
+        cost_pointer= new cost_model_HL<T, rpag_base<T> >( this );
+        break;
+
+      case HL_MIN_AD:
+      IF_VERBOSE(2) cout << "using high level cost model for minimal adder depth" << endl;
+        set_cost_FF(0.001); //!!??!!
+        set_cost_FA(1);
+        cost_pointer= new cost_model_hl_min_ad<T, rpag_base<T> >( this );
+        break;
+
+      case LL_MIN_AD:
+      IF_VERBOSE(2) cout << "using high level cost model for minimal adder depth" << endl;
+        set_cost_FF(0.001); //!!??!!
+        set_cost_FA(1);
+        cost_pointer= new cost_model_ll_min_ad<T, rpag_base<T> >( this );
+        if(input_wordsize < 0)
+        {
+          cerr << "Error: input word size necessary for ll_min_ad cost model (parameter: --input_wordsize)" << endl;
+          exit(-1);
+        }
+        break;
+
+      case HL_FPGA_OLD:
+      IF_VERBOSE(2) cout << "using OLD hl FPGA cost model-- just for debuging" << endl;
+        set_cost_FF(COST_FF_DEFAULT_FPGA);
+        set_cost_FA(COST_FA_DEFAULT_FPGA);
+        cost_pointer= new cost_model_HL_old<T, rpag_base<T> >( this );
+        break;
+
+      case LL_FPGA_OLD:
+      IF_VERBOSE(2) cout << "using OLD hl FPGA cost model-- just for debuging" << endl;
+        set_cost_FF(COST_FF_DEFAULT_FPGA);
+        set_cost_FA(COST_FA_DEFAULT_FPGA);
+        cost_pointer= new cost_model_LL_old<T, rpag_base<T> >( this );
+        break;
+
+      case MIN_GPC:
+      IF_VERBOSE(2) cout << "using cost model for minimal glitch path count (GPC)" << endl;
+        set_cost_FF(0.001); //!!??!!
+        set_cost_FA(COST_FA_DEFAULT_FPGA);
+        cost_pointer= new cost_model_min_gpc<T, rpag_base<T> >( this );
+        break;
+
+    }
+  }
+
+  template<class T>
   int rpag_base<T>::optimize()
   {
     timer.start();
@@ -721,11 +807,21 @@ namespace PAGSuite
     {
       IF_VERBOSE(2) cout << "****** realizing elements in pipeline stage " << s << " ******" << endl;
 
+      if(cost == NULL)
+      {
+        cerr << "error: no cost model passed to rpag!" << endl;
+        exit(-1);
+      }
+
       // set (or update) the current pipeline stage for the cost model
+      cout << "hier 1" << endl; flush(cout);
       cost->set_pipeline_state(s);
+      cout << "hier 2" << endl; flush(cout);
 
       predecessor_set = (*pipeline_set)[s - 1];
       working_set = (*pipeline_set)[s];
+
+      cout << "hier 3" << endl; flush(cout);
 
       IF_VERBOSE(4) cout << "predecessor_set=" << predecessor_set << endl;
       IF_VERBOSE(4) cout << "working_set=" << working_set << endl;

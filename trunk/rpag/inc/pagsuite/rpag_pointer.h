@@ -75,7 +75,6 @@ namespace PAGSuite
     unsigned int fix_decision_cnt;
 
     int set_cost_FF(float FF);
-
     int set_cost_FA(float FA);
 
     // just change or set this two cost-variable's with the set functions.(the only exeption is the constructor)

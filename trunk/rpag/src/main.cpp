@@ -149,6 +149,8 @@ int print_exhaustive_help()
   //print_short_help();
   exit(0);
 }
+
+/*
 template<class T>
 void set_cost_model(cost_model_t cost_model, rpag_pointer *rpagp)
 {
@@ -230,6 +232,7 @@ void set_cost_model(cost_model_t cost_model, rpag_pointer *rpagp)
 
   }
 }
+ */
 
 int rpag_pointer::input_wordsize;
 
@@ -543,11 +546,11 @@ int main(int argc, char *argv[])
   //select cost model:
   if (vector_input==true)
   {
-    set_cost_model<vec_t>(cost_model, rpagp);
+    ((rpag_base<vec_t>*)rpagp)->set_cost_model(cost_model);
   }
   else
   {
-    set_cost_model<int_t>(cost_model, rpagp);
+    ((rpag_base<int_t>*)rpagp)->set_cost_model(cost_model);
   }
 
   rpagp->cost_model = cost_model;//this is necesseary because the min_ad cost_model change something whith where the target's are implementet in the pipeline set
