@@ -827,6 +827,7 @@ namespace PAGSuite
       {
         exponentsFound = false;
         w = *working_set_iter;// should not called c, because c is used in case of 3 addder's.( posseble w? than a &b vor 2 adders and a, b and c for 3 adders) should we chanche the name in the getExponent funktion? the it is unic
+        IF_VERBOSE(5) cout << "processing element " << w << " in stage " << s << endl;
         {
           //check for register:
           c = 0;
