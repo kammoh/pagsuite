@@ -65,7 +65,7 @@ namespace PAGSuite
 
     int create_rpag_output(vector<set<T> > &pipeline_set_best, double pag_cost_best, set<T> *target_set);
 
-    vector<set<T> > best_pipeline_set_result;
+    vector<set<T> > pipeline_set_best_result;
 
     //internal parameters:
 #ifdef KEEP_C_MAX_CONST_ONE
@@ -216,7 +216,7 @@ namespace PAGSuite
   template<class T>
   vector<set<T> > rpag_base<T>::get_best_pipeline_set()
   {
-    return best_pipeline_set_result;
+    return pipeline_set_best_result;
   }
 
   template<class T>
@@ -588,7 +588,7 @@ namespace PAGSuite
       pipeline_set_best.push_back(target_fun_set);
 
       create_rpag_output(pipeline_set_best, 0, target_set);
-      best_pipeline_set_result = pipeline_set_best;
+      pipeline_set_best_result = pipeline_set_best;
       return 0;
     }
     unsigned act_decision_no = 0, act_decision_value = 0;
@@ -630,7 +630,7 @@ namespace PAGSuite
       first_decison_predecessor.clear();
       first_decision_predecessor_stage = -1;
 
-      //the pipelineset has to be cleard from a preview optimazation
+      //the pipelineset has to be cleared from a preview optimization
       for (int j = 0; j < no_of_pipeline_stages; ++j)
       {
         pipeline_set[j].clear();
@@ -725,8 +725,8 @@ namespace PAGSuite
       }
     }
     timer.stop();
+    pipeline_set_best_result = pipeline_set_best;
     create_rpag_output(pipeline_set_best, pag_cost_best, target_set);
-    best_pipeline_set_result = pipeline_set_best;
     return 1;
   }
 
@@ -1186,7 +1186,7 @@ namespace PAGSuite
   int rpag_base<T>::create_rpag_output(vector<set<T> > &pipeline_set_best, double pag_cost_best, set<T> *target_set)
   {
     {
-      vec_t dummi;// it is nessesary to have an object to switch the seperate symbol
+      vec_t dummi;// it is nessesary to have an object to switch the separate symbol
       dummi.set_stream_seperate_symbol(',');// the output has a "special" or different syntax
     }
     stringstream output_stream; // to be able to stream the output in file and display

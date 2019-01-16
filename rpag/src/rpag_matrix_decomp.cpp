@@ -394,10 +394,10 @@ namespace PAGSuite
       //reverse the reversed pipeline set...
       {
           unsigned int stages = pipeline_set_rev.size();
-          best_pipeline_set_result.resize(pipeline_set_rev.size());
+          pipeline_set_best_result.resize(pipeline_set_rev.size());
           for (int i = 0; i < stages; ++i)
           {
-              best_pipeline_set_result[stages - i - 1] = pipeline_set_rev[i];
+              pipeline_set_best_result[stages - i - 1] = pipeline_set_rev[i];
           }
       }
 
@@ -409,13 +409,13 @@ namespace PAGSuite
           {
               for (vec_t target : solutions[i][j])
               {
-                  best_pipeline_set_result[j].insert(target);
+                  pipeline_set_best_result[j].insert(target);
               }
           }
 
       }
 
-      std::cout << "pipeline_set_best: " << best_pipeline_set_result << std::endl << std::endl;
+      std::cout << "pipeline_set_best: " << pipeline_set_best_result << std::endl << std::endl;
 
 
       IF_VERBOSE(5) std::cout << "calculating rpag pag cost" << std::endl;
@@ -423,11 +423,11 @@ namespace PAGSuite
       cost_model_base<vec_t> *cost = (cost_model_base<vec_t> *) this->cost_pointer;
       cost_pointer = NULL;
 
-      double pag_cost_best = cost->cost_pag(&best_pipeline_set_result);
+      double pag_cost_best = cost->cost_pag(&pipeline_set_best_result);
 
       IF_VERBOSE(5)std::cout << "calculating rpag output" << std::endl;
       std::cout << std::endl;
-      this->create_rpag_output(best_pipeline_set_result, pag_cost_best, target_set);
+      this->create_rpag_output(pipeline_set_best_result, pag_cost_best, target_set);
 
   }
 
