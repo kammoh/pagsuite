@@ -22,7 +22,7 @@ using namespace std;
 namespace PAGSuite
 {
 
-#define UNUSED(x) (void)(x)
+#define ISUNUSED(x) (void)(x)
 #define MAX_INT32  2147483647LL;
 #define MAX_UINT32 4294967295LL;
 

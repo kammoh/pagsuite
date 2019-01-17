@@ -35,7 +35,7 @@ namespace PAGSuite
 
   vec_t my_atoll(vec_t to, const char *input)
   {
-    UNUSED(to);
+    ISUNUSED(to);
     char const *cut = "+-,";
 
     int pos = 0;
@@ -59,7 +59,7 @@ namespace PAGSuite
 
   int_t my_atoll(int_t to, const char *input)
   {
-    UNUSED(to);
+    ISUNUSED(to);
     return atoll(input);
   }
 
@@ -268,7 +268,7 @@ namespace PAGSuite
 
   void create_unit_element(int_t &var, unsigned int i)
   {
-    UNUSED(i);
+    ISUNUSED(i);
     var = 1;
   }
 
@@ -383,9 +383,9 @@ namespace PAGSuite
 //do the sciping just in case of vectors
   bool skip_predecessor(const int_t &w, const int_t &p, const bool &dont_skip)
   {
-    UNUSED(w);
-    UNUSED(p);
-    UNUSED(dont_skip);
+    ISUNUSED(w);
+    ISUNUSED(p);
+    ISUNUSED(dont_skip);
     return 0;
   }
 

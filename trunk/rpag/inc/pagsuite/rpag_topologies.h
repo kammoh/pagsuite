@@ -868,7 +868,7 @@ namespace PAGSuite
     int l11, l12, l21, l22, r1, r2, s12, s22;
 
 
-    UNUSED(ws_max); //ToDo: Implement & test filter for word size constraint
+    ISUNUSED(ws_max); //ToDo: Implement & test filter for word size constraint
 
     IF_VERBOSE(4) cout << "l_max=" << l_max << endl;
 

@@ -140,7 +140,7 @@ int print_exhaustive_help()
 
   mutex my_Mutex;
   std::lock_guard<mutex> my_lockgard(my_Mutex);
-  UNUSED(my_lockgard); // the usage is in the destructor of the objekt... but with this line there is no warning
+  ISUNUSED(my_lockgard); // the usage is in the destructor of the objekt... but with this line there is no warning
   cout << "exhaustive help is not implemented" << endl;
 
   std::thread my_thread1(print_short_help);
