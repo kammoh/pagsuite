@@ -159,18 +159,18 @@ namespace PAGSuite
 
     virtual T get_best_single_predecessor(const set<T> &working_set, const set<T> &predecessor_set, int s)
     {
-      UNUSED(working_set);
-      UNUSED(predecessor_set);
-      UNUSED(s);
+      ISUNUSED(working_set);
+      ISUNUSED(predecessor_set);
+      ISUNUSED(s);
       std::cout << "Error: Called from base class! This should never happen!\n";
       exit(-1);
     }
 
     virtual void get_best_multi_predecessor(const set<T> &working_set, set<T> *best_multi_predecessor_set, int s)
     {
-      UNUSED(working_set);
-      UNUSED(best_multi_predecessor_set);
-      UNUSED(s);
+      ISUNUSED(working_set);
+      ISUNUSED(best_multi_predecessor_set);
+      ISUNUSED(s);
       std::cout << "Error: Called from base class! This should never happen!\n";
       exit(-1);
     }

@@ -121,28 +121,28 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_HL<T_ELEM, T_CLASS>::cost_reg(T_ELEM w, int c_max)
   {
-    UNUSED(w);
-    UNUSED(c_max);
+    ISUNUSED(w);
+    ISUNUSED(c_max);
     return 1;
   }
 
   template<class T_ELEM, class T_CLASS>
   double cost_model_HL<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max)
   {
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(c_max);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(c_max);
     return no_of_predecessors_used;
   }
 
   template<class T_ELEM, class T_CLASS>
   double cost_model_HL<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
   {
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(p3);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(p3);
     return 1;
   }
 
@@ -196,7 +196,7 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_LL<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max)
   {
-    UNUSED(c_max);
+    ISUNUSED(c_max);
 
     //register or adder with single predecessor:
     int predecessor_word_size = compute_word_size(p1, rpag_p->input_wordsize);
@@ -251,10 +251,10 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_LL<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
   {
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(p3);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(p3);
     return compute_word_size(w, rpag_p->input_wordsize);
   }
 
@@ -308,28 +308,28 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_hl_min_ad<T_ELEM, T_CLASS>::cost_reg(T_ELEM w, int c_max)
   {
-    UNUSED(w);
-    UNUSED(c_max);
+    ISUNUSED(w);
+    ISUNUSED(c_max);
     return 0;
   }
 
   template<class T_ELEM, class T_CLASS>
   double cost_model_hl_min_ad<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max)
   {
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(c_max);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(c_max);
     return no_of_predecessors_used;
   }
 
   template<class T_ELEM, class T_CLASS>
   double cost_model_hl_min_ad<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
   {
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(p3);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(p3);
     return 1;
   }
 
@@ -395,15 +395,15 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_ll_min_ad<T_ELEM, T_CLASS>::cost_reg(T_ELEM w, int c_max)
   {
-    UNUSED(w);
-    UNUSED(c_max);
+    ISUNUSED(w);
+    ISUNUSED(c_max);
     return 0;
   }
 
   template<class T_ELEM, class T_CLASS>
   double cost_model_ll_min_ad<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max)
   {
-    UNUSED(c_max);
+    ISUNUSED(c_max);
 
     //register or adder with single predecessor:
     int predecessor_word_size = compute_word_size(p1, rpag_p->input_wordsize);
@@ -458,10 +458,10 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_ll_min_ad<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
   {
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(p3);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(p3);
     return compute_word_size(w, rpag_p->input_wordsize);
   }
 
@@ -530,28 +530,28 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_min_gpc<T_ELEM, T_CLASS>::cost_reg(T_ELEM w, int c_max)
   {
-    UNUSED(w);
-    UNUSED(c_max);
+    ISUNUSED(w);
+    ISUNUSED(c_max);
     return 0;
   }
 
   template<class T_ELEM, class T_CLASS>
   double cost_model_min_gpc<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max)
   {
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(c_max);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(c_max);
     return no_of_predecessors_used;
   }
 
   template<class T_ELEM, class T_CLASS>
   double cost_model_min_gpc<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
   {
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(p3);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(p3);
     return 1;
   }
 
@@ -633,8 +633,8 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_HL_old<T_ELEM, T_CLASS>::cost_reg(int_t w, int c_max)
   {
-    UNUSED(w);
-    UNUSED(c_max);
+    ISUNUSED(w);
+    ISUNUSED(c_max);
     return 1;
   }
 
@@ -647,10 +647,10 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_HL_old<T_ELEM, T_CLASS>::cost_add(int_t w, int_t p1, int_t p2, int no_of_predecessors_used, int c_max)
   {
-    UNUSED(c_max);
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
+    ISUNUSED(c_max);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
     return no_of_predecessors_used;
 
   }
@@ -658,7 +658,7 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_HL_old<T_ELEM, T_CLASS>::cost_add(vec_t w, vec_t p1, vec_t p2, int no_of_predecessors_used, int c_max)
   {
-    UNUSED(w);
+    ISUNUSED(w);
     if (no_of_predecessors_used > 1)
     {
       return no_of_predecessors_used + ((double) max(abs(p1).max(), abs(p2).max())) / ((double) c_max);
@@ -672,10 +672,10 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_HL_old<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
   {
-    UNUSED(w);
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(p3);
+    ISUNUSED(w);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(p3);
     return 1;
   }
 
@@ -724,26 +724,26 @@ namespace PAGSuite
   template<class T_ELEM, class T_CLASS>
   double cost_model_LL_old<T_ELEM, T_CLASS>::cost_reg(T_ELEM w, int c_max)
   {
-    UNUSED(c_max);
+    ISUNUSED(c_max);
     return this->cost_add(w, 0, 0, 0);
   }
 
   template<class T_ELEM, class T_CLASS>
   double cost_model_LL_old<T_ELEM, T_CLASS>::cost_add(T_ELEM w, T_ELEM p1, T_ELEM p2, int no_of_predecessors_used, int c_max)
   {
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(no_of_predecessors_used);
-    UNUSED(c_max);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(no_of_predecessors_used);
+    ISUNUSED(c_max);
     return compute_word_size(w, rpag_p->input_wordsize);
   }
 
   template<class T_ELEM, class T_CLASS>
   double cost_model_LL_old<T_ELEM, T_CLASS>::cost_ternary_add(T_ELEM w, T_ELEM p1, T_ELEM p2, T_ELEM p3)
   {
-    UNUSED(p1);
-    UNUSED(p2);
-    UNUSED(p3);
+    ISUNUSED(p1);
+    ISUNUSED(p2);
+    ISUNUSED(p3);
     return compute_word_size(w, rpag_p->input_wordsize);
   }
 
