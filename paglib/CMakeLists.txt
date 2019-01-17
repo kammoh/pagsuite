@@ -16,13 +16,13 @@ SET(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/inc/pagsuite/adder_graph.h
 )
 
-ADD_LIBRARY(pag_lib SHARED ${SRC_FILES} ${HEADERS})
+ADD_LIBRARY(paglib SHARED ${SRC_FILES} ${HEADERS})
 
-set_target_properties(pag_lib PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(pag_lib PROPERTIES OUTPUT_NAME "pag")
+set_target_properties(paglib PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(paglib PROPERTIES OUTPUT_NAME "pag")
 
 SET_TARGET_PROPERTIES(
-pag_lib
+paglib
 PROPERTIES
 	SOVERSION 0
 	VERSION 2.1.0
@@ -32,7 +32,7 @@ INSTALL(FILES ${HEADERS}
     DESTINATION include/pagsuite
 )
 
-INSTALL(TARGETS pag_lib
+INSTALL(TARGETS paglib
   RUNTIME DESTINATION lib
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

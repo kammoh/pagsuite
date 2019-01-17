@@ -25,8 +25,6 @@ add_executable(omcm omcm.cpp)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 include_directories(${SCALP_H})
-#set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} /Users/pluto/research/develop/inst/lib)
-
 
 target_link_libraries(omcm ${SCALP_LIB})
 
