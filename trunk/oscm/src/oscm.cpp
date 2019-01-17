@@ -1,5 +1,6 @@
 #include <string>
-
+#include <set>
+#include <algorithm>
 //#define MAX_SCM_CONST 524287
 
 using namespace std;
