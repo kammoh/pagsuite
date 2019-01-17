@@ -339,7 +339,7 @@ namespace PAGSuite
       {
         throw runtime_error("node_to_string: unknown node of type " + string(typeid(*node).name()));
       }
-      stream << matrix_to_string(node->output_factor);
+      stream << matrix_to_string(node->output_factor) << "_s" << node->stage;
       return stream.str();
     }
 
@@ -865,9 +865,12 @@ namespace PAGSuite
               nodeStr = commandLine.substr(pos, nodeEndPos - pos);
               node = parse_node(nodeStr);
 
-              node_tmp = get_node_from_output_factor_in_stage(node->output_factor, node->stage);
+              if(!is_a<output_node_t>(*node))
+                node_tmp = get_node_from_output_factor_in_stage(node->output_factor, node->stage);
+              else
+                node_tmp = nullptr; //ignore output nodes as there will be a node with same output factor
 
-              if (node_tmp != nullptr)
+              if(node_tmp != nullptr)
               {
                 if (is_a<adder_graph_base_node_t>(*node_tmp))
                 {
@@ -923,13 +926,17 @@ namespace PAGSuite
                     }
                     else
                     {
-                      throw runtime_error("unsupported node type!");
+                      throw runtime_error("unsupported node type " + string(typeid(*n).name()));
                     }
                   }
                 }
+                else if (is_a<output_node_t>(*node_tmp))
+                {
+                  //ignore output nodes as those will have the same value as other nodes and are not temporary nodes
+                }
                 else
                 {
-                  throw runtime_error("unsupported node type!");
+                  throw runtime_error("unsupported node type of temporary node " + string(typeid(*node_tmp).name()));
                 }
               }
               nodes_list.push_back(node);
