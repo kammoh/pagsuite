@@ -258,6 +258,8 @@ int main(int argc, char *args[])
         sol.timeout = timeout;
       }
 
+/*
+      //does not work with SCIP!
       sol.intFeasTol = intFeasTol;
 
       double minTol = 1/((double) 2*bigM); //the minimum tolerance accepted by the model
@@ -265,7 +267,7 @@ int main(int argc, char *args[])
         sol.intFeasTol = minTol;
 
       cout << "Int feasibility tolerance set to " << sol.intFeasTol << endl;
-
+*/
       //define and initialize variables:
       vector<ScaLP::Variable> coeff(noOfAdders+1);
       vector<ScaLP::Variable> coeffLeft(noOfAdders+1);
