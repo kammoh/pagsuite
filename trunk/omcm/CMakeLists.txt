@@ -20,7 +20,13 @@ ENDIF (SCALP_H AND SCALP_LIB)
 
 #link_directories(${SCALP_LIB})
 
-add_executable(omcm omcm.cpp)
+SET(SOURCES omcm.cpp)
+
+#ToDo: Separate omcm code from main to make it available as library
+#ADD_LIBRARY( omcmlib SHARED ${SOURCES} ${HEADERS})
+#set_target_properties(omcmlib PROPERTIES OUTPUT_NAME "omcm")
+
+add_executable(omcm ${SOURCES})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -28,3 +34,18 @@ include_directories(${SCALP_H})
 
 target_link_libraries(omcm ${SCALP_LIB})
 
+INSTALL(FILES ${HEADERS}
+		DESTINATION include/pagsuite
+		)
+
+#INSTALL(TARGETS omcmlib
+#		RUNTIME DESTINATION lib
+#		LIBRARY DESTINATION lib
+#		ARCHIVE DESTINATION lib
+#		)
+
+INSTALL(TARGETS omcm
+		RUNTIME DESTINATION bin
+		LIBRARY DESTINATION lib
+		ARCHIVE DESTINATION lib
+		)
