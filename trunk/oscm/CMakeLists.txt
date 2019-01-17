@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 2.4)
 
 SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. )
 
-include(${PAGSUITE_ROOT_DIR}/PagSuiteConfig.cmake)
-configure()
+#include(${PAGSUITE_ROOT_DIR}/PagSuiteConfig.cmake)
+#configure()
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/inc ${PAGSUITE_ROOT_DIR}/rpag/inc )
 
@@ -18,10 +18,6 @@ set_target_properties(oscmlib PROPERTIES OUTPUT_NAME "oscm")
 
 ADD_EXECUTABLE( oscm ${SOURCES} ${HEADERS})
 
-#set_target_properties( oscm PROPERTIES LINKER_LANGUAGE CXX)
-#IF( ${SYSTEM_PREFIX} STREQUAL "lin" )
-#	TARGET_LINK_LIBRARIES( rpag rt )
-#ENDIF()
 
 INSTALL(FILES ${HEADERS}
   DESTINATION include/pagsuite

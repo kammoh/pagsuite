@@ -7,9 +7,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. )
 
-include(${PAGSUITE_ROOT_DIR}/PagSuiteConfig.cmake)
-configure()
-
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/inc )
 
 FILE( GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
@@ -21,10 +18,8 @@ set_target_properties(rpaglib PROPERTIES OUTPUT_NAME "rpag")
 ADD_EXECUTABLE( rpag ${SOURCES} ${HEADERS})
 set_target_properties( rpag PROPERTIES LINKER_LANGUAGE CXX)
 
-IF( ${SYSTEM_PREFIX} STREQUAL "lin" )
-        TARGET_LINK_LIBRARIES( rpag rt pthread)
-ENDIF()
-
+#ToDo: search for the following libraries to allow runtime measurements as well as multithreading (currently only used for large CMM problems)
+#TARGET_LINK_LIBRARIES( rpag rt pthread)
 
 INSTALL(TARGETS rpag
   RUNTIME DESTINATION bin

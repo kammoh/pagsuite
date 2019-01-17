@@ -1,18 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
-project(pag_tools CXX)
+project(pagsuite CXX)
 
 SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
 
-include(${PAGSUITE_ROOT_DIR}/PagSuiteConfig.cmake)
-configure()
-include_paglib( ${PAGSUITE_ROOT_DIR} )
+set(CMAKE_MACOSX_RPATH 1)
 
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/pag_lib/paglib_test ${CMAKE_CURRENT_SOURCE_DIR}/CMakeTmp/pag_print )
-set_target_properties(paglib_test PROPERTIES OUTPUT_NAME pag_print)
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/pag_fusion ${CMAKE_CURRENT_SOURCE_DIR}/CMakeTmp/pag_fusion)
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/pag_split ${CMAKE_CURRENT_SOURCE_DIR}/CMakeTmp/pag_split)
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/rpag ${CMAKE_CURRENT_SOURCE_DIR}/CMakeTmp/rpag)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-IF( BUILD_FLOPOCO )
-	add_subdirectory( ${BUILD_FLOPOCO} ${CMAKE_CURRENT_SOURCE_DIR}/CMakeTmp/flopoco)
-ENDIF( BUILD_FLOPOCO )
+add_subdirectory( ${PAGSUITE_ROOT_DIR}/omcm CMakeTmp/omcm)
+add_subdirectory( ${PAGSUITE_ROOT_DIR}/paglib CMakeTmp/paglib)
+add_subdirectory( ${PAGSUITE_ROOT_DIR}/oscm CMakeTmp/oscm)
+add_subdirectory( ${PAGSUITE_ROOT_DIR}/rpag CMakeTmp/rpag)
