@@ -1289,7 +1289,7 @@ namespace PAGSuite
               if (elemStr == "NaN")
                 value = DONT_CARE;
               else
-                value = stoi(elemStr);
+                value = stoll(elemStr);
 
               //resize matrix if necessary:
               if ((*factor).size() <= row)
