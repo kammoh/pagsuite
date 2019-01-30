@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <assert.h>
+#include <sstream>
 
 namespace PAGSuite
 {
@@ -1941,7 +1942,77 @@ namespace PAGSuite
       return new_k_adder_graph.str();
     }
 
-    std::ostream &operator<<(std::ostream &stream, const std::vector<std::vector<int64_t> > &matrix)
+  string adder_graph_t::get_adder_graph_as_string()
+  {
+    stringstream graphStr;
+
+    graphStr << "{";
+
+    bool firstIteration = true;
+    for (adder_graph_base_node_t* node : nodes_list)
+    {
+      if (is_a<input_node_t>(*node))
+      {
+        //nothing to do
+      }
+      else
+      {
+        if (!firstIteration)
+        {
+          graphStr << ",";
+        }
+        firstIteration = false;
+
+        graphStr << "{";
+        if (is_a<adder_subtractor_node_t>(*node))
+        {
+          graphStr << "'A',";
+          graphStr << "[" << node->output_factor << "],";
+          graphStr << node->stage << ",";
+          int i = 0;
+          bool firstInInnerIteration = true;
+          for (adder_graph_base_node_t *input_node : ((adder_subtractor_node_t *) node)->inputs)
+          {
+            if (!firstInInnerIteration)
+            {
+              graphStr << ",";
+            }
+            graphStr << "[" << input_node->output_factor << "],";
+            graphStr << input_node->stage << ",";
+            graphStr << ((adder_subtractor_node_t *) node)->input_shifts[i];
+            i++;
+            firstInInnerIteration = false;
+          }
+        }
+        else if(is_a<output_node_t>(*node) || is_a<register_node_t>(*node))
+        {
+          if(is_a<output_node_t>(*node))
+            graphStr << "'O',";
+          else
+            graphStr << "'R',";
+
+          graphStr << "[" << node->output_factor << "],";
+          graphStr << node->stage << ",";
+          graphStr << "[" << ((register_node_t *) node)->input->output_factor << "],";
+          graphStr << ((register_node_t *) node)->input->stage << ",";
+          graphStr << ((register_node_t *) node)->input_shift;
+        }
+        else if (is_a<mux_node_t>(*node))
+        {
+          throw runtime_error("output for MUX node type not supported so far, sorry");
+        }
+        else if (is_a<conf_adder_subtractor_node_t>(*node))
+        {
+          throw runtime_error("output for conf. add/subtract node type not supported so far, sorry");
+        }
+        graphStr << "}";
+      }
+    }
+    graphStr << "}";
+    return graphStr.str();
+  }
+
+  std::ostream &operator<<(std::ostream &stream, const std::vector<std::vector<int64_t> > &matrix)
     {
       for (int r = 0; r < matrix.size(); r++)
       {
@@ -1955,4 +2026,10 @@ namespace PAGSuite
       return stream;
     }
 
+}
+
+std::ostream &operator<<(std::ostream &stream, PAGSuite::adder_graph_t &adder_graph)
+{
+  stream << adder_graph.get_adder_graph_as_string();
+  return stream;
 }
