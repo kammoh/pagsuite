@@ -149,6 +149,8 @@ namespace PAGSuite
 
         void check_and_correct(string graphstring = ""); //check adder graph
 
+        string get_adder_graph_as_string();
+
     private:
         adder_graph_base_node_t *parse_node(string nodeStr);
 
@@ -181,5 +183,6 @@ namespace PAGSuite
     std::ostream &operator<<(std::ostream &stream, const std::vector<std::vector<int64_t> > &matrix);
 
 }
+std::ostream &operator<<(std::ostream &stream, const PAGSuite::adder_graph_t &adder_graph);
 
 #endif // ADDER_GRAPH_H
