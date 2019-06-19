@@ -73,8 +73,8 @@ for l=1:size(pipelined_realization,2)
         sign_str='';
       end
     end
-%    if pipelined_realization_element{2} ==  pipelined_realization_element{4} %no delay -> this is a node without register (output)
-    if pipelined_realization_element{6} == 0 %no second argument, this is an output
+    if pipelined_realization_element{2} ==  pipelined_realization_element{4} %no delay -> this is a node without register (output)
+%    if pipelined_realization_element{6} == 0 %no second argument, this is an output
       
       if shortnames
         label = num2str(nodecnt);

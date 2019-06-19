@@ -69,6 +69,7 @@ int main(int argc, char *args[])
   int noOfAddersMin=-1;
   int noOfAddersMax=-1;
   int shiftMax=-1;
+  int shiftMin=0;
   //    int coeffMax=(1LL << shiftMax);
   long coeffMax=-1;
   int timeout=-1; //default -1 means no timeout
@@ -504,7 +505,7 @@ int main(int argc, char *args[])
           sol << (c3bm == 1);
 
         //constraints C4a:
-        for(int s=0; s < shiftMax; s++)
+        for(int s=shiftMin; s < shiftMax; s++)
         {
           if(useIndicatorConstraints)
           {
@@ -531,7 +532,7 @@ int main(int argc, char *args[])
           if(s > 0)
             sol << (shiftIsSRight[a][s] == 0 ); //shift at right input is zero for all positive shifts
           else
-            sol << (shiftIsSRight[a][s] == 1 ); //right shift at right input is currently disabled
+            sol << (shiftIsSRight[a][s] - shiftIsSLeft[a][s] == 0 ); //for right shifts, both have to be equal
         }
         sol << (coeffShiftedRight[a] - coeffRight[a] == 0 ); //right shift is currently disabled
 
