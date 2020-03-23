@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.4)
 project(pagsuite CXX)
 
 SET( PAGSUITE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
